@@ -32,7 +32,7 @@
 
         canvas {
             display: block;
-            background: #4a75a0; /* Cor fallback do céu */
+            background: #4a75a0;
         }
 
         .instrucoes {
@@ -42,6 +42,8 @@
             font-size: 1.1rem;
             letter-spacing: 1px;
             text-shadow: 1px 1px 2px #000;
+            max-width: 800px;
+            line-height: 1.5;
         }
 
         .instrucoes span {
@@ -56,7 +58,8 @@
     </div>
 
     <div class="instrucoes">
-        CONTROLES: <span>W / Seta Cima</span> = Acelerar | <span>S / Seta Baixo</span> = Frear | <span>ESPAÇO</span> = DÁ GRAU 🏍️💨
+        <span>W / S / A / D</span> ou <span>Setas</span> = Move a Moto para os Lados, Cima e Baixo<br>
+        Segure <span>ESPAÇO</span> = DÁ GRAU 🏍️💨
     </div>
 
     <script>
@@ -68,19 +71,27 @@
         let pontuacao = 0;
         let velocidadeCenario = 4;
 
-        // Configuração da Moto do Jogador
+        // Configuração da Moto do Jogador (Agora com movimentos livres)
         const moto = {
             x: 100,
-            y: 280,
+            y: 340, // Posição inicial na rua
             largura: 70,
             altura: 45,
-            velocidadeY: 0,
+            velocidade: 5, // Velocidade de movimento do jogador
             estaEmpinando: false,
-            anguloGrau: 0,
-            noChao: true
+            anguloGrau: 0
         };
 
-        // Obstáculos (Caixas ou Carros na rua)
+        // Objeto para monitorar quais teclas estão pressionadas simultaneamente
+        const teclas = {
+            KeyW: false, ArrowUp: false,
+            KeyS: false, ArrowDown: false,
+            KeyA: false, ArrowLeft: false,
+            KeyD: false, ArrowRight: false,
+            Space: false
+        };
+
+        // Obstáculos da favela
         let obstaculos = [];
         let tempoProximoObstaculo = 0;
 
@@ -99,165 +110,181 @@
 
         // Lógica de Movimentos e Colisões
         function atualizar() {
-            // Aumenta a velocidade/pontuação conforme o tempo passa
-            pontuacao += moto.estaEmpinando ? 2 : 1; // Ganha o dobro de pontos dando grau
-            velocidadeCenario = 4 + Math.floor(pontuacao / 500);
+            // Pontuação e velocidade progressiva
+            pontuacao += moto.estaEmpinando ? 2 : 1;
+            velocidadeCenario = 4 + Math.floor(pontuacao / 600);
 
-            // Controle do Grau (Animação de Empinar)
-            if (moto.estaEmpinando) {
-                if (moto.anguloGrau < 0.5) moto.anguloGrau += 0.05; // Levanta a frente
-            } else {
-                if (moto.anguloGrau > 0) moto.anguloGrau -= 0.05; // Abaixa a frente
+            // --- MOVIMENTAÇÃO DA MOTO PELO TECLADO ---
+            
+            // Mover para Cima (Limite superior da rua)
+            if (teclas.KeyW || teclas.ArrowUp) {
+                if (moto.y > 300) moto.y -= moto.velocidade;
+            }
+            // Mover para Baixo (Limite inferior da rua)
+            if (teclas.KeyS || teclas.ArrowDown) {
+                if (moto.y < 365) moto.y += moto.velocidade;
+            }
+            // Mover para Trás / Frear
+            if (teclas.KeyA || teclas.ArrowLeft) {
+                if (moto.x > 30) moto.x -= moto.velocidade;
+            }
+            // Mover para Frente / Acelerar rápido
+            if (teclas.KeyD || teclas.ArrowRight) {
+                if (moto.x < canvas.width - 100) moto.x += moto.velocidade;
             }
 
-            // Gerador de Obstáculos da Quebrada
+            // Controle do Grau (Espaço)
+            if (teclas.Space) {
+                moto.estaEmpinando = true;
+                if (moto.anguloGrau < 0.5) moto.anguloGrau += 0.06;
+            } else {
+                moto.estaEmpinando = false;
+                if (moto.anguloGrau > 0) moto.anguloGrau -= 0.06;
+            }
+
+            // --- GERADOR DE OBSTÁCULOS ---
             tempoProximoObstaculo++;
-            if (tempoProximoObstaculo > Math.random() * 80 + 60) {
+            if (tempoProximoObstaculo > Math.random() * 60 + 40) {
+                // Sorteia uma altura na rua para o obstáculo aparecer
+                let yObstaculo = 300 + Math.random() * 65;
                 obstaculos.push({
                     x: canvas.width,
-                    y: 300,
+                    y: yObstaculo,
                     largura: 30,
                     altura: 30,
-                    tipo: Math.random() > 0.5 ? '📦' : '🗑️' // Caixa ou Lixeira
+                    tipo: Math.random() > 0.5 ? '📦' : '🗑️'
                 });
                 tempoProximoObstaculo = 0;
             }
 
-            // Movimentar e checar obstáculos
+            // Movimentar obstáculos e checar colisão
             for (let i = obstaculos.length - 1; i >= 0; i--) {
                 obstaculos[i].x -= velocidadeCenario;
 
-                // Detectar Colisão Simples (Hitbox)
+                // Ajuste fino da Hitbox (Caixa de colisão) do emoji
+                let motoHitboxX = moto.x + 10;
+                let motoHitboxY = moto.y + 10;
+
                 if (
-                    moto.x < obstaculos[i].x + obstaculos[i].largura &&
-                    moto.x + moto.largura > obstaculos[i].x &&
-                    moto.y < obstaculos[i].y + obstaculos[i].altura &&
-                    moto.y + moto.altura > obstaculos[i].y
+                    motoHitboxX < obstaculos[i].x + obstaculos[i].largura &&
+                    motoHitboxX + (moto.largura - 20) > obstaculos[i].x &&
+                    motoHitboxY < obstaculos[i].y + obstaculos[i].altura &&
+                    motoHitboxY + (moto.altura - 15) > obstaculos[i].y
                 ) {
-                    // Se estiver dando grau, a hitbox fica um pouco diferente, mas para fins de arcade: caiu!
-                    jogoAtivo = false;
+                    jogoAtivo = false; // Bateu, game over!
                 }
 
-                // Remove obstáculos que saíram da tela
+                // Limpa os obstáculos antigos
                 if (obstaculos[i].x + obstaculos[i].largura < 0) {
                     obstaculos.splice(i, 1);
                 }
             }
         }
 
-        // Renderização Gráfica completa por código (Canvas)
+        // Renderização do jogo no Canvas
         function desenhar() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 1. DESENHAR CÉU DO POR DO SOL (Vibe Favela de tarde)
+            // 1. CÉU
             let gradienteCeu = ctx.createLinearGradient(0, 0, 0, canvas.height);
             gradienteCeu.addColorStop(0, '#f12711');
             gradienteCeu.addColorStop(1, '#f5af19');
             ctx.fillStyle = gradienteCeu;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. DESENHAR CENÁRIO DA FAVELA (Casas em camadas/Silhueta)
+            // 2. FAVELA (Fundo do morro)
             ctx.fillStyle = '#4a1515';
-            // Camada de trás do morro
             for (let i = 0; i < canvas.width; i += 40) {
                 let h = 120 + Math.sin(i + (pontuacao * 0.01)) * 30;
-                ctx.fillRect(i, canvas.height - h - 70, 35, h);
+                ctx.fillRect(i, 300 - h, 35, h);
             }
-            
-            // Camada da frente do morro (tijolos/barracos mais escuros)
             ctx.fillStyle = '#2b0c0c';
             for (let i = -20; i < canvas.width; i += 50) {
                 let h = 100 + Math.cos(i + (pontuacao * 0.02)) * 25;
-                ctx.fillRect(i, canvas.height - h - 70, 45, h);
-                // Detalhe de janelinhas amarelas nas casas
+                ctx.fillRect(i, 300 - h, 45, h);
                 ctx.fillStyle = '#ffcc00';
-                ctx.fillRect(i + 15, canvas.height - h - 40, 10, 10);
+                ctx.fillRect(i + 15, 300 - h + 30, 10, 10);
                 ctx.fillStyle = '#2b0c0c';
             }
 
-            // 3. DESENHAR O ASFALTO / RUA
+            // 3. RUA DE ASFALTO (Onde a moto se move livremente)
             ctx.fillStyle = '#333';
-            ctx.fillRect(0, 320, canvas.width, 80);
+            ctx.fillRect(0, 300, canvas.width, 100);
             
-            // Faixa amarela pintada na rua (efeito de movimento)
+            // Linhas amarelas móveis
             ctx.fillStyle = '#ffcc00';
             let deslocamentoLinha = (pontuacao * velocidadeCenario) % 100;
             for (let i = -deslocamentoLinha; i < canvas.width; i += 100) {
-                ctx.fillRect(i, 355, 50, 8);
+                ctx.fillRect(i, 345, 40, 6);
             }
 
-            // 4. DESENHAR OBSTÁCULOS
-            ctx.font = "30px Arial";
+            // 4. OBSTÁCULOS
+            ctx.font = "28px Arial";
             obstaculos.forEach(obs => {
-                ctx.fillText(obs.tipo, obs.x, obs.y + 25);
+                ctx.fillText(obs.tipo, obs.x, obs.y + 20);
             });
 
-            // 5. DESENHAR JOGADOR (MOTO + GRAU)
+            // 5. DESENHAR MOTO
             ctx.save();
-            // Muda o centro de rotação para a roda traseira para fazer o Grau realista
-            ctx.translate(moto.x + 15, moto.y + moto.altura); 
+            // Desloca para a posição dinâmica atual (x, y) controlada pelo jogador
+            ctx.translate(moto.x + 15, moto.y + 15); 
             ctx.rotate(-moto.anguloGrau);
 
-            // Corpo da Moto/Piloto feito com Emoji para visual leve e divertido
             ctx.font = "45px Arial";
-            ctx.scale(-1, 1); // Inverte o emoji para andar para a direita
-            ctx.fillText("🏍️", -35, -10);
+            ctx.scale(-1, 1); // Roda o emoji para a direita
+            ctx.fillText("🏍️", -35, 15);
             ctx.restore();
 
-            // 6. DESENHAR PLACAR DE PONTOS
+            // 6. PLACAR
             ctx.fillStyle = '#fff';
             ctx.font = '24px Impact';
             ctx.fillText(`DISTÂNCIA: ${Math.floor(pontuacao)}m`, 20, 40);
             if (moto.estaEmpinando) {
                 ctx.fillStyle = '#ffcc00';
-                ctx.fillText(`+ GRAU NO TOPO! 💨`, 20, 70);
+                ctx.fillText(`+ NO GRAU! 🔥`, 20, 70);
             }
         }
 
         function desenharGameOver() {
-            ctx.fillStyle = 'rgba(0,0,0,0.8)';
+            ctx.fillStyle = 'rgba(0,0,0,0.85)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.fillStyle = '#ff3333';
             ctx.font = '50px Impact';
             ctx.textAlign = 'center';
-            ctx.fillText('CAIU NA CAMPOULA! 💥', canvas.width / 2, canvas.height / 2 - 20);
+            ctx.fillText('CAIU DA MOTO! 💥', canvas.width / 2, canvas.height / 2 - 20);
 
             ctx.fillStyle = '#fff';
-            ctx.font = '25px Impact';
-            ctx.fillText(`Pontuação Final: ${Math.floor(pontuacao)} metros`, canvas.width / 2, canvas.height / 2 + 20);
-            ctx.fillText('Pressione ESPAÇO para tentar de novo', canvas.width / 2, canvas.height / 2 + 60);
+            ctx.font = '24px Impact';
+            ctx.fillText(`Você percorreu: ${Math.floor(pontuacao)} metros`, canvas.width / 2, canvas.height / 2 + 25);
+            ctx.fillText('Pressione ESPAÇO para reviver na favela', canvas.width / 2, canvas.height / 2 + 65);
         }
 
-        // Eventos do Teclado (Input)
-        const teclas = {};
+        // --- SISTEMA MULTI-TECLAS (Garante movimentação fluida em diagonal) ---
         window.addEventListener('keydown', e => {
-            if (e.code === 'Space') {
-                if (!jogoAtivo) {
-                    // Reiniciar jogo
-                    moto.estaEmpinando = false;
+            if (e.code in teclas) {
+                teclas[e.code] = true;
+                if (e.code === 'Space' && !jogoAtivo) {
+                    // Reset do jogo
+                    moto.x = 100;
+                    moto.y = 340;
                     moto.anguloGrau = 0;
                     obstaculos = [];
                     pontuacao = 0;
                     jogoAtivo = true;
                     ctx.textAlign = 'left';
                     loop();
-                } else {
-                    moto.estaEmpinando = true;
                 }
-            }
-            if (e.code === 'ArrowUp' || e.code === 'KeyW') {
-                // Feature de velocidade extra se quiser adicionar
             }
         });
 
         window.addEventListener('keyup', e => {
-            if (e.code === 'Space') {
-                moto.estaEmpinando = false;
+            if (e.code in teclas) {
+                teclas[e.code] = false;
             }
         });
 
-        // Inicia o motor do jogo
+        // Inicia o jogo
         loop();
     </script>
 </body>
