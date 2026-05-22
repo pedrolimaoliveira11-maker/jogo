@@ -1,1 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grau na Favela: O Jogo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Impact', sans-serif;
+        }
 
+        body {
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .game-wrapper {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 20px #ffcc00;
+            border: 4px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            background: #4a75a0; /* Cor fallback do céu */
+        }
+
+        .instrucoes {
+            color: #fff;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .instrucoes span {
+            color: #ffcc00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-wrapper">
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+    </div>
+
+    <div class="instrucoes">
+        CONTROLES: <span>W / Seta Cima</span> = Acelerar | <span>S / Seta Baixo</span> = Frear | <span>ESPAÇO</span> = DÁ GRAU 🏍️💨
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Estado do Jogo
+        let jogoAtivo = true;
+        let pontuacao = 0;
+        let velocidadeCenario = 4;
+
+        // Configuração da Moto do Jogador
+        const moto = {
+            x: 100,
+            y: 280,
+            largura: 70,
+            altura: 45,
+            velocidadeY: 0,
+            estaEmpinando: false,
+            anguloGrau: 0,
+            noChao: true
+        };
+
+        // Obstáculos (Caixas ou Carros na rua)
+        let obstaculos = [];
+        let tempoProximoObstaculo = 0;
+
+        // Loop Principal do Jogo
+        function loop() {
+            if (!jogoAtivo) {
+                desenharGameOver();
+                return;
+            }
+
+            atualizar();
+            desenhar();
+
+            requestAnimationFrame(loop);
+        }
+
+        // Lógica de Movimentos e Colisões
+        function atualizar() {
+            // Aumenta a velocidade/pontuação conforme o tempo passa
+            pontuacao += moto.estaEmpinando ? 2 : 1; // Ganha o dobro de pontos dando grau
+            velocidadeCenario = 4 + Math.floor(pontuacao / 500);
+
+            // Controle do Grau (Animação de Empinar)
+            if (moto.estaEmpinando) {
+                if (moto.anguloGrau < 0.5) moto.anguloGrau += 0.05; // Levanta a frente
+            } else {
+                if (moto.anguloGrau > 0) moto.anguloGrau -= 0.05; // Abaixa a frente
+            }
+
+            // Gerador de Obstáculos da Quebrada
+            tempoProximoObstaculo++;
+            if (tempoProximoObstaculo > Math.random() * 80 + 60) {
+                obstaculos.push({
+                    x: canvas.width,
+                    y: 300,
+                    largura: 30,
+                    altura: 30,
+                    tipo: Math.random() > 0.5 ? '📦' : '🗑️' // Caixa ou Lixeira
+                });
+                tempoProximoObstaculo = 0;
+            }
+
+            // Movimentar e checar obstáculos
+            for (let i = obstaculos.length - 1; i >= 0; i--) {
+                obstaculos[i].x -= velocidadeCenario;
+
+                // Detectar Colisão Simples (Hitbox)
+                if (
+                    moto.x < obstaculos[i].x + obstaculos[i].largura &&
+                    moto.x + moto.largura > obstaculos[i].x &&
+                    moto.y < obstaculos[i].y + obstaculos[i].altura &&
+                    moto.y + moto.altura > obstaculos[i].y
+                ) {
+                    // Se estiver dando grau, a hitbox fica um pouco diferente, mas para fins de arcade: caiu!
+                    jogoAtivo = false;
+                }
+
+                // Remove obstáculos que saíram da tela
+                if (obstaculos[i].x + obstaculos[i].largura < 0) {
+                    obstaculos.splice(i, 1);
+                }
+            }
+        }
+
+        // Renderização Gráfica completa por código (Canvas)
+        function desenhar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. DESENHAR CÉU DO POR DO SOL (Vibe Favela de tarde)
+            let gradienteCeu = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradienteCeu.addColorStop(0, '#f12711');
+            gradienteCeu.addColorStop(1, '#f5af19');
+            ctx.fillStyle = gradienteCeu;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. DESENHAR CENÁRIO DA FAVELA (Casas em camadas/Silhueta)
+            ctx.fillStyle = '#4a1515';
+            // Camada de trás do morro
+            for (let i = 0; i < canvas.width; i += 40) {
+                let h = 120 + Math.sin(i + (pontuacao * 0.01)) * 30;
+                ctx.fillRect(i, canvas.height - h - 70, 35, h);
+            }
+            
+            // Camada da frente do morro (tijolos/barracos mais escuros)
+            ctx.fillStyle = '#2b0c0c';
+            for (let i = -20; i < canvas.width; i += 50) {
+                let h = 100 + Math.cos(i + (pontuacao * 0.02)) * 25;
+                ctx.fillRect(i, canvas.height - h - 70, 45, h);
+                // Detalhe de janelinhas amarelas nas casas
+                ctx.fillStyle = '#ffcc00';
+                ctx.fillRect(i + 15, canvas.height - h - 40, 10, 10);
+                ctx.fillStyle = '#2b0c0c';
+            }
+
+            // 3. DESENHAR O ASFALTO / RUA
+            ctx.fillStyle = '#333';
+            ctx.fillRect(0, 320, canvas.width, 80);
+            
+            // Faixa amarela pintada na rua (efeito de movimento)
+            ctx.fillStyle = '#ffcc00';
+            let deslocamentoLinha = (pontuacao * velocidadeCenario) % 100;
+            for (let i = -deslocamentoLinha; i < canvas.width; i += 100) {
+                ctx.fillRect(i, 355, 50, 8);
+            }
+
+            // 4. DESENHAR OBSTÁCULOS
+            ctx.font = "30px Arial";
+            obstaculos.forEach(obs => {
+                ctx.fillText(obs.tipo, obs.x, obs.y + 25);
+            });
+
+            // 5. DESENHAR JOGADOR (MOTO + GRAU)
+            ctx.save();
+            // Muda o centro de rotação para a roda traseira para fazer o Grau realista
+            ctx.translate(moto.x + 15, moto.y + moto.altura); 
+            ctx.rotate(-moto.anguloGrau);
+
+            // Corpo da Moto/Piloto feito com Emoji para visual leve e divertido
+            ctx.font = "45px Arial";
+            ctx.scale(-1, 1); // Inverte o emoji para andar para a direita
+            ctx.fillText("🏍️", -35, -10);
+            ctx.restore();
+
+            // 6. DESENHAR PLACAR DE PONTOS
+            ctx.fillStyle = '#fff';
+            ctx.font = '24px Impact';
+            ctx.fillText(`DISTÂNCIA: ${Math.floor(pontuacao)}m`, 20, 40);
+            if (moto.estaEmpinando) {
+                ctx.fillStyle = '#ffcc00';
+                ctx.fillText(`+ GRAU NO TOPO! 💨`, 20, 70);
+            }
+        }
+
+        function desenharGameOver() {
+            ctx.fillStyle = 'rgba(0,0,0,0.8)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#ff3333';
+            ctx.font = '50px Impact';
+            ctx.textAlign = 'center';
+            ctx.fillText('CAIU NA CAMPOULA! 💥', canvas.width / 2, canvas.height / 2 - 20);
+
+            ctx.fillStyle = '#fff';
+            ctx.font = '25px Impact';
+            ctx.fillText(`Pontuação Final: ${Math.floor(pontuacao)} metros`, canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText('Pressione ESPAÇO para tentar de novo', canvas.width / 2, canvas.height / 2 + 60);
+        }
+
+        // Eventos do Teclado (Input)
+        const teclas = {};
+        window.addEventListener('keydown', e => {
+            if (e.code === 'Space') {
+                if (!jogoAtivo) {
+                    // Reiniciar jogo
+                    moto.estaEmpinando = false;
+                    moto.anguloGrau = 0;
+                    obstaculos = [];
+                    pontuacao = 0;
+                    jogoAtivo = true;
+                    ctx.textAlign = 'left';
+                    loop();
+                } else {
+                    moto.estaEmpinando = true;
+                }
+            }
+            if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+                // Feature de velocidade extra se quiser adicionar
+            }
+        });
+
+        window.addEventListener('keyup', e => {
+            if (e.code === 'Space') {
+                moto.estaEmpinando = false;
+            }
+        });
+
+        // Inicia o motor do jogo
+        loop();
+    </script>
+</body>
+</html>
