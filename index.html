@@ -3,416 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fortune Tiger Tricolor Max 🐯</title>
+    <title>Grau na Favela: O Jogo</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Arial Black', Gadget, sans-serif;
+            font-family: 'Impact', sans-serif;
         }
 
         body {
-            background-color: #120101;
-            background-image: 
-                linear-gradient(to bottom, rgba(20, 2, 2, 0.94), rgba(0, 0, 0, 0.96)),
-                url('https://upload.wikimedia.org/wikipedia/pt/4/4b/S%C3%A3o_Paulo_Futebol_Clube.svg');
-            background-size: 700px;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            
-            color: #fff;
+            background: #111;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
+            flex-direction: column;
         }
 
-        .casino-container {
-            text-align: center;
-            background: linear-gradient(145deg, #2b0404, #110101);
-            padding: 25px;
-            border-radius: 30px;
-            box-shadow: 0 0 35px #ff0000, inset 0 0 15px #ffffff;
-            border: 4px solid #cc0000;
-            max-width: 420px;
-            width: 100%;
+        .game-wrapper {
             position: relative;
-        }
-
-        .casino-container::before {
-            content: '🐯 FORTUNE TIGER 🇾🇪';
-            display: block;
-            font-size: 1.6rem;
-            color: #fff;
-            background: linear-gradient(90deg, #ff0000, #000000, #ff0000);
-            padding: 10px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            border: 2px solid #fff;
-            text-shadow: 2px 2px 0px #000;
-        }
-
-        .painel-saldo {
-            background-color: #000;
-            padding: 12px;
-            border-radius: 50px;
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            border: 2px solid #ffcc00;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-
-        #saldo {
-            color: #ffcc00;
-            text-shadow: 0 0 8px #ffcc00;
-            font-size: 1.5rem;
-        }
-
-        /* Tela da Grade do Tigrinho */
-        .slots-box {
-            display: flex;
-            justify-content: space-between;
-            background: linear-gradient(180deg, #3a0000, #990000);
-            padding: 15px;
-            border-radius: 20px;
-            border: 5px solid #ffcc00;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-            margin-bottom: 20px;
-        }
-
-        .rolo {
-            width: 100px;
-            height: 120px;
-            background: #fff;
-            border-radius: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3.5rem;
-            border: 3px solid #333;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
-            transition: transform 0.1s ease;
-        }
-
-        /* Animação de Giro */
-        .girando {
-            animation: rodarTigre 0.08s linear infinite;
-        }
-
-        @keyframes rodarTigre {
-            0% { transform: translateY(3px) filter: blur(3px); }
-            50% { transform: translateY(-3px) filter: blur(5px); }
-            100% { transform: translateY(3px) filter: blur(3px); }
-        }
-
-        /* Controles de Aposta */
-        .controles {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .botoes-aposta {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-ajuste {
-            background: #fff;
-            color: #000;
-            border: 2px solid #cc0000;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        input[type="number"] {
-            width: 90px;
-            padding: 8px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 20px #ffcc00;
+            border: 4px solid #333;
             border-radius: 10px;
-            border: 2px solid #ffcc00;
-            background-color: #000;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            background: #4a75a0; /* Cor fallback do céu */
+        }
+
+        .instrucoes {
             color: #fff;
-            text-align: center;
-            font-size: 1.2rem;
-            outline: none;
-        }
-
-        /* Botões Principais */
-        .area-botoes {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-girar {
-            flex: 2;
-            background: linear-gradient(180deg, #ffcc00, #ff6600);
-            color: white;
-            border: 3px solid #fff;
-            padding: 16px;
-            font-size: 1.4rem;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 102, 0, 0.5);
-            text-shadow: 2px 2px 2px #000;
-        }
-
-        .btn-carta {
-            flex: 1;
-            background: linear-gradient(180deg, #ff0000, #8b0000);
-            color: white;
-            border: 3px solid #ffcc00;
-            padding: 16px;
-            font-size: 1rem;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
-            text-shadow: 1px 1px 1px #000;
-        }
-
-        .btn-girar:disabled, .btn-carta:disabled {
-            background: #555 !important;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-
-        #mensagem {
             margin-top: 15px;
-            font-size: 1.2rem;
-            min-height: 30px;
-        }
-        
-        .perdeu { color: #ff3333; }
-
-        /* TELA DE GANHO NO MEIO DA TELA (POP-UP) */
-        .pop-up-ganho {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.85);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .conteudo-ganho {
-            background: linear-gradient(145deg, #ffd700, #ff8c00);
-            border: 5px solid #fff;
-            padding: 40px;
-            border-radius: 30px;
             text-align: center;
-            box-shadow: 0 0 50px #ffcc00;
-            animation: surgir 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            max-width: 90%;
-            width: 380px;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px #000;
         }
 
-        @keyframes surgir {
-            0% { transform: scale(0.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .conteudo-ganho h2 {
-            font-size: 2.2rem;
-            color: #fff;
-            text-shadow: 3px 3px 0px #ff0000, -2px -2px 0px #000;
-            margin-bottom: 15px;
-        }
-
-        .conteudo-ganho .premio {
-            font-size: 3rem;
-            color: #fff;
-            text-shadow: 2px 2px 10px #000;
-            background: #000;
-            padding: 10px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border: 2px solid #fff;
-        }
-
-        .btn-fechar {
-            background: #fff;
-            color: #000;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        .instrucoes span {
+            color: #ffcc00;
         }
     </style>
 </head>
 <body>
 
-    <div class="pop-up-ganho" id="popUpGanho">
-        <div class="conteudo-ganho">
-            <h2 id="tituloPopUp">🎉 BIG WIN! 🎉</h2>
-            <div class="premio" id="valorPopUp">R$ 0.00</div>
-            <button class="btn-fechar" onclick="fecharPopUp()">COLETAR 💰</button>
-        </div>
+    <div class="game-wrapper">
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
     </div>
 
-    <div class="casino-container">
-        <div class="painel-saldo">
-            💰 R$ <span id="saldo">50.00</span>
-        </div>
-
-        <div class="slots-box">
-            <div class="rolo" id="rolo1">🐯</div>
-            <div class="rolo" id="rolo2">🐯</div>
-            <div class="rolo" id="rolo3">🐯</div>
-        </div>
-
-        <div class="controles">
-            <div class="botoes-aposta">
-                <button class="btn-ajuste" onclick="alterarAposta(-2)">-</button>
-                <input type="number" id="aposta" value="2.00" step="2" min="2" readonly>
-                <button class="btn-ajuste" onclick="alterarAposta(2)">+</button>
-            </div>
-            <div class="area-botoes">
-                <button class="btn-girar" id="btnGirar" onclick="jogar(false)">GIRAR ⚡</button>
-                <button class="btn-carta" id="btnCarta" onclick="jogar(true)">CARTA 🧧</button>
-            </div>
-        </div>
-
-        <div id="mensagem">Ajuste a bet e solte a carta!</div>
+    <div class="instrucoes">
+        CONTROLES: <span>W / Seta Cima</span> = Acelerar | <span>S / Seta Baixo</span> = Frear | <span>ESPAÇO</span> = DÁ GRAU 🏍️💨
     </div>
 
     <script>
-        let saldo = 50.00;
-        const itens = ['🐯', '🍊', '🧧', '💰', '🎆', '🏆'];
-        
-        const rolo1 = document.getElementById('rolo1');
-        const rolo2 = document.getElementById('rolo2');
-        const rolo3 = document.getElementById('rolo3');
-        const txtSaldo = document.getElementById('saldo');
-        const txtMensagem = document.getElementById('mensagem');
-        const btnGirar = document.getElementById('btnGirar');
-        const btnCarta = document.getElementById('btnCarta');
-        const inputAposta = document.getElementById('aposta');
-        
-        // Elementos do Pop-up
-        const popUpGanho = document.getElementById('popUpGanho');
-        const tituloPopUp = document.getElementById('tituloPopUp');
-        const valorPopUp = document.getElementById('valorPopUp');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-        function alterarAposta(valor) {
-            let atual = parseFloat(inputAposta.value);
-            let nova = atual + valor;
-            if (nova >= 2 && nova <= saldo) {
-                inputAposta.value = nova.toFixed(2);
-            }
-        }
+        // Estado do Jogo
+        let jogoAtivo = true;
+        let pontuacao = 0;
+        let velocidadeCenario = 4;
 
-        function jogar(forcarCarta = false) {
-            const aposta = parseFloat(inputAposta.value);
+        // Configuração da Moto do Jogador
+        const moto = {
+            x: 100,
+            y: 280,
+            largura: 70,
+            altura: 45,
+            velocidadeY: 0,
+            estaEmpinando: false,
+            anguloGrau: 0,
+            noChao: true
+        };
 
-            if (aposta > saldo) {
-                txtMensagem.className = 'perdeu';
-                txtMensagem.innerText = "❌ Saldo insuficiente!";
+        // Obstáculos (Caixas ou Carros na rua)
+        let obstaculos = [];
+        let tempoProximoObstaculo = 0;
+
+        // Loop Principal do Jogo
+        function loop() {
+            if (!jogoAtivo) {
+                desenharGameOver();
                 return;
             }
 
-            // Descontando o valor
-            saldo -= aposta;
-            txtSaldo.innerText = saldo.toFixed(2);
-            
-            // Travando interface
-            btnGirar.disabled = true;
-            btnCarta.disabled = true;
-            txtMensagem.innerText = forcarCarta ? "🐯 SOLTANDO A CARTA..." : "O tigre está rodando...";
-            txtMensagem.className = '';
+            atualizar();
+            desenhar();
 
-            rolo1.classList.add('girando');
-            rolo2.classList.add('girando');
-            rolo3.classList.add('girando');
-
-            setTimeout(() => {
-                rolo1.classList.remove('girando');
-                rolo2.classList.remove('girando');
-                rolo3.classList.remove('girando');
-
-                let r1, r2, r3;
-
-                if (forcarCarta) {
-                    // Garante que os 3 símbolos vão ser o Tigre (Prêmio máximo)
-                    r1 = '🐯'; r2 = '🐯'; r3 = '🐯';
-                } else {
-                    // Sorteio comum normal
-                    r1 = itens[Math.floor(Math.random() * itens.length)];
-                    r2 = itens[Math.floor(Math.random() * itens.length)];
-                    r3 = itens[Math.floor(Math.random() * itens.length)];
-                }
-
-                rolo1.innerText = r1;
-                rolo2.innerText = r2;
-                rolo3.innerText = r3;
-
-                // Verificação de resultados
-                if (r1 === r2 && r2 === r3) {
-                    // Se foi o bônus da carta forçada ou sorte pura de 3 iguais
-                    let mult = r1 === '🐯' ? 20 : 10;
-                    let ganho = aposta * mult;
-                    saldo += ganho;
-                    
-                    // Exibe a tela de vitória gigante no meio
-                    abrirPopUp(forcarCarta ? "🐯 O TIGRE SOLTOU A CARTA! 🐯" : "🎉 BIG WIN TRICOLOR! 🎉", ganho);
-                } 
-                else if (r1 === r2 || r2 === r3 || r1 === r3) {
-                    let ganho = aposta * 1.5;
-                    saldo += ganho;
-                    
-                    // Também exibe no meio da tela para ganhos médios
-                    abrirPopUp("✨ GANHO DA LINHA! ✨", ganho);
-                } 
-                else {
-                    txtMensagem.className = 'perdeu';
-                    txtMensagem.innerText = "Não deu! O tigre não soltou nada.";
-                    destravarBotoes();
-                }
-
-                txtSaldo.innerText = saldo.toFixed(2);
-
-            }, 1400);
+            requestAnimationFrame(loop);
         }
 
-        function abrirPopUp(titulo, valor) {
-            tituloPopUp.innerText = titulo;
-            valorPopUp.innerText = `R$ ${valor.toFixed(2)}`;
-            popUpGanho.style.display = 'flex';
-        }
+        // Lógica de Movimentos e Colisões
+        function atualizar() {
+            // Aumenta a velocidade/pontuação conforme o tempo passa
+            pontuacao += moto.estaEmpinando ? 2 : 1; // Ganha o dobro de pontos dando grau
+            velocidadeCenario = 4 + Math.floor(pontuacao / 500);
 
-        function fecharPopUp() {
-            popUpGanho.style.display = 'none';
-            destravarBotoes();
-        }
-
-        function destravarBotoes() {
-            if (saldo >= 2) {
-                btnGirar.disabled = false;
-                btnCarta.disabled = false;
-                txtMensagem.innerText = "Gire novamente ou solte outra carta!";
+            // Controle do Grau (Animação de Empinar)
+            if (moto.estaEmpinando) {
+                if (moto.anguloGrau < 0.5) moto.anguloGrau += 0.05; // Levanta a frente
             } else {
-                txtMensagem.className = 'perdeu';
-                txtMensagem.innerText = "💥 A banca quebrou! Atualize para recarregar.";
+                if (moto.anguloGrau > 0) moto.anguloGrau -= 0.05; // Abaixa a frente
+            }
+
+            // Gerador de Obstáculos da Quebrada
+            tempoProximoObstaculo++;
+            if (tempoProximoObstaculo > Math.random() * 80 + 60) {
+                obstaculos.push({
+                    x: canvas.width,
+                    y: 300,
+                    largura: 30,
+                    altura: 30,
+                    tipo: Math.random() > 0.5 ? '📦' : '🗑️' // Caixa ou Lixeira
+                });
+                tempoProximoObstaculo = 0;
+            }
+
+            // Movimentar e checar obstáculos
+            for (let i = obstaculos.length - 1; i >= 0; i--) {
+                obstaculos[i].x -= velocidadeCenario;
+
+                // Detectar Colisão Simples (Hitbox)
+                if (
+                    moto.x < obstaculos[i].x + obstaculos[i].largura &&
+                    moto.x + moto.largura > obstaculos[i].x &&
+                    moto.y < obstaculos[i].y + obstaculos[i].altura &&
+                    moto.y + moto.altura > obstaculos[i].y
+                ) {
+                    // Se estiver dando grau, a hitbox fica um pouco diferente, mas para fins de arcade: caiu!
+                    jogoAtivo = false;
+                }
+
+                // Remove obstáculos que saíram da tela
+                if (obstaculos[i].x + obstaculos[i].largura < 0) {
+                    obstaculos.splice(i, 1);
+                }
             }
         }
+
+        // Renderização Gráfica completa por código (Canvas)
+        function desenhar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. DESENHAR CÉU DO POR DO SOL (Vibe Favela de tarde)
+            let gradienteCeu = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradienteCeu.addColorStop(0, '#f12711');
+            gradienteCeu.addColorStop(1, '#f5af19');
+            ctx.fillStyle = gradienteCeu;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. DESENHAR CENÁRIO DA FAVELA (Casas em camadas/Silhueta)
+            ctx.fillStyle = '#4a1515';
+            // Camada de trás do morro
+            for (let i = 0; i < canvas.width; i += 40) {
+                let h = 120 + Math.sin(i + (pontuacao * 0.01)) * 30;
+                ctx.fillRect(i, canvas.height - h - 70, 35, h);
+            }
+            
+            // Camada da frente do morro (tijolos/barracos mais escuros)
+            ctx.fillStyle = '#2b0c0c';
+            for (let i = -20; i < canvas.width; i += 50) {
+                let h = 100 + Math.cos(i + (pontuacao * 0.02)) * 25;
+                ctx.fillRect(i, canvas.height - h - 70, 45, h);
+                // Detalhe de janelinhas amarelas nas casas
+                ctx.fillStyle = '#ffcc00';
+                ctx.fillRect(i + 15, canvas.height - h - 40, 10, 10);
+                ctx.fillStyle = '#2b0c0c';
+            }
+
+            // 3. DESENHAR O ASFALTO / RUA
+            ctx.fillStyle = '#333';
+            ctx.fillRect(0, 320, canvas.width, 80);
+            
+            // Faixa amarela pintada na rua (efeito de movimento)
+            ctx.fillStyle = '#ffcc00';
+            let deslocamentoLinha = (pontuacao * velocidadeCenario) % 100;
+            for (let i = -deslocamentoLinha; i < canvas.width; i += 100) {
+                ctx.fillRect(i, 355, 50, 8);
+            }
+
+            // 4. DESENHAR OBSTÁCULOS
+            ctx.font = "30px Arial";
+            obstaculos.forEach(obs => {
+                ctx.fillText(obs.tipo, obs.x, obs.y + 25);
+            });
+
+            // 5. DESENHAR JOGADOR (MOTO + GRAU)
+            ctx.save();
+            // Muda o centro de rotação para a roda traseira para fazer o Grau realista
+            ctx.translate(moto.x + 15, moto.y + moto.altura); 
+            ctx.rotate(-moto.anguloGrau);
+
+            // Corpo da Moto/Piloto feito com Emoji para visual leve e divertido
+            ctx.font = "45px Arial";
+            ctx.scale(-1, 1); // Inverte o emoji para andar para a direita
+            ctx.fillText("🏍️", -35, -10);
+            ctx.restore();
+
+            // 6. DESENHAR PLACAR DE PONTOS
+            ctx.fillStyle = '#fff';
+            ctx.font = '24px Impact';
+            ctx.fillText(`DISTÂNCIA: ${Math.floor(pontuacao)}m`, 20, 40);
+            if (moto.estaEmpinando) {
+                ctx.fillStyle = '#ffcc00';
+                ctx.fillText(`+ GRAU NO TOPO! 💨`, 20, 70);
+            }
+        }
+
+        function desenharGameOver() {
+            ctx.fillStyle = 'rgba(0,0,0,0.8)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#ff3333';
+            ctx.font = '50px Impact';
+            ctx.textAlign = 'center';
+            ctx.fillText('CAIU NA CAMPOULA! 💥', canvas.width / 2, canvas.height / 2 - 20);
+
+            ctx.fillStyle = '#fff';
+            ctx.font = '25px Impact';
+            ctx.fillText(`Pontuação Final: ${Math.floor(pontuacao)} metros`, canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText('Pressione ESPAÇO para tentar de novo', canvas.width / 2, canvas.height / 2 + 60);
+        }
+
+        // Eventos do Teclado (Input)
+        const teclas = {};
+        window.addEventListener('keydown', e => {
+            if (e.code === 'Space') {
+                if (!jogoAtivo) {
+                    // Reiniciar jogo
+                    moto.estaEmpinando = false;
+                    moto.anguloGrau = 0;
+                    obstaculos = [];
+                    pontuacao = 0;
+                    jogoAtivo = true;
+                    ctx.textAlign = 'left';
+                    loop();
+                } else {
+                    moto.estaEmpinando = true;
+                }
+            }
+            if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+                // Feature de velocidade extra se quiser adicionar
+            }
+        });
+
+        window.addEventListener('keyup', e => {
+            if (e.code === 'Space') {
+                moto.estaEmpinando = false;
+            }
+        });
+
+        // Inicia o motor do jogo
+        loop();
     </script>
 </body>
 </html>
