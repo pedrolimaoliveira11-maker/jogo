@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fortune Tiger Tricolor 🐯</title>
+    <title>Fortune Tiger Tricolor Max 🐯</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,6 @@
         }
 
         body {
-            /* Fundo com o escudo do São Paulo sutil ao fundo */
             background-color: #120101;
             background-image: 
                 linear-gradient(to bottom, rgba(20, 2, 2, 0.94), rgba(0, 0, 0, 0.96)),
@@ -28,7 +27,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
         .casino-container {
@@ -43,7 +42,6 @@
             position: relative;
         }
 
-        /* Moldura Chinesa/Tigrinho */
         .casino-container::before {
             content: '🐯 FORTUNE TIGER 🇾🇪';
             display: block;
@@ -87,7 +85,6 @@
             border: 5px solid #ffcc00;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
             margin-bottom: 20px;
-            position: relative;
         }
 
         .rolo {
@@ -104,32 +101,15 @@
             transition: transform 0.1s ease;
         }
 
-        /* Animação de Giro Alucinante igual do app original */
+        /* Animação de Giro */
         .girando {
             animation: rodarTigre 0.08s linear infinite;
         }
 
         @keyframes rodarTigre {
-            0% { transform: translateY(3px) scaleY(1); filter: blur(3px); }
-            50% { transform: translateY(-3px) scaleY(0.9); filter: blur(5px); }
-            100% { transform: translateY(3px) scaleY(1); filter: blur(3px); }
-        }
-
-        /* Mensagem do multiplicador bônus (Solta a carta!) */
-        .bonus-banner {
-            background: #ffcc00;
-            color: #000;
-            font-size: 0.9rem;
-            padding: 4px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            animation: piscar 0.5s linear infinite;
-            display: none;
-        }
-
-        @keyframes piscar {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0% { transform: translateY(3px) filter: blur(3px); }
+            50% { transform: translateY(-3px) filter: blur(5px); }
+            100% { transform: translateY(3px) filter: blur(3px); }
         }
 
         /* Controles de Aposta */
@@ -169,30 +149,40 @@
             outline: none;
         }
 
-        /* Botão de Giro Grande e Alaranjado do Tigrinho */
+        /* Botões Principais */
+        .area-botoes {
+            display: flex;
+            gap: 10px;
+        }
+
         .btn-girar {
+            flex: 2;
             background: linear-gradient(180deg, #ffcc00, #ff6600);
             color: white;
             border: 3px solid #fff;
             padding: 16px;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             border-radius: 50px;
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(255, 102, 0, 0.5);
             text-shadow: 2px 2px 2px #000;
-            transition: 0.1s ease;
         }
 
-        .btn-girar:hover {
-            transform: scale(1.03);
+        .btn-carta {
+            flex: 1;
+            background: linear-gradient(180deg, #ff0000, #8b0000);
+            color: white;
+            border: 3px solid #ffcc00;
+            padding: 16px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+            text-shadow: 1px 1px 1px #000;
         }
 
-        .btn-girar:active {
-            transform: scale(0.97);
-        }
-
-        .btn-girar:disabled {
-            background: #555;
+        .btn-girar:disabled, .btn-carta:disabled {
+            background: #555 !important;
             box-shadow: none;
             cursor: not-allowed;
         }
@@ -201,22 +191,87 @@
             margin-top: 15px;
             font-size: 1.2rem;
             min-height: 30px;
-            text-shadow: 1px 1px 2px #000;
         }
         
-        .ganhou { color: #00ff66; font-size: 1.4rem; }
         .perdeu { color: #ff3333; }
-        .carta-bonus { color: #ffcc00; font-size: 1.4rem; }
+
+        /* TELA DE GANHO NO MEIO DA TELA (POP-UP) */
+        .pop-up-ganho {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .conteudo-ganho {
+            background: linear-gradient(145deg, #ffd700, #ff8c00);
+            border: 5px solid #fff;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 0 50px #ffcc00;
+            animation: surgir 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 90%;
+            width: 380px;
+        }
+
+        @keyframes surgir {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .conteudo-ganho h2 {
+            font-size: 2.2rem;
+            color: #fff;
+            text-shadow: 3px 3px 0px #ff0000, -2px -2px 0px #000;
+            margin-bottom: 15px;
+        }
+
+        .conteudo-ganho .premio {
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 2px 2px 10px #000;
+            background: #000;
+            padding: 10px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #fff;
+        }
+
+        .btn-fechar {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body>
+
+    <div class="pop-up-ganho" id="popUpGanho">
+        <div class="conteudo-ganho">
+            <h2 id="tituloPopUp">🎉 BIG WIN! 🎉</h2>
+            <div class="premio" id="valorPopUp">R$ 0.00</div>
+            <button class="btn-fechar" onclick="fecharPopUp()">COLETAR 💰</button>
+        </div>
+    </div>
 
     <div class="casino-container">
         <div class="painel-saldo">
             💰 R$ <span id="saldo">50.00</span>
         </div>
-
-        <div class="bonus-banner" id="banner">🐯 O TIGRINHO ESTÁ PRESTES A SOLTAR A CARTA X10! 🐯</div>
 
         <div class="slots-box">
             <div class="rolo" id="rolo1">🐯</div>
@@ -230,15 +285,17 @@
                 <input type="number" id="aposta" value="2.00" step="2" min="2" readonly>
                 <button class="btn-ajuste" onclick="alterarAposta(2)">+</button>
             </div>
-            <button class="btn-girar" id="btnGirar" onclick="soltarOTigre()">GIRAR ⚡</button>
+            <div class="area-botoes">
+                <button class="btn-girar" id="btnGirar" onclick="jogar(false)">GIRAR ⚡</button>
+                <button class="btn-carta" id="btnCarta" onclick="jogar(true)">CARTA 🧧</button>
+            </div>
         </div>
 
-        <div id="mensagem">Suba a banca e comece a girar!</div>
+        <div id="mensagem">Ajuste a bet e solte a carta!</div>
     </div>
 
     <script>
         let saldo = 50.00;
-        // Ícones baseados no Fortune Tiger
         const itens = ['🐯', '🍊', '🧧', '💰', '🎆', '🏆'];
         
         const rolo1 = document.getElementById('rolo1');
@@ -247,8 +304,13 @@
         const txtSaldo = document.getElementById('saldo');
         const txtMensagem = document.getElementById('mensagem');
         const btnGirar = document.getElementById('btnGirar');
+        const btnCarta = document.getElementById('btnCarta');
         const inputAposta = document.getElementById('aposta');
-        const banner = document.getElementById('banner');
+        
+        // Elementos do Pop-up
+        const popUpGanho = document.getElementById('popUpGanho');
+        const tituloPopUp = document.getElementById('tituloPopUp');
+        const valorPopUp = document.getElementById('valorPopUp');
 
         function alterarAposta(valor) {
             let atual = parseFloat(inputAposta.value);
@@ -258,7 +320,7 @@
             }
         }
 
-        function soltarOTigre() {
+        function jogar(forcarCarta = false) {
             const aposta = parseFloat(inputAposta.value);
 
             if (aposta > saldo) {
@@ -267,71 +329,89 @@
                 return;
             }
 
-            // Consome o saldo da rodada
+            // Descontando o valor
             saldo -= aposta;
             txtSaldo.innerText = saldo.toFixed(2);
             
+            // Travando interface
             btnGirar.disabled = true;
-            txtMensagem.innerText = "O tigre está rodando...";
+            btnCarta.disabled = true;
+            txtMensagem.innerText = forcarCarta ? "🐯 SOLTANDO A CARTA..." : "O tigre está rodando...";
             txtMensagem.className = '';
-            banner.style.display = 'none';
-
-            // Chance aleatória de ativar a famosa "Animação da Carta" (Bônus falso visual)
-            const ativarModoCarta = Math.random() < 0.25; 
-            if (ativarModoCarta) {
-                banner.style.display = 'block';
-            }
 
             rolo1.classList.add('girando');
             rolo2.classList.add('girando');
             rolo3.classList.add('girando');
 
-            // Tempo de giro (1.5 segundos para dar suspense)
             setTimeout(() => {
                 rolo1.classList.remove('girando');
                 rolo2.classList.remove('girando');
                 rolo3.classList.remove('girando');
 
-                // Sorteio
-                const r1 = itens[Math.floor(Math.random() * itens.length)];
-                const r2 = itens[Math.floor(Math.random() * itens.length)];
-                const r3 = itens[Math.floor(Math.random() * itens.length)];
+                let r1, r2, r3;
+
+                if (forcarCarta) {
+                    // Garante que os 3 símbolos vão ser o Tigre (Prêmio máximo)
+                    r1 = '🐯'; r2 = '🐯'; r3 = '🐯';
+                } else {
+                    // Sorteio comum normal
+                    r1 = itens[Math.floor(Math.random() * itens.length)];
+                    r2 = itens[Math.floor(Math.random() * itens.length)];
+                    r3 = itens[Math.floor(Math.random() * itens.length)];
+                }
 
                 rolo1.innerText = r1;
                 rolo2.innerText = r2;
                 rolo3.innerText = r3;
 
-                // Sistema de Ganhos
+                // Verificação de resultados
                 if (r1 === r2 && r2 === r3) {
-                    let multiplicador = r1 === '🐯' ? 20 : 10; // Tigre paga mais!
-                    let ganho = aposta * multiplicador;
+                    // Se foi o bônus da carta forçada ou sorte pura de 3 iguais
+                    let mult = r1 === '🐯' ? 20 : 10;
+                    let ganho = aposta * mult;
                     saldo += ganho;
-                    txtMensagem.className = 'ganhou';
-                    txtMensagem.innerText = `🐯 SOLTOU A CARTA! 3x ${r1} Pagou R$ ${ganho.toFixed(2)}!`;
+                    
+                    // Exibe a tela de vitória gigante no meio
+                    abrirPopUp(forcarCarta ? "🐯 O TIGRE SOLTOU A CARTA! 🐯" : "🎉 BIG WIN TRICOLOR! 🎉", ganho);
                 } 
                 else if (r1 === r2 || r2 === r3 || r1 === r3) {
                     let ganho = aposta * 1.5;
                     saldo += ganho;
-                    txtMensagem.className = 'ganhou';
-                    txtMensagem.innerText = `✨ Ganho da Linha! Combinou 2 e levou R$ ${ganho.toFixed(2)}`;
+                    
+                    // Também exibe no meio da tela para ganhos médios
+                    abrirPopUp("✨ GANHO DA LINHA! ✨", ganho);
                 } 
                 else {
                     txtMensagem.className = 'perdeu';
-                    txtMensagem.innerText = "Abaixe a cabeça... O tigre não soltou a carta.";
+                    txtMensagem.innerText = "Não deu! O tigre não soltou nada.";
+                    destravarBotoes();
                 }
 
                 txtSaldo.innerText = saldo.toFixed(2);
+
+            }, 1400);
+        }
+
+        function abrirPopUp(titulo, valor) {
+            tituloPopUp.innerText = titulo;
+            valorPopUp.innerText = `R$ ${valor.toFixed(2)}`;
+            popUpGanho.style.display = 'flex';
+        }
+
+        function fecharPopUp() {
+            popUpGanho.style.display = 'none';
+            destravarBotoes();
+        }
+
+        function destravarBotoes() {
+            if (saldo >= 2) {
                 btnGirar.disabled = false;
-                banner.style.display = 'none';
-
-                // Se falir
-                if (saldo < 2) {
-                    txtMensagem.className = 'perdeu';
-                    txtMensagem.innerText = "💥 A banca quebrou! Atualize para resetar os créditos.";
-                    btnGirar.disabled = true;
-                }
-
-            }, 1500);
+                btnCarta.disabled = false;
+                txtMensagem.innerText = "Gire novamente ou solte outra carta!";
+            } else {
+                txtMensagem.className = 'perdeu';
+                txtMensagem.innerText = "💥 A banca quebrou! Atualize para recarregar.";
+            }
         }
     </script>
 </body>
