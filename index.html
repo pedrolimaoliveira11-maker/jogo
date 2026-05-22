@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casino Tricolor Slots</title>
+    <title>Fortune Tiger Tricolor 🐯</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Arial Black', Gadget, sans-serif;
         }
 
         body {
-            /* Fundo principal com o escudo do São Paulo */
-            background-color: #1a1a36;
+            /* Fundo com o escudo do São Paulo sutil ao fundo */
+            background-color: #120101;
             background-image: 
-                linear-gradient(to bottom, rgba(11, 11, 26, 0.92), rgba(26, 26, 54, 0.95)),
+                linear-gradient(to bottom, rgba(20, 2, 2, 0.94), rgba(0, 0, 0, 0.96)),
                 url('https://upload.wikimedia.org/wikipedia/pt/4/4b/S%C3%A3o_Paulo_Futebol_Clube.svg');
-            background-size: cover;
+            background-size: 700px;
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
@@ -28,265 +28,310 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .casino-container {
             text-align: center;
-            background: linear-gradient(145deg, rgba(21, 21, 40, 0.9), rgba(26, 26, 54, 0.9));
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 0 30px rgba(255, 0, 128, 0.3), inset 0 0 15px rgba(0, 255, 255, 0.2);
-            border: 2px solid #ff0080; /* Mantendo o neon rosa */
-            max-width: 450px;
+            background: linear-gradient(145deg, #2b0404, #110101);
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 0 35px #ff0000, inset 0 0 15px #ffffff;
+            border: 4px solid #cc0000;
+            max-width: 420px;
             width: 100%;
-            backdrop-filter: blur(3px); /* Leve desfoque no fundo para destacar a máquina */
+            position: relative;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: #ff0080;
-            text-shadow: 0 0 10px #ff0080, 0 0 20px #ff0080;
-            letter-spacing: 2px;
+        /* Moldura Chinesa/Tigrinho */
+        .casino-container::before {
+            content: '🐯 FORTUNE TIGER 🇾🇪';
+            display: block;
+            font-size: 1.6rem;
+            color: #fff;
+            background: linear-gradient(90deg, #ff0000, #000000, #ff0000);
+            padding: 10px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            border: 2px solid #fff;
+            text-shadow: 2px 2px 0px #000;
         }
 
         .painel-saldo {
-            background-color: rgba(7, 7, 20, 0.8);
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            margin-bottom: 25px;
-            border: 1px solid #00ffff;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
-        }
-
-        #saldo, #resultado {
-            font-weight: bold;
-            color: #00ffff;
-            text-shadow: 0 0 5px #00ffff;
-        }
-
-        /* Máquina de Caça-Níqueis */
-        .slots-box {
-            display: flex;
-            justify-content: space-between;
-            background-color: #05050f;
-            padding: 20px;
-            border-radius: 15px;
-            border: 3px solid #ffcc00;
-            box-shadow: 0 0 20px rgba(255, 204, 0, 0.2);
-            margin-bottom: 25px;
-        }
-
-        .rolo {
-            width: 90px;
-            height: 90px;
-            background-color: #22223b;
-            border-radius: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3rem;
-            border: 2px solid #444;
-            transition: transform 0.1s ease;
-        }
-
-        /* Animação de Giro */
-        .girando {
-            animation: rodar 0.1s linear infinite;
-        }
-
-        @keyframes rodar {
-            0% { transform: scale(1); filter: blur(2px); }
-            50% { transform: scale(0.9); filter: blur(4px); }
-            100% { transform: scale(1); filter: blur(2px); }
-        }
-
-        /* Controles */
-        .controles {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .input-aposta {
+            background-color: #000;
+            padding: 12px;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            border: 2px solid #ffcc00;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
-            font-size: 1.1rem;
+        }
+
+        #saldo {
+            color: #ffcc00;
+            text-shadow: 0 0 8px #ffcc00;
+            font-size: 1.5rem;
+        }
+
+        /* Tela da Grade do Tigrinho */
+        .slots-box {
+            display: flex;
+            justify-content: space-between;
+            background: linear-gradient(180deg, #3a0000, #990000);
+            padding: 15px;
+            border-radius: 20px;
+            border: 5px solid #ffcc00;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .rolo {
+            width: 100px;
+            height: 120px;
+            background: #fff;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3.5rem;
+            border: 3px solid #333;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+            transition: transform 0.1s ease;
+        }
+
+        /* Animação de Giro Alucinante igual do app original */
+        .girando {
+            animation: rodarTigre 0.08s linear infinite;
+        }
+
+        @keyframes rodarTigre {
+            0% { transform: translateY(3px) scaleY(1); filter: blur(3px); }
+            50% { transform: translateY(-3px) scaleY(0.9); filter: blur(5px); }
+            100% { transform: translateY(3px) scaleY(1); filter: blur(3px); }
+        }
+
+        /* Mensagem do multiplicador bônus (Solta a carta!) */
+        .bonus-banner {
+            background: #ffcc00;
+            color: #000;
+            font-size: 0.9rem;
+            padding: 4px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            animation: piscar 0.5s linear infinite;
+            display: none;
+        }
+
+        @keyframes piscar {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Controles de Aposta */
+        .controles {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .botoes-aposta {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-ajuste {
+            background: #fff;
+            color: #000;
+            border: 2px solid #cc0000;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
         }
 
         input[type="number"] {
-            width: 80px;
+            width: 90px;
             padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #ff0080;
-            background-color: rgba(7, 7, 20, 0.8);
+            border-radius: 10px;
+            border: 2px solid #ffcc00;
+            background-color: #000;
             color: #fff;
             text-align: center;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             outline: none;
         }
 
-        input:focus {
-            box-shadow: 0 0 8px #ff0080;
-        }
-
-        .btn-jogar {
-            background: linear-gradient(90deg, #ff0080, #ff00c8);
+        /* Botão de Giro Grande e Alaranjado do Tigrinho */
+        .btn-girar {
+            background: linear-gradient(180deg, #ffcc00, #ff6600);
             color: white;
-            border: none;
-            padding: 15px;
-            font-size: 1.3rem;
-            font-weight: bold;
-            border-radius: 10px;
+            border: 3px solid #fff;
+            padding: 16px;
+            font-size: 1.5rem;
+            border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 0, 128, 0.4);
-            transition: 0.2s ease;
-            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(255, 102, 0, 0.5);
+            text-shadow: 2px 2px 2px #000;
+            transition: 0.1s ease;
         }
 
-        .btn-jogar:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px #ff0080;
+        .btn-girar:hover {
+            transform: scale(1.03);
         }
 
-        .btn-jogar:disabled {
-            background: #444;
+        .btn-girar:active {
+            transform: scale(0.97);
+        }
+
+        .btn-girar:disabled {
+            background: #555;
             box-shadow: none;
             cursor: not-allowed;
-            transform: none;
         }
 
         #mensagem {
-            margin-top: 20px;
-            font-size: 1.1rem;
-            min-height: 27px;
-            font-weight: 600;
+            margin-top: 15px;
+            font-size: 1.2rem;
+            min-height: 30px;
+            text-shadow: 1px 1px 2px #000;
         }
         
-        .ganhou { color: #00ffcc; text-shadow: 0 0 10px #00ffcc; }
-        .perdeu { color: #ff3333; text-shadow: 0 0 10px #ff3333; }
+        .ganhou { color: #00ff66; font-size: 1.4rem; }
+        .perdeu { color: #ff3333; }
+        .carta-bonus { color: #ffcc00; font-size: 1.4rem; }
     </style>
 </head>
 <body>
 
     <div class="casino-container">
-        <h1>TRICOLOR SLOTS</h1>
-        
         <div class="painel-saldo">
-            Saldo: $<span id="saldo">100</span>
+            💰 R$ <span id="saldo">50.00</span>
         </div>
 
+        <div class="bonus-banner" id="banner">🐯 O TIGRINHO ESTÁ PRESTES A SOLTAR A CARTA X10! 🐯</div>
+
         <div class="slots-box">
-            <div class="rolo" id="rolo1">🇾🇪</div>
-            <div class="rolo" id="rolo2">🏆</div>
-            <div class="rolo" id="rolo3">⚽</div>
+            <div class="rolo" id="rolo1">🐯</div>
+            <div class="rolo" id="rolo2">🐯</div>
+            <div class="rolo" id="rolo3">🐯</div>
         </div>
 
         <div class="controles">
-            <div class="input-aposta">
-                <label for="aposta">Aposta: $</label>
-                <input type="number" id="aposta" value="10" min="1">
+            <div class="botoes-aposta">
+                <button class="btn-ajuste" onclick="alterarAposta(-2)">-</button>
+                <input type="number" id="aposta" value="2.00" step="2" min="2" readonly>
+                <button class="btn-ajuste" onclick="alterarAposta(2)">+</button>
             </div>
-            <button class="btn-jogar" id="btnJogar" onclick="jogar()">GIRAR 🎰</button>
+            <button class="btn-girar" id="btnGirar" onclick="soltarOTigre()">GIRAR ⚡</button>
         </div>
 
-        <div id="mensagem">Aposte e gire a sorte, Torcedor!</div>
+        <div id="mensagem">Suba a banca e comece a girar!</div>
     </div>
 
     <script>
-        // Configurações Básicas
-        let saldo = 100;
-        // Atualizei os símbolos para combinarem com o tema
-        const simbolos = ['🇾🇪', '🏆', '⚽', '⭐', '💎', '7️⃣'];
+        let saldo = 50.00;
+        // Ícones baseados no Fortune Tiger
+        const itens = ['🐯', '🍊', '🧧', '💰', '🎆', '🏆'];
         
         const rolo1 = document.getElementById('rolo1');
         const rolo2 = document.getElementById('rolo2');
         const rolo3 = document.getElementById('rolo3');
         const txtSaldo = document.getElementById('saldo');
         const txtMensagem = document.getElementById('mensagem');
-        const btnJogar = document.getElementById('btnJogar');
+        const btnGirar = document.getElementById('btnGirar');
         const inputAposta = document.getElementById('aposta');
+        const banner = document.getElementById('banner');
 
-        function jogar() {
-            const valorAposta = parseInt(inputAposta.value);
-
-            // Validações
-            if (isNaN(valorAposta) || valorAposta <= 0) {
-                txtMensagem.className = 'perdeu';
-                txtMensagem.innerText = "❌ Insira uma aposta válida!";
-                return;
+        function alterarAposta(valor) {
+            let atual = parseFloat(inputAposta.value);
+            let nova = atual + valor;
+            if (nova >= 2 && nova <= saldo) {
+                inputAposta.value = nova.toFixed(2);
             }
-            if (valorAposta > saldo) {
+        }
+
+        function soltarOTigre() {
+            const aposta = parseFloat(inputAposta.value);
+
+            if (aposta > saldo) {
                 txtMensagem.className = 'perdeu';
                 txtMensagem.innerText = "❌ Saldo insuficiente!";
                 return;
             }
 
-            // Deduz o valor da aposta
-            saldo -= valorAposta;
-            txtSaldo.innerText = saldo;
+            // Consome o saldo da rodada
+            saldo -= aposta;
+            txtSaldo.innerText = saldo.toFixed(2);
             
-            // Desativa botão e limpa texto temporariamente
-            btnJogar.disabled = true;
-            txtMensagem.innerText = "Girando...";
+            btnGirar.disabled = true;
+            txtMensagem.innerText = "O tigre está rodando...";
             txtMensagem.className = '';
+            banner.style.display = 'none';
 
-            // Adiciona efeito visual de rotação
+            // Chance aleatória de ativar a famosa "Animação da Carta" (Bônus falso visual)
+            const ativarModoCarta = Math.random() < 0.25; 
+            if (ativarModoCarta) {
+                banner.style.display = 'block';
+            }
+
             rolo1.classList.add('girando');
             rolo2.classList.add('girando');
             rolo3.classList.add('girando');
 
-            // Simula o tempo que a máquina leva rodando (1.2 segundos)
+            // Tempo de giro (1.5 segundos para dar suspense)
             setTimeout(() => {
-                // Sorteia os resultados
-                const resultado1 = simbolos[Math.floor(Math.random() * simbolos.length)];
-                const resultado2 = simbolos[Math.floor(Math.random() * simbolos.length)];
-                const resultado3 = simbolos[Math.floor(Math.random() * simbolos.length)];
-
-                // Para as animações e coloca os símbolos finais
                 rolo1.classList.remove('girando');
                 rolo2.classList.remove('girando');
                 rolo3.classList.remove('girando');
 
-                rolo1.innerText = resultado1;
-                rolo2.innerText = resultado2;
-                rolo3.innerText = resultado3;
+                // Sorteio
+                const r1 = itens[Math.floor(Math.random() * itens.length)];
+                const r2 = itens[Math.floor(Math.random() * itens.length)];
+                const r3 = itens[Math.floor(Math.random() * itens.length)];
 
-                // Verifica regras de vitória
-                if (resultado1 === resultado2 && resultado2 === resultado3) {
-                    // 3 Iguais = Jackpot (Paga 10x)
-                    let ganho = valorAposta * 10;
+                rolo1.innerText = r1;
+                rolo2.innerText = r2;
+                rolo3.innerText = r3;
+
+                // Sistema de Ganhos
+                if (r1 === r2 && r2 === r3) {
+                    let multiplicador = r1 === '🐯' ? 20 : 10; // Tigre paga mais!
+                    let ganho = aposta * multiplicador;
                     saldo += ganho;
                     txtMensagem.className = 'ganhou';
-                    txtMensagem.innerText = `🎉 JACKPOT TRICOLOR! 3 Iguais! Ganhou $${ganho}!`;
-                } else if (resultado1 === resultado2 || resultado2 === resultado3 || resultado1 === resultado3) {
-                    // 2 Iguais = Vitória menor (Paga 2x)
-                    let ganho = valorAposta * 2;
+                    txtMensagem.innerText = `🐯 SOLTOU A CARTA! 3x ${r1} Pagou R$ ${ganho.toFixed(2)}!`;
+                } 
+                else if (r1 === r2 || r2 === r3 || r1 === r3) {
+                    let ganho = aposta * 1.5;
                     saldo += ganho;
                     txtMensagem.className = 'ganhou';
-                    txtMensagem.innerText = `✨ Boa! 2 Iguais! Ganhou $${ganho}!`;
-                } else {
-                    // Nenhum igual = Perdeu
+                    txtMensagem.innerText = `✨ Ganho da Linha! Combinou 2 e levou R$ ${ganho.toFixed(2)}`;
+                } 
+                else {
                     txtMensagem.className = 'perdeu';
-                    txtMensagem.innerText = `😢 Não foi dessa vez, Campeão! Perdeu $${valorAposta}`;
+                    txtMensagem.innerText = "Abaixe a cabeça... O tigre não soltou a carta.";
                 }
 
-                // Atualiza saldo na tela e reativa o botão
-                txtSaldo.innerText = saldo;
-                btnJogar.disabled = false;
+                txtSaldo.innerText = saldo.toFixed(2);
+                btnGirar.disabled = false;
+                banner.style.display = 'none';
 
-                // Game Over
-                if (saldo <= 0) {
+                // Se falir
+                if (saldo < 2) {
                     txtMensagem.className = 'perdeu';
-                    txtMensagem.innerText = "💥 O saldo acabou! Recarregue a página para tentar de novo.";
-                    btnJogar.disabled = true;
+                    txtMensagem.innerText = "💥 A banca quebrou! Atualize para resetar os créditos.";
+                    btnGirar.disabled = true;
                 }
 
-            }, 1200);
+            }, 1500);
         }
     </script>
 </body>
