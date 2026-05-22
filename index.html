@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casino Neon Slots</title>
+    <title>Casino Tricolor Slots</title>
     <style>
         * {
             margin: 0;
@@ -14,7 +13,16 @@
         }
 
         body {
-            background-color: #0b0b1a;
+            /* Fundo principal com o escudo do São Paulo */
+            background-color: #1a1a36;
+            background-image: 
+                linear-gradient(to bottom, rgba(11, 11, 26, 0.92), rgba(26, 26, 54, 0.95)),
+                url('https://upload.wikimedia.org/wikipedia/pt/4/4b/S%C3%A3o_Paulo_Futebol_Clube.svg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            
             color: #fff;
             display: flex;
             justify-content: center;
@@ -25,13 +33,14 @@
 
         .casino-container {
             text-align: center;
-            background: linear-gradient(145deg, #151528, #1a1a36);
+            background: linear-gradient(145deg, rgba(21, 21, 40, 0.9), rgba(26, 26, 54, 0.9));
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 0 30px rgba(255, 0, 128, 0.3), inset 0 0 15px rgba(0, 255, 255, 0.2);
-            border: 2px solid #ff0080;
+            border: 2px solid #ff0080; /* Mantendo o neon rosa */
             max-width: 450px;
             width: 100%;
+            backdrop-filter: blur(3px); /* Leve desfoque no fundo para destacar a máquina */
         }
 
         h1 {
@@ -43,7 +52,7 @@
         }
 
         .painel-saldo {
-            background-color: #070714;
+            background-color: rgba(7, 7, 20, 0.8);
             padding: 15px;
             border-radius: 10px;
             font-size: 1.2rem;
@@ -114,7 +123,7 @@
             padding: 8px;
             border-radius: 5px;
             border: 1px solid #ff0080;
-            background-color: #070714;
+            background-color: rgba(7, 7, 20, 0.8);
             color: #fff;
             text-align: center;
             font-size: 1.1rem;
@@ -165,16 +174,16 @@
 <body>
 
     <div class="casino-container">
-        <h1>SLOTS 777</h1>
+        <h1>TRICOLOR SLOTS</h1>
         
         <div class="painel-saldo">
             Saldo: $<span id="saldo">100</span>
         </div>
 
         <div class="slots-box">
-            <div class="rolo" id="rolo1">🍒</div>
-            <div class="rolo" id="rolo2">🍋</div>
-            <div class="rolo" id="rolo3">🍇</div>
+            <div class="rolo" id="rolo1">🇾🇪</div>
+            <div class="rolo" id="rolo2">🏆</div>
+            <div class="rolo" id="rolo3">⚽</div>
         </div>
 
         <div class="controles">
@@ -185,13 +194,14 @@
             <button class="btn-jogar" id="btnJogar" onclick="jogar()">GIRAR 🎰</button>
         </div>
 
-        <div id="mensagem">Aposte e gire a sorte!</div>
+        <div id="mensagem">Aposte e gire a sorte, Torcedor!</div>
     </div>
 
     <script>
         // Configurações Básicas
         let saldo = 100;
-        const simbolos = ['🍒', '🍋', '🍊', '🍇', '⭐', '💎'];
+        // Atualizei os símbolos para combinarem com o tema
+        const simbolos = ['🇾🇪', '🏆', '⚽', '⭐', '💎', '7️⃣'];
         
         const rolo1 = document.getElementById('rolo1');
         const rolo2 = document.getElementById('rolo2');
@@ -252,7 +262,7 @@
                     let ganho = valorAposta * 10;
                     saldo += ganho;
                     txtMensagem.className = 'ganhou';
-                    txtMensagem.innerText = `🎉 JACKPOT! 3 Iguais! Ganhou $${ganho}!`;
+                    txtMensagem.innerText = `🎉 JACKPOT TRICOLOR! 3 Iguais! Ganhou $${ganho}!`;
                 } else if (resultado1 === resultado2 || resultado2 === resultado3 || resultado1 === resultado3) {
                     // 2 Iguais = Vitória menor (Paga 2x)
                     let ganho = valorAposta * 2;
@@ -262,7 +272,7 @@
                 } else {
                     // Nenhum igual = Perdeu
                     txtMensagem.className = 'perdeu';
-                    txtMensagem.innerText = `😢 Não foi dessa vez! Perdeu $${valorAposta}`;
+                    txtMensagem.innerText = `😢 Não foi dessa vez, Campeão! Perdeu $${valorAposta}`;
                 }
 
                 // Atualiza saldo na tela e reativa o botão
@@ -272,7 +282,7 @@
                 // Game Over
                 if (saldo <= 0) {
                     txtMensagem.className = 'perdeu';
-                    txtMensagem.innerText = "💥 Você faliu! Recarregue a página para reiniciar.";
+                    txtMensagem.innerText = "💥 O saldo acabou! Recarregue a página para tentar de novo.";
                     btnJogar.disabled = true;
                 }
 
