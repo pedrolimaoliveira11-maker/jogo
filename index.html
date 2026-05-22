@@ -1,1 +1,283 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Neon Slots</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0b0b1a;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .casino-container {
+            text-align: center;
+            background: linear-gradient(145deg, #151528, #1a1a36);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 0, 128, 0.3), inset 0 0 15px rgba(0, 255, 255, 0.2);
+            border: 2px solid #ff0080;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #ff0080;
+            text-shadow: 0 0 10px #ff0080, 0 0 20px #ff0080;
+            letter-spacing: 2px;
+        }
+
+        .painel-saldo {
+            background-color: #070714;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            border: 1px solid #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+        }
+
+        #saldo, #resultado {
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        /* Máquina de Caça-Níqueis */
+        .slots-box {
+            display: flex;
+            justify-content: space-between;
+            background-color: #05050f;
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid #ffcc00;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .rolo {
+            width: 90px;
+            height: 90px;
+            background-color: #22223b;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            border: 2px solid #444;
+            transition: transform 0.1s ease;
+        }
+
+        /* Animação de Giro */
+        .girando {
+            animation: rodar 0.1s linear infinite;
+        }
+
+        @keyframes rodar {
+            0% { transform: scale(1); filter: blur(2px); }
+            50% { transform: scale(0.9); filter: blur(4px); }
+            100% { transform: scale(1); filter: blur(2px); }
+        }
+
+        /* Controles */
+        .controles {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-aposta {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ff0080;
+            background-color: #070714;
+            color: #fff;
+            text-align: center;
+            font-size: 1.1rem;
+            outline: none;
+        }
+
+        input:focus {
+            box-shadow: 0 0 8px #ff0080;
+        }
+
+        .btn-jogar {
+            background: linear-gradient(90deg, #ff0080, #ff00c8);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 0, 128, 0.4);
+            transition: 0.2s ease;
+            letter-spacing: 1px;
+        }
+
+        .btn-jogar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px #ff0080;
+        }
+
+        .btn-jogar:disabled {
+            background: #444;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #mensagem {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            min-height: 27px;
+            font-weight: 600;
+        }
+        
+        .ganhou { color: #00ffcc; text-shadow: 0 0 10px #00ffcc; }
+        .perdeu { color: #ff3333; text-shadow: 0 0 10px #ff3333; }
+    </style>
+</head>
+<body>
+
+    <div class="casino-container">
+        <h1>SLOTS 777</h1>
+        
+        <div class="painel-saldo">
+            Saldo: $<span id="saldo">100</span>
+        </div>
+
+        <div class="slots-box">
+            <div class="rolo" id="rolo1">🍒</div>
+            <div class="rolo" id="rolo2">🍋</div>
+            <div class="rolo" id="rolo3">🍇</div>
+        </div>
+
+        <div class="controles">
+            <div class="input-aposta">
+                <label for="aposta">Aposta: $</label>
+                <input type="number" id="aposta" value="10" min="1">
+            </div>
+            <button class="btn-jogar" id="btnJogar" onclick="jogar()">GIRAR 🎰</button>
+        </div>
+
+        <div id="mensagem">Aposte e gire a sorte!</div>
+    </div>
+
+    <script>
+        // Configurações Básicas
+        let saldo = 100;
+        const simbolos = ['🍒', '🍋', '🍊', '🍇', '⭐', '💎'];
+        
+        const rolo1 = document.getElementById('rolo1');
+        const rolo2 = document.getElementById('rolo2');
+        const rolo3 = document.getElementById('rolo3');
+        const txtSaldo = document.getElementById('saldo');
+        const txtMensagem = document.getElementById('mensagem');
+        const btnJogar = document.getElementById('btnJogar');
+        const inputAposta = document.getElementById('aposta');
+
+        function jogar() {
+            const valorAposta = parseInt(inputAposta.value);
+
+            // Validações
+            if (isNaN(valorAposta) || valorAposta <= 0) {
+                txtMensagem.className = 'perdeu';
+                txtMensagem.innerText = "❌ Insira uma aposta válida!";
+                return;
+            }
+            if (valorAposta > saldo) {
+                txtMensagem.className = 'perdeu';
+                txtMensagem.innerText = "❌ Saldo insuficiente!";
+                return;
+            }
+
+            // Deduz o valor da aposta
+            saldo -= valorAposta;
+            txtSaldo.innerText = saldo;
+            
+            // Desativa botão e limpa texto temporariamente
+            btnJogar.disabled = true;
+            txtMensagem.innerText = "Girando...";
+            txtMensagem.className = '';
+
+            // Adiciona efeito visual de rotação
+            rolo1.classList.add('girando');
+            rolo2.classList.add('girando');
+            rolo3.classList.add('girando');
+
+            // Simula o tempo que a máquina leva rodando (1.2 segundos)
+            setTimeout(() => {
+                // Sorteia os resultados
+                const resultado1 = simbolos[Math.floor(Math.random() * simbolos.length)];
+                const resultado2 = simbolos[Math.floor(Math.random() * simbolos.length)];
+                const resultado3 = simbolos[Math.floor(Math.random() * simbolos.length)];
+
+                // Para as animações e coloca os símbolos finais
+                rolo1.classList.remove('girando');
+                rolo2.classList.remove('girando');
+                rolo3.classList.remove('girando');
+
+                rolo1.innerText = resultado1;
+                rolo2.innerText = resultado2;
+                rolo3.innerText = resultado3;
+
+                // Verifica regras de vitória
+                if (resultado1 === resultado2 && resultado2 === resultado3) {
+                    // 3 Iguais = Jackpot (Paga 10x)
+                    let ganho = valorAposta * 10;
+                    saldo += ganho;
+                    txtMensagem.className = 'ganhou';
+                    txtMensagem.innerText = `🎉 JACKPOT! 3 Iguais! Ganhou $${ganho}!`;
+                } else if (resultado1 === resultado2 || resultado2 === resultado3 || resultado1 === resultado3) {
+                    // 2 Iguais = Vitória menor (Paga 2x)
+                    let ganho = valorAposta * 2;
+                    saldo += ganho;
+                    txtMensagem.className = 'ganhou';
+                    txtMensagem.innerText = `✨ Boa! 2 Iguais! Ganhou $${ganho}!`;
+                } else {
+                    // Nenhum igual = Perdeu
+                    txtMensagem.className = 'perdeu';
+                    txtMensagem.innerText = `😢 Não foi dessa vez! Perdeu $${valorAposta}`;
+                }
+
+                // Atualiza saldo na tela e reativa o botão
+                txtSaldo.innerText = saldo;
+                btnJogar.disabled = false;
+
+                // Game Over
+                if (saldo <= 0) {
+                    txtMensagem.className = 'perdeu';
+                    txtMensagem.innerText = "💥 Você faliu! Recarregue a página para reiniciar.";
+                    btnJogar.disabled = true;
+                }
+
+            }, 1200);
+        }
+    </script>
+</body>
+</html>
