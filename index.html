@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Jump - Tela Cheia</title>
+    <title>Cyber Jump - Poderes Ativados</title>
     <style>
         * {
             margin: 0;
             padding: 0;
-            box-shadow: border-box;
+            box-sizing: border-box;
             user-select: none;
         }
         body, html {
@@ -23,7 +23,6 @@
             width: 100vw;
             height: 100vh;
         }
-        /* Telas de Menu e Game Over */
         .overlay {
             position: absolute;
             top: 0;
@@ -72,10 +71,28 @@
             transform: scale(1.05);
             box-shadow: 0 0 25px #7f00ff;
         }
-        .btn:active {
-            transform: scale(0.98);
+        /* Alerta de Poder Soltado na Tela */
+        #alerta-poder {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 3rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            z-index: 8;
+            pointer-events: none;
+            text-shadow: 0 0 20px #fff;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.5s;
         }
-        /* Placar no topo */
+        #alerta-poder.visivel {
+            opacity: 1;
+            transform: translate(-50%, -40%);
+        }
+        /* Placar */
         #hud {
             position: absolute;
             top: 20px;
@@ -99,6 +116,16 @@
         }
         #score { color: #00ffcc; }
         #highscore { color: #ff007f; }
+        #status-poder {
+            position: absolute;
+            top: 90px;
+            left: 20px;
+            color: #ffcc00;
+            font-size: 1.2rem;
+            font-family: monospace;
+            text-shadow: 0 0 10px #ffcc00;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -107,10 +134,14 @@
         <div class="score-box">SCORE: <span id="score">0</span></div>
         <div class="score-box">HI-SCORE: <span id="highscore">0</span></div>
     </div>
+    
+    <div id="status-poder"></div>
+
+    <div id="alerta-poder">SUPER PULO!</div>
 
     <div id="menu-inicial" class="overlay">
         <h1>Cyber Jump</h1>
-        <p>Pule os blocos de energia para sobreviver!</p>
+        <p>A cada 200 pontos você muda de cor e ganha poderes!</p>
         <button class="btn" onclick="iniciarJogo()">JOGAR (Espaço)</button>
     </div>
 
@@ -126,14 +157,14 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        // Elementos da Interface
         const menuInicial = document.getElementById("menu-inicial");
         const telaGameOver = document.getElementById("tela-gameover");
         const txtScore = document.getElementById("score");
         const txtHighScore = document.getElementById("highscore");
         const txtFinalScore = document.getElementById("pontuacao-final");
+        const alertaPoder = document.getElementById("alerta-poder");
+        const statusPoder = document.getElementById("status-poder");
 
-        // Ajustar tamanho do Canvas para Tela Cheia
         function ajustarTela() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -141,33 +172,35 @@
         window.addEventListener("resize", ajustarTela);
         ajustarTela();
 
-        // Estado do Jogo
         let jogoRodando = false;
         let score = 0;
         let highscore = localStorage.getItem("highscore") || 0;
         txtHighScore.innerText = highscore;
 
-        let velocidadeMundo = 6;
+        let velocidadeMundo = 7;
         const gravidade = 1.2;
+        
+        // Controle de Cores e Ciclos
+        let ultimoCicloPontos = 0;
+        let corJogador = "#00ffcc";
+        let corObstaculo = "#ff007f";
+        const paletaCores = ["#00ffcc", "#ff007f", "#ffcc00", "#00ff00", "#ff3300", "#9933ff", "#00ffff"];
 
-        // Objeto do Jogador (Cubo)
+        // Atributos do Jogador
         const jogador = {
             x: 100,
             y: 0,
             largura: 50,
             altura: 50,
             velocidadeY: 0,
-            forcaPulo: -22,
+            forcaPuloPadrao: -21,
+            forcaPuloAtual: -21,
             noChao: false,
-            cor: "#00ffcc",
             atualizar() {
-                // Aplicar gravidade
                 this.velocidadeY += gravidade;
                 this.y += this.velocidadeY;
 
-                // Definir a linha do chão baseada no tamanho da tela
                 const linhaChao = canvas.height - 120 - this.altura;
-
                 if (this.y >= linhaChao) {
                     this.y = linhaChao;
                     this.velocidadeY = 0;
@@ -176,35 +209,33 @@
             },
             pular() {
                 if (this.noChao && jogoRodando) {
-                    this.velocidadeY = this.forcaPulo;
+                    this.velocidadeY = this.forcaPuloAtual;
                     this.noChao = false;
                 }
             },
             desenhar() {
-                ctx.fillStyle = this.cor;
+                ctx.fillStyle = corJogador;
                 ctx.shadowBlur = 15;
-                ctx.shadowColor = this.cor;
+                ctx.shadowColor = corJogador;
                 ctx.fillRect(this.x, this.y, this.largura, this.altura);
-                ctx.shadowBlur = 0; // reseta efeito neon para o resto
+                ctx.shadowBlur = 0;
             }
         };
 
-        // Classe dos Obstáculos
         class Obstaculo {
             constructor() {
-                this.largura = 30 + Math.random() * 40; // largura aleatória
-                this.altura = 40 + Math.random() * 50;  // altura aleatória
+                this.largura = 30 + Math.random() * 40;
+                this.altura = 40 + Math.random() * 60;
                 this.x = canvas.width + 100;
                 this.y = canvas.height - 120 - this.altura;
-                this.cor = "#ff007f";
             }
             atualizar() {
                 this.x -= velocidadeMundo;
             }
             desenhar() {
-                ctx.fillStyle = this.cor;
+                ctx.fillStyle = corObstaculo;
                 ctx.shadowBlur = 15;
-                ctx.shadowColor = this.cor;
+                ctx.shadowColor = corObstaculo;
                 ctx.fillRect(this.x, this.y, this.largura, this.altura);
                 ctx.shadowBlur = 0;
             }
@@ -213,7 +244,48 @@
         let listaObstaculos = [];
         let tempoProximoObstaculo = 0;
 
-        // Controlar comandos de pulo (Teclado e Clique na tela)
+        // Gerenciador de Upgrades e Eventos Visuais
+        function gerenciarEvolucao() {
+            let cicloAtual = Math.floor(score / 200);
+            
+            if (cicloAtual > ultimoCicloPontos) {
+                ultimoCicloPontos = cicloAtual;
+                
+                // 1. Trocar cores aleatoriamente
+                let novaCor1 = paletaCores[Math.floor(Math.random() * paletaCores.length)];
+                let novaCor2 = paletaCores[Math.floor(Math.random() * paletaCores.length)];
+                while(novaCor1 === novaCor2) { novaCor2 = paletaCores[Math.floor(Math.random() * paletaCores.length)]; }
+                corJogador = novaCor1;
+                corObstaculo = novaCor2;
+
+                // 2. Alternar os Poderes de forma justa
+                if (cicloAtual % 2 === 1) {
+                    // Ativa Super Pulo
+                    jogador.forcaPuloAtual = -27; // Pula bem mais alto (padrão é -21)
+                    mostrarAvisoPoder("⚡ SUPER PULO ATIVADO! ⚡", corJogador);
+                    statusPoder.innerText = "MODO: Super Pulo Ativo";
+                    statusPoder.style.color = corJogador;
+                } else {
+                    // Ativa Super Corrida (Velocidade do cenário aumenta muito rápido)
+                    velocidadeMundo += 5;
+                    jogador.forcaPuloAtual = jogador.forcaPuloPadrao; // Reseta pulo
+                    mostrarAvisoPoder("🏃 MODO CORRIDA ATIVADO! 🏃", corJogador);
+                    statusPoder.innerText = "MODO: Super Velocidade";
+                    statusPoder.style.color = corJogador;
+                }
+            }
+        }
+
+        function mostrarAvisoPoder(texto, cor) {
+            alertaPoder.innerText = texto;
+            alertaPoder.style.textShadow = `0 0 20px ${cor}`;
+            alertaPoder.classList.add("visivel");
+            
+            setTimeout(() => {
+                alertaPoder.classList.remove("visivel");
+            }, 1800);
+        }
+
         window.addEventListener("keydown", (e) => {
             if (e.code === "Space" || e.code === "ArrowUp") {
                 if (!jogoRodando && menuInicial.style.display !== "none") {
@@ -230,7 +302,13 @@
             menuInicial.style.display = "none";
             telaGameOver.classList.add("escondido");
             score = 0;
-            velocidadeMundo = 7;
+            ultimoCicloPontos = 0;
+            velocidadeMundo = 8;
+            corJogador = "#00ffcc";
+            corObstaculo = "#ff007f";
+            jogador.forcaPuloAtual = jogador.forcaPuloPadrao;
+            statusPoder.innerText = "MODO: Normal";
+            statusPoder.style.color = "#ffcc00";
             listaObstaculos = [];
             tempoProximoObstaculo = 0;
             jogador.y = canvas.height - 120 - jogador.altura;
@@ -240,7 +318,7 @@
         function gameOver() {
             jogoRodando = false;
             telaGameOver.classList.remove("escondido");
-            txtFinalScore.innerText = `Você sobreviveu por ${Math.floor(score)} pontos!`;
+            txtFinalScore.innerText = `Você atingiu ${Math.floor(score)} pontos!`;
             
             if (Math.floor(score) > highscore) {
                 highscore = Math.floor(score);
@@ -253,50 +331,46 @@
             iniciarJogo();
         }
 
-        // Loop Principal do Jogo (Roda a 60 FPS)
         function gameLoop() {
-            // 1. Limpar a tela
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Desenhar o Cenário (Chão e Linhas de fundo)
             const linhaChaoY = canvas.height - 120;
-            ctx.strokeStyle = "#33374b";
-            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#252836";
+            ctx.lineWidth = 6;
             ctx.beginPath();
             ctx.moveTo(0, linhaChaoY);
             ctx.lineTo(canvas.width, linhaChaoY);
             ctx.stroke();
 
             if (jogoRodando) {
-                // Aumentar score e velocidade gradualmente
-                score += 0.15;
+                // Se estiver no modo corrida (velocidade alta), ganha pontos mais rápido
+                let multiplicadorPontos = velocidadeMundo > 12 ? 0.35 : 0.18;
+                score += multiplicadorPontos;
                 txtScore.innerText = Math.floor(score);
-                velocidadeMundo += 0.002;
+                
+                // Aceleração passiva padrão do jogo
+                velocidadeMundo += 0.0015;
 
-                // 3. Atualizar e desenhar jogador
+                gerenciarEvolucao();
                 jogador.atualizar();
 
-                // 4. Gerenciar obstáculos de forma aleatória
                 tempoProximoObstaculo--;
                 if (tempoProximoObstaculo <= 0) {
                     listaObstaculos.push(new Obstaculo());
-                    // Define um tempo aleatório para o próximo vir (entre 1 e 2 segundos)
-                    tempoProximoObstaculo = 60 + Math.random() * 70; 
+                    // Ajusta o surgimento baseado na velocidade do mundo para não criar barreiras impossíveis
+                    tempoProximoObstaculo = Math.max(45, 90 - (velocidadeMundo * 2)) + Math.random() * 40; 
                 }
 
-                // 5. Mover e testar colisão dos obstáculos
                 for (let i = listaObstaculos.length - 1; i >= 0; i--) {
                     let obs = listaObstaculos[i];
                     obs.atualizar();
                     obs.desenhar();
 
-                    // Remover obstáculos que saíram da tela para não travar o jogo
                     if (obs.x + obs.largura < 0) {
                         listaObstaculos.splice(i, 1);
                         continue;
                     }
 
-                    // Checar Colisão (AABB Hitbox)
                     if (
                         jogador.x < obs.x + obs.largura &&
                         jogador.x + jogador.largura > obs.x &&
@@ -308,14 +382,10 @@
                 }
             }
 
-            // Sempre desenha o jogador na posição atual dele
             jogador.desenhar();
-
-            // Chama o próximo frame
             requestAnimationFrame(gameLoop);
         }
 
-        // Inicia o motor do loop
         gameLoop();
     </script>
 </body>
