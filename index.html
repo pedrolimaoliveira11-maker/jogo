@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>São Paulo Obstacle Runner - Tela Cheia</title>
+    <title>São Paulo Obstacle Runner - Tela Cheia Escura</title>
     <style>
         * {
             margin: 0;
@@ -12,63 +12,66 @@
             font-family: 'Arial', sans-serif;
         }
 
-        body {
+        /* Deixa a página em tela cheia e remove barras de rolagem */
+        body, html {
+            width: 100%;
+            height: 100%;
             background: #111;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
             user-select: none; 
         }
 
         /* ÁREA DO JOGO EM TELA CHEIA */
         #game-container {
             position: relative;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             /* Foto de fundo do São Paulo FC (Estádio do MorumBIS) */
-            background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?q=80&w=1200&auto=format&fit=crop'); 
+            background-image: url('https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?q=80&w=800&auto=format&fit=crop'); 
             background-size: cover;
             background-position: center;
             overflow: hidden;
+            cursor: pointer;
         }
 
-        /* ELEMENTOS DO JOGO */
+        /* CAMADA SUTIL PARA ESCURECER O FUNDO */
+        #dark-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4); /* Escurece o fundo em 40% */
+            z-index: 1;
+            pointer-events: none; /* Deixa os cliques passarem direto para o jogo */
+        }
+
+        /* ELEMENTOS DO JOGO (Z-index alto para ficarem na frente da camada escura) */
         #player {
             position: absolute;
             bottom: 0;
-            left: 10%; /* Posicionado a 10% da lateral da tela */
+            left: 8%;
             width: 60px;
-            height: 80px;
+            height: 70px;
             background-color: #FF0000; /* Cor Inicial: Vermelho */
             border: 3px solid #FFF;
             border-radius: 8px;
-            z-index: 2;
+            z-index: 5;
         }
 
         #obstacle {
             position: absolute;
             bottom: 0;
-            right: -60px;
-            width: 40px;
-            height: 65px;
+            right: -50px;
+            width: 35px;
+            height: 60px;
             background-color: #000000;
             border: 2px solid #FFF;
             border-radius: 5px;
-            z-index: 2;
-        }
-
-        /* CHÃO DO JOGO */
-        #floor {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background-color: rgba(255, 255, 255, 0.5);
-            z-index: 1;
+            z-index: 5;
         }
 
         /* PLACAR E ALERTAS */
@@ -81,19 +84,19 @@
             justify-content: space-between;
             align-items: center;
             color: white;
-            font-size: 28px;
+            font-size: 26px;
             font-weight: bold;
-            text-shadow: 3px 3px 6px #000;
+            text-shadow: 2px 2px 5px #000;
             pointer-events: none;
             z-index: 10;
         }
 
         #power-status {
             background: rgba(255, 0, 0, 0.9);
-            padding: 8px 24px;
-            border-radius: 30px;
+            padding: 8px 20px;
+            border-radius: 20px;
             border: 2px solid #fff;
-            font-size: 20px;
+            font-size: 18px;
             display: none;
             animation: piscar 0.5s infinite alternate;
         }
@@ -118,23 +121,24 @@
             color: white;
             display: none;
             z-index: 50;
+            cursor: default;
         }
 
         #game-over h2 {
-            font-size: 60px;
+            font-size: 55px;
             color: #FF0000;
             margin-bottom: 15px;
-            text-shadow: 2px 2px 8px #000;
+            text-shadow: 2px 2px 5px #000;
         }
 
         #game-over p {
-            font-size: 26px;
-            margin-bottom: 30px;
+            font-size: 24px;
+            margin-bottom: 25px;
         }
 
         #game-over button {
             padding: 15px 35px;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
             cursor: pointer;
             background: #FF0000;
@@ -153,13 +157,13 @@
 
     <div id="game-container">
         
+        <div id="dark-overlay"></div>
+
         <div id="ui-layer">
             <div id="score-display">Pontos: 0</div>
             <div id="power-status">⚡ SUPER PODER ATIVADO!</div>
         </div>
         
-        <div id="floor"></div>
-
         <div id="player" style="bottom: 0px;"></div>
         <div id="obstacle"></div>
 
@@ -186,10 +190,10 @@
         let score = 0;
         let isJumping = false;
         let isGameOver = false; 
-        let obstaclePosition = -60;
+        let obstaclePosition = -50;
 
-        // Configurações Iniciais de Física e Velocidade
-        let jumpHeight = 180; // Ajustado levemente para combinar com a proporção da tela cheia    
+        // Configurações Iniciais Ajustadas para Tela Cheia
+        let jumpHeight = 180;     
         let obstacleSpeed = 9;    
         let currentLevel = 0;
 
@@ -197,7 +201,8 @@
         const coresSpfc = ["#FF0000", "#FFFFFF", "#000000", "#FFD700"]; 
 
         // Reiniciar o jogo no botão do Game Over
-        btnRestart.addEventListener('click', () => {
+        btnRestart.addEventListener('click', (event) => {
+            event.stopPropagation(); // Impede que o clique chame o pulo
             initGame();
         });
 
@@ -207,7 +212,7 @@
             currentLevel = 0;
             jumpHeight = 180;
             obstacleSpeed = 9;
-            obstaclePosition = -60;
+            obstaclePosition = -50;
             isGameOver = false;
             isJumping = false;
             
@@ -238,12 +243,12 @@
                 let indexCor = currentLevel % coresSpfc.length;
                 player.style.backgroundColor = coresSpfc[indexCor];
 
-                // 2. Aplica os Superpoderes (Pula mais alto / Jogo fica mais rápido)
+                // 2. Aplica os Superpoderes dinamicamente na proporção da tela
                 jumpHeight = 180 + (currentLevel * 30); 
                 obstacleSpeed = 9 + (currentLevel * 3); 
 
                 // 3. Alerta na tela
-                powerStatus.innerText = `⚡ PODER NÍVEL ${currentLevel}! CORRIDA + ALTO PULO`;
+                powerStatus.innerText = `⚡ PODER NÍVEL ${currentLevel}! VELOCIDADE + PULO ALTO`;
                 powerStatus.style.display = 'block';
                 
                 setTimeout(() => {
@@ -252,14 +257,23 @@
             }
         }
 
-        /* --- CONTROLE DE PULO EXCLUSIVO NO ESPAÇO --- */
+        /* --- CONTROLES MANTIDOS: PULO NO ESPAÇO E NO CLIQUE (BOTÃO DE PULAR) --- */
+        
+        // 1. Pular com a barra de Espaço
         document.addEventListener('keydown', (event) => {
             if (event.code === 'Space' && !isJumping && !isGameOver) {
                 executarPulo();
             }
         });
 
-        function ejecutarPulo() {
+        // 2. Pular ao clicar com o mouse na tela (o container vira o botão de pulo)
+        gameContainer.addEventListener('mousedown', () => {
+            if (!isJumping && !isGameOver) {
+                executarPulo();
+            }
+        });
+
+        function executarPulo() {
             isJumping = true;
             let p_bottom = 0;
             
@@ -275,38 +289,37 @@
                             p_bottom = 0;
                             isJumping = false;
                         } else {
-                            p_bottom -= 8;
+                            p_bottom -= 8; // Velocidade de descida corrigida
                         }
                         player.style.bottom = p_bottom + 'px';
                     }, 15);
 
                 } else {
-                    p_bottom += 8;
+                    p_bottom += 8; // Velocidade de subida corrigida
                 }
                 player.style.bottom = p_bottom + 'px';
             }, 15);
         }
 
-        // ENGINE PRINCIPAL: Movimento e Verificação de Colisões (Adaptada para Tela Cheia)
+        // ENGINE PRINCIPAL: Movimento e Verificação de Colisões Responsiva
         function gameEngine() {
             if (!isGameOver) {
+                let larguraTela = gameContainer.offsetWidth;
                 obstaclePosition += obstacleSpeed;
                 
-                // Se o obstáculo passar do limite esquerdo da tela, reseta ele para a direita
-                if (obstaclePosition > (window.innerWidth + 60)) {
-                    obstaclePosition = -60;
+                // Reseta o obstáculo quando ele cruza toda a tela cheia
+                if (obstaclePosition > (larguraTela + 100)) {
+                    obstaclePosition = -50;
                 }
                 obstacle.style.right = obstaclePosition + 'px';
 
-                // Lógica de colisão baseada na posição exata da tela em pixels
-                let playerBounds = player.getBoundingClientRect();
-                let obstacleBounds = obstacle.getBoundingClientRect();
+                // Lógica adaptada para pegar a colisão exata em qualquer tamanho de monitor
+                let playerBottom = parseInt(player.style.bottom) || 0;
+                let playerLeft = player.offsetLeft;
+                let obstacleLeft = larguraTela - obstaclePosition - 35; 
 
-                if (
-                    playerBounds.right > obstacleBounds.left &&
-                    playerBounds.left < obstacleBounds.right &&
-                    playerBounds.bottom > obstacleBounds.top
-                ) {
+                // Caixa de colisão exata
+                if (obstacleLeft < (playerLeft + 60) && obstacleLeft > playerLeft && playerBottom < 60) {
                     isGameOver = true;
                     finalScoreDisplay.innerText = "Pontos Finais: " + score;
                     gameOverScreen.style.display = 'flex';
@@ -316,7 +329,7 @@
             requestAnimationFrame(gameEngine);
         }
 
-        // Inicializa o motor gráfico
+        // Inicializa o motor gráfico adaptado para o novo layout
         requestAnimationFrame(gameEngine);
     </script>
 </body>
