@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>São Paulo Obstacle Runner - Oficial</title>
+    <title>São Paulo Obstacle Runner - Completo</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Arial', sans-serif;
         }
 
         body {
-            background: #121212;
+            background: #111;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,45 +21,64 @@
             overflow: hidden;
         }
 
-        /* TELA DE LOGIN ATUALIZADA */
+        /* ÁREA PRINCIPAL DO JOGO */
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 400px;
+            /* Foto de fundo do São Paulo FC (Estádio do MorumBIS) */
+            background-image: url('https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?q=80&w=800&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+            border: 4px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+
+        /* TELA DE LOGIN (Fica por cima de tudo no início) */
         #login-screen {
             position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.85);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 100;
+            color: white;
+            transition: all 0.5s ease;
         }
 
         .login-box {
-            background: #ffffff;
-            color: #000000;
+            background: white;
+            color: black;
             padding: 40px;
-            border-radius: 20px;
+            border-radius: 15px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
-            border-top: 8px solid #FF0000;
-            border-bottom: 8px solid #000000;
-            width: 360px;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.6);
+            border-top: 6px solid #FF0000;
+            border-bottom: 6px solid #000000;
+            max-width: 350px;
+            width: 90%;
         }
 
         .login-box h1 {
-            font-size: 26px;
             margin-bottom: 10px;
-            font-weight: 800;
-            letter-spacing: -1px;
+            font-size: 26px;
+            font-weight: bold;
         }
 
         .login-box p {
             color: #555;
-            font-size: 14px;
             margin-bottom: 25px;
+            font-size: 14px;
         }
 
-        /* Botão do Google idêntico ao real */
+        /* BOTÃO DO GOOGLE CORRIGIDO */
         .google-btn {
             display: flex;
             align-items: center;
@@ -71,111 +90,41 @@
             padding: 14px;
             font-size: 16px;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
+            transition: background 0.2s;
             width: 100%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .google-btn:hover {
             background: #357AE8;
-            transform: translateY(-1px);
         }
 
-        .google-btn:active {
-            transform: translateY(1px);
-        }
-
-        .google-icon-wrapper {
+        .google-icon {
+            width: 22px;
+            height: 22px;
             background: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        /* ÁREA DO JOGO */
-        #game-container {
-            position: relative;
-            width: 800px;
-            height: 400px;
-            /* Foto de fundo do estádio do São Paulo */
-            background-image: url('https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?q=80&w=800&auto=format&fit=crop'); 
-            background-size: cover;
-            background-position: center;
-            overflow: hidden;
-            border: 4px solid #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.7);
-            display: none; /* Só aparece após o login */
-        }
-
-        /* Camada escura no fundo para dar contraste ao boneco */
-        #game-container::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.25);
-            z-index: 1;
-        }
-
-        /* Elementos da Interface */
-        #ui-layer {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 5;
-        }
-
-        #score-display {
-            color: #ffffff;
-            font-size: 24px;
             font-weight: bold;
-            background: rgba(0,0,0,0.6);
-            padding: 8px 16px;
-            border-radius: 8px;
-            text-shadow: 1px 1px 2px #000;
+            color: #4285F4;
+            font-size: 15px;
         }
 
-        #power-status {
-            background: #FF0000;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 16px;
-            box-shadow: 0 0 15px #FF0000;
-            animation: pulse 1s infinite alternate;
-            display: none;
-        }
-
-        @keyframes pulse {
-            from { transform: scale(1); }
-            to { transform: scale(1.05); }
-        }
-
-        /* Personagem Tricolor */
+        /* ELEMENTOS DO JOGO */
         #player {
             position: absolute;
             bottom: 0;
-            left: 60px;
-            width: 45px;
-            height: 55px;
-            background-color: #FF0000; /* Vermelho inicial */
-            border: 3px solid #ffffff;
-            border-radius: 6px;
-            z-index: 2;
-            transition: background-color 0.2s;
+            left: 50px;
+            width: 50px;
+            height: 60px;
+            background-color: #FF0000; /* Cor Inicial: Vermelho */
+            border: 3px solid #FFF;
+            border-radius: 5px;
         }
 
-        /* Obstáculo */
         #obstacle {
             position: absolute;
             bottom: 0;
@@ -183,22 +132,42 @@
             width: 30px;
             height: 50px;
             background-color: #000000;
-            border: 2px solid #ffffff;
-            border-radius: 4px;
-            z-index: 2;
+            border: 2px solid #FFF;
+            border-radius: 3px;
         }
 
-        /* Chão decorativo */
-        #floor {
+        /* PLACAR E ALERTAS */
+        #ui-layer {
             position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 4px;
-            background: #ffffff;
-            z-index: 3;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000;
+            pointer-events: none;
         }
 
-        /* Tela de Fim de Jogo */
+        #power-status {
+            background: rgba(255, 0, 0, 0.85);
+            padding: 6px 18px;
+            border-radius: 20px;
+            border: 2px solid #fff;
+            font-size: 16px;
+            display: none;
+            animation: piscar 0.5s infinite alternate;
+        }
+
+        @keyframes piscar {
+            from { opacity: 1; }
+            to { opacity: 0.5; }
+        }
+
+        /* TELA DE GAME OVER */
         #game-over {
             position: absolute;
             top: 0;
@@ -211,15 +180,15 @@
             justify-content: center;
             align-items: center;
             color: white;
-            z-index: 10;
             display: none;
+            z-index: 50;
         }
 
         #game-over h2 {
-            font-size: 46px;
+            font-size: 45px;
             color: #FF0000;
             margin-bottom: 10px;
-            letter-spacing: 2px;
+            text-shadow: 2px 2px 5px #000;
         }
 
         #game-over p {
@@ -228,162 +197,210 @@
         }
 
         #game-over button {
-            padding: 12px 30px;
+            padding: 12px 25px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            background: #ffffff;
-            color: #000;
-            border: none;
-            border-radius: 6px;
-            transition: background 0.2s;
+            background: #FF0000;
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            transition: 0.2s;
         }
 
         #game-over button:hover {
-            background: #FF0000;
-            color: #fff;
+            background: #cc0000;
         }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <div class="login-box">
-            <h1>SPFC Runner</h1>
-            <p>Faça login com sua conta Google para jogar</p>
-            <button class="google-btn" onclick="autenticarUsuario()">
-                <div class="google-icon-wrapper">
-                    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.9c1.69-1.55 2.69-3.85 2.69-6.57z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.24c-.8.54-1.84.87-3.06.87-2.35 0-4.33-1.58-5.04-3.71H.92v2.32C2.4 16.01 5.48 18 9 18z"/><path fill="#FBBC05" d="M3.96 10.74A5.4 5.4 0 0 1 3.6 9c0-.6.1-1.18.27-1.74V4.94H.92A8.99 8.99 0 0 0 0 9c0 1.46.35 2.85.96 4.08l2.45-1.92z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.3C13.46.89 11.43 0 9 0 5.48 0 2.4 1.99.92 4.94l3.04 2.36C4.67 5.17 6.65 3.58 9 3.58z"/></svg>
-                </div>
-                Entrar com o Google
-            </button>
-        </div>
-    </div>
-
     <div id="game-container">
+        
+        <div id="login-screen">
+            <div class="login-box">
+                <h1>São Paulo Runner</h1>
+                <p>Faça login com sua conta Google para entrar no jogo</p>
+                <button class="google-btn" id="btn-login">
+                    <div class="google-icon">G</div>
+                    Entrar com o Google
+                </button>
+            </div>
+        </div>
+
         <div id="ui-layer">
             <div id="score-display">Pontos: 0</div>
-            <div id="power-status">⚡ SUPER PULO + CORRIDA!</div>
+            <div id="power-status">⚡ SUPER PODER ATIVADO!</div>
         </div>
         
-        <div id="player"></div>
+        <div id="player" style="bottom: 0px;"></div>
         <div id="obstacle"></div>
-        <div id="floor"></div>
 
         <div id="game-over">
             <h2>FIM DE JOGO</h2>
             <p id="final-score">Pontos: 0</p>
-            <button onclick="reiniciarJogo()">Jogar Novamente</button>
+            <button id="btn-restart">Jogar Novamente</button>
         </div>
+
     </div>
 
     <script>
+        // Elementos da Tela
         const loginScreen = document.getElementById('login-screen');
-        const gameContainer = document.getElementById('game-container');
         const player = document.getElementById('player');
         const obstacle = document.getElementById('obstacle');
         const scoreDisplay = document.getElementById('score-display');
         const powerStatus = document.getElementById('power-status');
         const gameOverScreen = document.getElementById('game-over');
         const finalScoreDisplay = document.getElementById('final-score');
-
-        // Configurações base do jogo
-        let score = 0;
-        let jumping = false;
-        let gameOver = false;
-        let obstaclePosition = -40;
         
-        // Atributos dinâmicos (que mudam com os poderes)
-        let velocidadeObstaculo = 7;
-        let forcaDoPulo = 145; 
-        let faixaDePontosAtual = 0;
+        // Botões
+        const btnLogin = document.getElementById('btn-login');
+        const btnRestart = document.getElementById('btn-restart');
 
-        // Cores oficiais do São Paulo FC que mudam a cada 200 pontos
-        // Vermelho -> Branco -> Preto -> Dourado Campeão
-        const coresSpfc = ["#FF0000", "#FFFFFF", "#111111", "#FFD700"];
+        // Mecânicas do Jogo
+        let score = 0;
+        let isJumping = false;
+        let isGameOver = true; // Começa travado até fazer o login
+        let obstaclePosition = -40;
 
-        // Função que aciona ao clicar no botão do Google
-        function autenticarUsuario() {
-            loginScreen.style.display = 'none';
-            gameContainer.style.display = 'block';
-            inicializarJogo();
-        }
+        // Configurações Iniciais de Física e Velocidade
+        let jumpHeight = 140;     
+        let obstacleSpeed = 7;    
+        let currentLevel = 0;
 
-        function inicializarJogo() {
+        // Cores do São Paulo que mudam a cada 200 pontos (Vermelho, Branco, Preto, Dourado)
+        const coresSpfc = ["#FF0000", "#FFFFFF", "#000000", "#FFD700"]; 
+
+        // EVENTO 1: Ação de clicar no botão de Login do Google
+        btnLogin.addEventListener('click', () => {
+            loginScreen.style.display = 'none'; // Esconde a tela de login
+            initGame(); // Inicia o jogo
+        });
+
+        // EVENTO 2: Reiniciar o jogo no Game Over
+        btnRestart.addEventListener('click', () => {
+            initGame();
+        });
+
+        // Inicializador do Estado do Jogo
+        function initGame() {
             score = 0;
-            gameOver = false;
+            currentLevel = 0;
+            jumpHeight = 140;
+            obstacleSpeed = 7;
             obstaclePosition = -40;
-            velocidadeObstaculo = 7;
-            forcaDoPulo = 145;
-            faixaDePontosAtual = 0;
+            isGameOver = false;
+            isJumping = false;
             
             player.style.backgroundColor = coresSpfc[0];
-            player.style.bottom = '0px';
+            player.style.bottom = "0px";
             powerStatus.style.display = 'none';
             gameOverScreen.style.display = 'none';
             scoreDisplay.innerText = "Pontos: 0";
-
-            loopPrincipal();
         }
 
-        // Captura comandos de pulo do teclado (Espaço ou Seta para Cima)
-        document.addEventListener('keydown', function(evento) {
-            if ((evento.code === 'Space' || evento.code === 'ArrowUp') && !jumping && !gameOver) {
+        // Sistema de loop de Pontos (Sobe de 10 em 10)
+        setInterval(() => {
+            if (!isGameOver) {
+                score += 10;
+                scoreDisplay.innerText = "Pontos: " + score;
+                testarEvolucaoPoderes();
+            }
+        }, 150);
+
+        // MECÂNICA: Troca de cor e upgrade de poderes a cada 200 pontos
+        function testarEvolucaoPoderes() {
+            let passoAtual = Math.floor(score / 200);
+
+            if (passoAtual > currentLevel) {
+                currentLevel = passoAtual;
+                
+                // 1. Troca a cor baseado nas cores do São Paulo
+                let indexCor = currentLevel % coresSpfc.length;
+                player.style.backgroundColor = coresSpfc[indexCor];
+
+                // 2. Aplica os Superpoderes (Pula mais alto / Corre mais rápido)
+                jumpHeight = 140 + (currentLevel * 25); 
+                obstacleSpeed = 7 + (currentLevel * 2.5); 
+
+                // 3. Mostra o Alerta visual do Poder na tela
+                powerStatus.innerText = `⚡ PODER NÍVEL ${currentLevel}! CORRIDA + ALTO PULO`;
+                powerStatus.style.display = 'block';
+                
+                setTimeout(() => {
+                    powerStatus.style.display = 'none';
+                }, 2500);
+            }
+        }
+
+        // CONTROLE: Evento de Pulo (Barra de Espaço ou Seta para Cima)
+        document.addEventListener('keydown', (event) => {
+            if ((event.code === 'Space' || event.code === 'ArrowUp') && !isJumping && !isGameOver) {
                 executarPulo();
             }
         });
 
-        // Captura cliques ou toques na tela (para funcionar no celular ou mouse)
-        gameContainer.addEventListener('touchstart', function() {
-            if (!jumping && !gameOver) executarPulo();
-        });
-        gameContainer.addEventListener('mousedown', function() {
-            if (!jumping && !gameOver) executarPulo();
-        });
-
-        function executarPulo() {
-            jumping = true;
-            let altura = 0;
+        function ejecutarPulo() {
+            isJumping = true;
+            let p_bottom = 0;
             
             // Subindo...
-            let subir = setInterval(() => {
-                if (altura >= forcaDoPulo) {
-                    clearInterval(subir);
+            let upInterval = setInterval(() => {
+                if (p_bottom >= jumpHeight) {
+                    clearInterval(upInterval);
+                    
                     // Descendo...
-                    let descer = setInterval(() => {
-                        if (altura <= 0) {
-                            clearInterval(descer);
-                            altura = 0;
-                            jumping = false;
+                    let downInterval = setInterval(() => {
+                        if (p_bottom <= 0) {
+                            clearInterval(downInterval);
+                            p_bottom = 0;
+                            isJumping = false;
+                        } else {
+                            p_bottom -= 6;
                         }
-                        altura -= 6;
-                        player.style.bottom = altura + 'px';
-                    }, 12);
+                        player.style.bottom = p_bottom + 'px';
+                    }, 15);
+
+                } else {
+                    p_bottom += 6;
                 }
-                altura += 6;
-                player.style.bottom = altura + 'px';
-            }, 12);
+                player.style.bottom = p_bottom + 'px';
+            }, 15);
         }
 
-        // Loop principal do jogo (Executado frame a frame)
-        function loopPrincipal() {
-            if (gameOver) return;
-
-            // 1. Move o obstáculo
-            obstaclePosition += velocidadeObstaculo;
-            if (obstaclePosition > 840) {
-                obstaclePosition = -40; // Volta para o início
+        // ENGINE PRINCIPAL: Movimento do Obstáculo e Verificação de Batidas (Hitbox)
+        function gameEngine() {
+            if (!isGameOver) {
+                // Move o obstáculo da direita para a esquerda
+                obstaclePosition += obstacleSpeed;
                 
-                // Ganha pontos cada vez que desvia com sucesso de um obstáculo
-                score += 50; 
-                scoreDisplay.innerText = "Pontos: " + score;
-                gerenciarPoderesECores();
+                // Se sumir da tela à esquerda, reseta para a direita
+                if (obstaclePosition > 840) {
+                    obstaclePosition = -40;
+                }
+                obstacle.style.right = obstaclePosition + 'px';
+
+                // LÓGICA DE COLISÃO MATEMÁTICA
+                let playerBottom = parseInt(player.style.bottom) || 0;
+                // Converte a posição 'right' do obstáculo para o eixo X da esquerda
+                let obstacleLeft = 800 - obstaclePosition - 30; 
+
+                // Se o obstáculo atingir a área onde o jogador está (entre 50px e 100px da esquerda)
+                if (obstacleLeft < 100 && obstacleLeft > 50 && playerBottom < 50) {
+                    // Game Over detectado!
+                    isGameOver = true;
+                    finalScoreDisplay.innerText = "Pontos Finais: " + score;
+                    gameOverScreen.style.display = 'flex';
+                }
             }
-            obstacle.style.right = obstaclePosition + 'px';
+            
+            // Mantém o motor gráfico rodando de forma suave
+            requestAnimationFrame(gameEngine);
+        }
 
-            // 2. Sistema de detecção física de colisão (Hitbox)
-            let jogadorAltura = parseInt(player.style.bottom) || 0;
-            // Transforma a métrica 'right' do obstáculo para a distância da esquerda
-            let obstaculoDaEsquerda = 800 - obstaclePosition - 30;
-
-            // Verifica se as
+        // Inicia a checagem da engine gráfica do navegador
+        requestAnimationFrame(gameEngine);
+    </script>
+</body>
+</html>
