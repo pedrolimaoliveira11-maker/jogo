@@ -3,351 +3,317 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fuga na Favela: Grau vs Polícia 🏍️🚓</title>
+    <title>Fortune Tiger Tricolor Completo 🐯🇾🇪</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Impact', sans-serif;
+            font-family: 'Arial Black', Gadget, sans-serif;
         }
 
         body {
-            background: #111;
+            /* Fundo com o Escudo do São Paulo centralizado e nítido */
+            background-color: #120101;
+            background-image: 
+                linear-gradient(to bottom, rgba(20, 2, 2, 0.88), rgba(0, 0, 0, 0.92)),
+                url('https://upload.wikimedia.org/wikipedia/pt/4/4b/S%C3%A3o_Paulo_Futebol_Clube.svg');
+            background-size: 650px;
+            background-position: center 45%;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
+        }
+
+        .casino-container {
+            text-align: center;
+            background: linear-gradient(145deg, rgba(43, 4, 4, 0.95), rgba(17, 1, 1, 0.95));
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 0 35px #ff0000, inset 0 0 15px #ffffff;
+            border: 4px solid #cc0000;
+            max-width: 420px;
+            width: 100%;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .casino-container::before {
+            content: '🐯 FORTUNE TIGER 🇾🇪';
+            display: block;
+            font-size: 1.5rem;
+            color: #fff;
+            background: linear-gradient(90deg, #ff0000, #000000, #ff0000);
+            padding: 10px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            border: 2px solid #fff;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        /* Painel Superior de Informações */
+        .painel-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .painel-saldo {
+            flex: 2;
+            background-color: #000;
+            padding: 10px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            border: 2px solid #ffcc00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #saldo {
+            color: #ffcc00;
+            text-shadow: 0 0 8px #ffcc00;
+            font-weight: bold;
+        }
+
+        /* Botão de Adicionar Dinheiro / Recarregar */
+        .btn-recarregar {
+            flex: 1;
+            background: linear-gradient(180deg, #00ff66, #009933);
+            color: white;
+            border: 2px solid #fff;
+            padding: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0, 255, 102, 0.3);
+            text-shadow: 1px 1px 1px #000;
+        }
+
+        .btn-recarregar:active {
+            transform: scale(0.95);
+        }
+
+        /* Slots do Jogo */
+        .slots-box {
+            display: flex;
+            justify-content: space-between;
+            background: linear-gradient(180deg, #3a0000, #990000);
+            padding: 15px;
+            border-radius: 20px;
+            border: 5px solid #ffcc00;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+            margin-bottom: 20px;
+        }
+
+        .rolo {
+            width: 100px;
+            height: 120px;
+            background: #fff;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3.5rem;
+            border: 3px solid #333;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+            transition: transform 0.1s ease;
+        }
+
+        /* Animação de Giro */
+        .girando {
+            animation: rodarTigre 0.08s linear infinite;
+        }
+
+        @keyframes rodarTigre {
+            0% { transform: translateY(3px) filter: blur(3px); }
+            50% { transform: translateY(-3px) filter: blur(5px); }
+            100% { transform: translateY(3px) filter: blur(3px); }
+        }
+
+        /* Controles de Aposta */
+        .controles {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .botoes-aposta {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-ajuste {
+            background: #fff;
+            color: #000;
+            border: 2px solid #cc0000;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .btn-ajuste:active { transform: scale(0.9); }
+
+        input[type="number"] {
+            width: 110px;
+            padding: 8px;
+            border-radius: 10px;
+            border: 2px solid #ffcc00;
+            background-color: #000;
+            color: #fff;
+            text-align: center;
+            font-size: 1.3rem;
+            outline: none;
+        }
+
+        /* Botões Principais de Ação */
+        .area-botoes {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-girar {
+            flex: 2;
+            background: linear-gradient(180deg, #ffcc00, #ff6600);
+            color: white;
+            border: 3px solid #fff;
+            padding: 16px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 102, 0, 0.5);
+            text-shadow: 2px 2px 2px #000;
+        }
+
+        .btn-carta {
+            flex: 1;
+            background: linear-gradient(180deg, #ff0000, #8b0000);
+            color: white;
+            border: 3px solid #ffcc00;
+            padding: 16px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+            text-shadow: 1px 1px 1px #000;
+        }
+
+        .btn-girar:disabled, .btn-carta:disabled, .btn-recarregar:disabled {
+            background: #555 !important;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        #mensagem {
+            margin-top: 15px;
+            font-size: 1.1rem;
+            min-height: 25px;
+        }
+        
+        .perdeu { color: #ff3333; }
+
+        /* TELA DE GANHO GIGANTE (POP-UP MEIO DA TELA) */
+        .pop-up-ganho {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.88);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
             flex-direction: column;
         }
 
-        .game-wrapper {
-            position: relative;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 20px #ff3333;
-            border: 4px solid #222;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        canvas {
-            display: block;
-            background: #333;
-        }
-
-        .instrucoes {
-            color: #fff;
-            margin-top: 15px;
+        .conteudo-ganho {
+            background: linear-gradient(145deg, #ffd700, #ff8c00);
+            border: 5px solid #fff;
+            padding: 45px 30px;
+            border-radius: 30px;
             text-align: center;
-            font-size: 1.1rem;
-            letter-spacing: 1px;
-            text-shadow: 1px 1px 2px #000;
-            max-width: 800px;
-            line-height: 1.5;
+            box-shadow: 0 0 60px #ffcc00;
+            animation: surgir 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 90%;
+            width: 380px;
         }
 
-        .instrucoes span {
-            color: #ff3333;
+        @keyframes surgir {
+            0% { transform: scale(0.4); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
+
+        .conteudo-ganho h2 {
+            font-size: 2.3rem;
+            color: #fff;
+            text-shadow: 3px 3px 0px #ff0000, -2px -2px 0px #000;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .conteudo-ganho .premio {
+            font-size: 3.2rem;
+            color: #fff;
+            text-shadow: 2px 2px 12px #000;
+            background: #000;
+            padding: 12px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #fff;
+        }
+
+        .btn-fechar {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: 0.1s;
+        }
+
+        .btn-fechar:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 
-    <div class="game-wrapper">
-        <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div class="pop-up-ganho" id="popUpGanho">
+        <div class="conteudo-ganho">
+            <h2 id="tituloPopUp">🎉 MEGA WIN 🎉</h2>
+            <div class="premio" id="valorPopUp">R$ 0.00</div>
+            <button class="btn-fechar" onclick="fecharPopUp()">COLETAR REAIS 💰</button>
+        </div>
     </div>
 
-    <div class="instrucoes">
-        <span>W / S / A / D</span> ou <span>Setas</span> = Pilota a Moto | Segure <span>ESPAÇO</span> = Dá Grau!<br>
-        Acelere para fugir da <span>POLÍCIA (🚓)</span> e desvie dos <span>CARROS (🚗 / 🚕)</span>!
-    </div>
+    <div class="casino-container">
+        <div class="painel-topo">
+            <div class="painel-saldo">
+                💰 R$ <span id="saldo">100.00</span>
+            </div>
+            <button class="btn-recarregar" id="btnRecarregar" onclick="recarregarDinheiro()">+ SALDO 💸</button>
+        </div>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        // Estado do Jogo
-        let jogoAtivo = true;
-        let pontuacao = 0;
-        let velocidadeCenario = 5;
-        let contadorSirene = 0;
-        let motivoGameOver = ""; // "policia" ou "batida"
-
-        // Moto do Jogador
-        const moto = {
-            x: 220, // Começa um pouco mais para a frente para não bater direto na polícia
-            y: 340,
-            largura: 65,
-            altura: 40,
-            velocidade: 5.5,
-            estaEmpinando: false,
-            anguloGrau: 0
-        };
-
-        // Viatura da Polícia (Fica na retaguarda perseguindo)
-        const policia = {
-            x: 20,
-            y: 330,
-            largura: 80,
-            altura: 45
-        };
-
-        // Mapeamento de Teclas
-        const teclas = {
-            KeyW: false, ArrowUp: false,
-            KeyS: false, ArrowDown: false,
-            KeyA: false, ArrowLeft: false,
-            KeyD: false, ArrowRight: false,
-            Space: false
-        };
-
-        // Obstáculos (Agora inclui Carros e Caixas)
-        let obstaculos = [];
-        let tempoProximoObstaculo = 0;
-        const tiposObstaculos = ['🚗', '🚕', '📦', '🗑️'];
-
-        function loop() {
-            if (!jogoAtivo) {
-                desenharGameOver();
-                return;
-            }
-
-            atualizar();
-            desenhar();
-
-            requestAnimationFrame(loop);
-        }
-
-        function atualizar() {
-            pontuacao += moto.estaEmpinando ? 2 : 1;
-            velocidadeCenario = 5 + Math.floor(pontuacao / 700);
-            contadorSirene++;
-
-            // Movimentação da Polícia acompanha a pista suavemente para seguir a moto
-            policia.y += (moto.y - policia.y) * 0.06;
-
-            // --- MOVIMENTAÇÃO DA MOTO PELO TECLADO ---
-            if (teclas.KeyW || teclas.ArrowUp) {
-                if (moto.y > 300) moto.y -= moto.velocidade;
-            }
-            if (teclas.KeyS || teclas.ArrowDown) {
-                if (moto.y < 365) moto.y += moto.velocidade;
-            }
-            if (teclas.KeyA || teclas.ArrowLeft) {
-                if (moto.x > 10) moto.x -= moto.velocidade; // Permite recuar (Cuidado com a polícia!)
-            }
-            if (teclas.KeyD || teclas.ArrowRight) {
-                if (moto.x < canvas.width - 90) moto.x += moto.velocidade;
-            }
-
-            // Controle do Grau
-            if (teclas.Space) {
-                moto.estaEmpinando = true;
-                if (moto.anguloGrau < 0.55) moto.anguloGrau += 0.07;
-            } else {
-                moto.estaEmpinando = false;
-                if (moto.anguloGrau > 0) moto.anguloGrau -= 0.07;
-            }
-
-            // --- COLISÃO DA MOTO COM A POLÍCIA ---
-            // Se a moto recuar demais ou parar e tocar na viatura
-            if (moto.x < policia.x + policia.largura - 10 &&
-                moto.y < policia.y + policia.altura &&
-                moto.y + moto.altura > policia.y) {
-                motivoGameOver = "policia";
-                jogoAtivo = false;
-            }
-
-            // --- GERADOR DE TRÁFEGO (CARROS E OBSTÁCULOS) ---
-            tempoProximoObstaculo++;
-            if (tempoProximoObstaculo > Math.random() * 50 + 35) {
-                let ySorteado = 300 + Math.random() * 65;
-                let tipoSorteado = tiposObstaculos[Math.floor(Math.random() * tiposObstaculos.length)];
-                
-                // Carros andam mais rápido contra o cenário do que uma simples caixa parada
-                let velocidadePropria = (tipoSorteado === '🚗' || tipoSorteado === '🚕') ? 1.5 : 0;
-
-                obstaculos.push({
-                    x: canvas.width,
-                    y: ySorteado,
-                    largura: 45,
-                    altura: 35,
-                    tipo: tipoSorteado,
-                    velX: velocidadeCenario + velocidadePropria
-                });
-                tempoProximoObstaculo = 0;
-            }
-
-            // Movimentação e colisão de obstáculos
-            for (let i = obstaculos.length - 1; i >= 0; i--) {
-                obstaculos[i].x -= obstaculos[i].velX;
-
-                // Hitbox ajustada para os Carros e Moto
-                let motoHitX = moto.x + 10;
-                let motoHitY = moto.y + 5;
-
-                if (
-                    motoHitX < obstaculos[i].x + obstaculos[i].largura &&
-                    motoHitX + (moto.largura - 15) > obstaculos[i].x &&
-                    motoHitY < obstaculos[i].y + obstaculos[i].altura &&
-                    motoHitY + (moto.altura - 10) > obstaculos[i].y
-                ) {
-                    motivoGameOver = "batida";
-                    jogoAtivo = false; // Bateu no trânsito!
-                }
-
-                if (obstaculos[i].x + 50 < 0) {
-                    obstaculos.splice(i, 1);
-                }
-            }
-        }
-
-        function desenhar() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // 1. CÉU NOTURNO DA QUEBRADA
-            let gradienteCeu = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradienteCeu.addColorStop(0, '#0a0a1a');
-            gradienteCeu.addColorStop(1, '#1a0505');
-            ctx.fillStyle = gradienteCeu;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // 2. GIROFLEX DA POLÍCIA (Efeito de luz piscante de fundo na tela inteira)
-            if (Math.floor(contadorSirene / 7) % 2 === 0) {
-                ctx.fillStyle = 'rgba(0, 0, 255, 0.08)';
-            } else {
-                ctx.fillStyle = 'rgba(255, 0, 0, 0.08)';
-            }
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // 3. MORRO DA FAVELA (Silhueta escura com luzes)
-            ctx.fillStyle = '#1c1414';
-            for (let i = 0; i < canvas.width; i += 40) {
-                let h = 140 + Math.sin(i + (pontuacao * 0.005)) * 40;
-                ctx.fillRect(i, 300 - h, 35, h);
-            }
-            ctx.fillStyle = '#0f0a0a';
-            for (let i = -20; i < canvas.width; i += 50) {
-                let h = 110 + Math.cos(i + (pontuacao * 0.01)) * 30;
-                ctx.fillRect(i, 300 - h, 45, h);
-                // Janelas brilhando na noite
-                ctx.fillStyle = Math.random() > 0.1 ? '#ffcc00' : '#888';
-                ctx.fillRect(i + 15, 300 - h + 40, 8, 8);
-                ctx.fillStyle = '#0f0a0a';
-            }
-
-            // 4. PISTA / ASFALTO
-            ctx.fillStyle = '#222';
-            ctx.fillRect(0, 300, canvas.width, 100);
-            
-            ctx.fillStyle = '#fff'; // Linhas brancas da avenida estourada
-            let deslocamentoLinha = (pontuacao * velocidadeCenario) % 100;
-            for (let i = -deslocamentoLinha; i < canvas.width; i += 100) {
-                ctx.fillRect(i, 345, 35, 4);
-            }
-
-            // 5. RENDERIZAR OBSTÁCULOS (CARROS E CAIXAS)
-            ctx.font = "34px Arial";
-            obstaculos.forEach(obs => {
-                ctx.fillText(obs.tipo, obs.x, obs.y + 25);
-            });
-
-            // 6. RENDERIZAR A POLÍCIA ATRÁS
-            ctx.save();
-            ctx.translate(policia.x, policia.y);
-            ctx.font = "48px Arial";
-            ctx.scale(-1, 1); // Vira a polícia para a direita
-            ctx.fillText("Receba!", -policia.largura, 35);
-            ctx.fillText("危害", -policia.largura, 35); // Apenas preenchimento interno oculto do emoji
-            ctx.fillText("模", -policia.largura, 35);
-            ctx.fillText("破坏", -policia.largura, 35);
-            ctx.fillText("🚓", -policia.largura, 35);
-            ctx.restore();
-
-            // Luz do giroflex em cima do carro da polícia
-            ctx.fillStyle = (Math.floor(contadorSirene / 4) % 2 === 0) ? '#ff0000' : '#0000ff';
-            ctx.beginPath();
-            ctx.arc(policia.x + 45, policia.y, 12, 0, Math.PI * 2);
-            ctx.fill();
-
-            // 7. RENDERIZAR A MOTO DO JOGADOR
-            ctx.save();
-            ctx.translate(moto.x + 15, moto.y + 15); 
-            ctx.rotate(-moto.anguloGrau);
-            ctx.font = "45px Arial";
-            ctx.scale(-1, 1); 
-            ctx.fillText("🏍️", -35, 15);
-            ctx.restore();
-
-            // 8. PLACAR HUD
-            ctx.fillStyle = '#fff';
-            ctx.font = '22px Impact';
-            ctx.fillText(`FUGA: ${Math.floor(pontuacao)}m`, 20, 35);
-            ctx.fillStyle = '#ff3333';
-            ctx.fillText(`🚨 POLÍCIA NA COLA`, 20, 65);
-            if (moto.estaEmpinando) {
-                ctx.fillStyle = '#ffcc00';
-                ctx.fillText(`+ NO GRAU DE FUGA! 🔥`, 20, 95);
-            }
-        }
-
-        function desenharGameOver() {
-            ctx.fillStyle = 'rgba(0,0,0,0.9)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.textAlign = 'center';
-            
-            if (motivoGameOver === "policia") {
-                ctx.fillStyle = '#3366ff';
-                ctx.font = '45px Impact';
-                ctx.fillText('PERDEU A MOTO! ENQUADRADO! 🚓⚠️', canvas.width / 2, canvas.height / 2 - 20);
-                ctx.fillStyle = '#fff';
-                ctx.font = '20px Arial';
-                ctx.fillText('A polícia colou na sua traseira e te levou pro pátio.', canvas.width / 2, canvas.height / 2 + 15);
-            } else {
-                ctx.fillStyle = '#ff3333';
-                ctx.font = '45px Impact';
-                ctx.fillText('💥 CHICOTEOU NO CARRO! 💥', canvas.width / 2, canvas.height / 2 - 20);
-                ctx.fillStyle = '#fff';
-                ctx.font = '20px Arial';
-                ctx.fillText('Você colidiu em alta velocidade contra o trânsito.', canvas.width / 2, canvas.height / 2 + 15);
-            }
-
-            ctx.fillStyle = '#ffcc00';
-            ctx.font = '24px Impact';
-            ctx.fillText(`Distância da fuga: ${Math.floor(pontuacao)} metros`, canvas.width / 2, canvas.height / 2 + 55);
-            
-            ctx.fillStyle = '#fff';
-            ctx.font = '20px Impact';
-            ctx.fillText('Pressione ESPAÇO para ligar a moto de novo', canvas.width / 2, canvas.height / 2 + 95);
-        }
-
-        // --- SISTEMA DE ENTRADAS ---
-        window.addEventListener('keydown', e => {
-            if (e.code in teclas) {
-                teclas[e.code] = true;
-                if (e.code === 'Space' && !jogoAtivo) {
-                    // Reiniciar jogo do zero
-                    moto.x = 220;
-                    moto.y = 340;
-                    moto.anguloGrau = 0;
-                    policia.y = 330;
-                    obstaculos = [];
-                    pontuacao = 0;
-                    jogoAtivo = true;
-                    ctx.textAlign = 'left';
-                    loop();
-                }
-            }
-        });
-
-        window.addEventListener('keyup', e => {
-            if (e.code in teclas) {
-                teclas[e.code] = false;
-            }
-        });
-
-        loop();
-    </script>
-</body>
-</html>
+        <div class="slots-box">
+            <div class="rolo" id="rolo1">🐯</div>
+            <div class
