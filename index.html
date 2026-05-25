@@ -19,6 +19,8 @@
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            /* Impede que o clique duplo selecione textos na tela */
+            user-select: none; 
         }
 
         /* ÁREA PRINCIPAL DO JOGO */
@@ -34,6 +36,7 @@
             border: 4px solid #fff;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            cursor: pointer; /* Transforma o mouse em uma mãozinha indicando clique */
         }
 
         /* TELA DE LOGIN (Fica por cima de tudo no início) */
@@ -51,6 +54,7 @@
             z-index: 100;
             color: white;
             transition: all 0.5s ease;
+            cursor: default;
         }
 
         .login-box {
@@ -182,6 +186,7 @@
             color: white;
             display: none;
             z-index: 50;
+            cursor: default;
         }
 
         #game-over h2 {
@@ -235,172 +240,3 @@
         
         <div id="player" style="bottom: 0px;"></div>
         <div id="obstacle"></div>
-
-        <div id="game-over">
-            <h2>FIM DE JOGO</h2>
-            <p id="final-score">Pontos: 0</p>
-            <button id="btn-restart">Jogar Novamente</button>
-        </div>
-
-    </div>
-
-    <script>
-        // Elementos da Tela
-        const loginScreen = document.getElementById('login-screen');
-        const player = document.getElementById('player');
-        const obstacle = document.getElementById('obstacle');
-        const scoreDisplay = document.getElementById('score-display');
-        const powerStatus = document.getElementById('power-status');
-        const gameOverScreen = document.getElementById('game-over');
-        const finalScoreDisplay = document.getElementById('final-score');
-        
-        // Botões
-        const btnLogin = document.getElementById('btn-login');
-        const btnRestart = document.getElementById('btn-restart');
-
-        // Mecânicas do Jogo
-        let score = 0;
-        let isJumping = false;
-        let isGameOver = true; // Começa travado até fazer o login
-        let obstaclePosition = -40;
-
-        // Configurações Iniciais de Física e Velocidade
-        let jumpHeight = 140;     
-        let obstacleSpeed = 7;    
-        let currentLevel = 0;
-
-        // Cores do São Paulo que mudam a cada 200 pontos (Vermelho, Branco, Preto, Dourado)
-        const coresSpfc = ["#FF0000", "#FFFFFF", "#000000", "#FFD700"]; 
-
-        // EVENTO 1: Ação de clicar no botão de Login do Google
-        btnLogin.addEventListener('click', () => {
-            loginScreen.style.display = 'none'; // Esconde a tela de login
-            initGame(); // Inicia o jogo
-        });
-
-        // EVENTO 2: Reiniciar o jogo no Game Over
-        btnRestart.addEventListener('click', () => {
-            initGame();
-        });
-
-        // Inicializador do Estado do Jogo
-        function initGame() {
-            score = 0;
-            currentLevel = 0;
-            jumpHeight = 140;
-            obstacleSpeed = 7;
-            obstaclePosition = -40;
-            isGameOver = false;
-            isJumping = false;
-            
-            player.style.backgroundColor = coresSpfc[0];
-            player.style.bottom = "0px";
-            powerStatus.style.display = 'none';
-            gameOverScreen.style.display = 'none';
-            scoreDisplay.innerText = "Pontos: 0";
-        }
-
-        // Sistema de loop de Pontos (Sobe de 10 em 10)
-        setInterval(() => {
-            if (!isGameOver) {
-                score += 10;
-                scoreDisplay.innerText = "Pontos: " + score;
-                testarEvolucaoPoderes();
-            }
-        }, 150);
-
-        // MECÂNICA: Troca de cor e upgrade de poderes a cada 200 pontos
-        function testarEvolucaoPoderes() {
-            let passoAtual = Math.floor(score / 200);
-
-            if (passoAtual > currentLevel) {
-                currentLevel = passoAtual;
-                
-                // 1. Troca a cor baseado nas cores do São Paulo
-                let indexCor = currentLevel % coresSpfc.length;
-                player.style.backgroundColor = coresSpfc[indexCor];
-
-                // 2. Aplica os Superpoderes (Pula mais alto / Corre mais rápido)
-                jumpHeight = 140 + (currentLevel * 25); 
-                obstacleSpeed = 7 + (currentLevel * 2.5); 
-
-                // 3. Mostra o Alerta visual do Poder na tela
-                powerStatus.innerText = `⚡ PODER NÍVEL ${currentLevel}! CORRIDA + ALTO PULO`;
-                powerStatus.style.display = 'block';
-                
-                setTimeout(() => {
-                    powerStatus.style.display = 'none';
-                }, 2500);
-            }
-        }
-
-        // CONTROLE: Evento de Pulo (Barra de Espaço ou Seta para Cima)
-        document.addEventListener('keydown', (event) => {
-            if ((event.code === 'Space' || event.code === 'ArrowUp') && !isJumping && !isGameOver) {
-                executarPulo();
-            }
-        });
-
-        function ejecutarPulo() {
-            isJumping = true;
-            let p_bottom = 0;
-            
-            // Subindo...
-            let upInterval = setInterval(() => {
-                if (p_bottom >= jumpHeight) {
-                    clearInterval(upInterval);
-                    
-                    // Descendo...
-                    let downInterval = setInterval(() => {
-                        if (p_bottom <= 0) {
-                            clearInterval(downInterval);
-                            p_bottom = 0;
-                            isJumping = false;
-                        } else {
-                            p_bottom -= 6;
-                        }
-                        player.style.bottom = p_bottom + 'px';
-                    }, 15);
-
-                } else {
-                    p_bottom += 6;
-                }
-                player.style.bottom = p_bottom + 'px';
-            }, 15);
-        }
-
-        // ENGINE PRINCIPAL: Movimento do Obstáculo e Verificação de Batidas (Hitbox)
-        function gameEngine() {
-            if (!isGameOver) {
-                // Move o obstáculo da direita para a esquerda
-                obstaclePosition += obstacleSpeed;
-                
-                // Se sumir da tela à esquerda, reseta para a direita
-                if (obstaclePosition > 840) {
-                    obstaclePosition = -40;
-                }
-                obstacle.style.right = obstaclePosition + 'px';
-
-                // LÓGICA DE COLISÃO MATEMÁTICA
-                let playerBottom = parseInt(player.style.bottom) || 0;
-                // Converte a posição 'right' do obstáculo para o eixo X da esquerda
-                let obstacleLeft = 800 - obstaclePosition - 30; 
-
-                // Se o obstáculo atingir a área onde o jogador está (entre 50px e 100px da esquerda)
-                if (obstacleLeft < 100 && obstacleLeft > 50 && playerBottom < 50) {
-                    // Game Over detectado!
-                    isGameOver = true;
-                    finalScoreDisplay.innerText = "Pontos Finais: " + score;
-                    gameOverScreen.style.display = 'flex';
-                }
-            }
-            
-            // Mantém o motor gráfico rodando de forma suave
-            requestAnimationFrame(gameEngine);
-        }
-
-        // Inicia a checagem da engine gráfica do navegador
-        requestAnimationFrame(gameEngine);
-    </script>
-</body>
-</html>
