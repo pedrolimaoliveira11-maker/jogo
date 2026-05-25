@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>São Paulo Obstacle Runner - Pulo no Espaço</title>
+    <title>São Paulo Obstacle Runner - Tela Cheia</title>
     <style>
         * {
             margin: 0;
@@ -18,70 +18,82 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
             user-select: none; 
         }
 
-        /* ÁREA PRINCIPAL DO JOGO */
+        /* ÁREA DO JOGO EM TELA CHEIA */
         #game-container {
             position: relative;
-            width: 800px;
-            height: 400px;
+            width: 100vw;
+            height: 100vh;
             /* Foto de fundo do São Paulo FC (Estádio do MorumBIS) */
-            background-image: url('https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?q=80&w=800&auto=format&fit=crop'); 
+            background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?q=80&w=1200&auto=format&fit=crop'); 
             background-size: cover;
             background-position: center;
             overflow: hidden;
-            border: 4px solid #fff;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
         }
 
         /* ELEMENTOS DO JOGO */
         #player {
             position: absolute;
             bottom: 0;
-            left: 50px;
-            width: 50px;
-            height: 60px;
+            left: 10%; /* Posicionado a 10% da lateral da tela */
+            width: 60px;
+            height: 80px;
             background-color: #FF0000; /* Cor Inicial: Vermelho */
             border: 3px solid #FFF;
-            border-radius: 5px;
+            border-radius: 8px;
+            z-index: 2;
         }
 
         #obstacle {
             position: absolute;
             bottom: 0;
-            right: -40px;
-            width: 30px;
-            height: 50px;
+            right: -60px;
+            width: 40px;
+            height: 65px;
             background-color: #000000;
             border: 2px solid #FFF;
-            border-radius: 3px;
+            border-radius: 5px;
+            z-index: 2;
+        }
+
+        /* CHÃO DO JOGO */
+        #floor {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: rgba(255, 255, 255, 0.5);
+            z-index: 1;
         }
 
         /* PLACAR E ALERTAS */
         #ui-layer {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
+            top: 25px;
+            left: 25px;
+            right: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             color: white;
-            font-size: 22px;
+            font-size: 28px;
             font-weight: bold;
-            text-shadow: 2px 2px 4px #000;
+            text-shadow: 3px 3px 6px #000;
             pointer-events: none;
+            z-index: 10;
         }
 
         #power-status {
-            background: rgba(255, 0, 0, 0.85);
-            padding: 6px 18px;
-            border-radius: 20px;
+            background: rgba(255, 0, 0, 0.9);
+            padding: 8px 24px;
+            border-radius: 30px;
             border: 2px solid #fff;
-            font-size: 16px;
+            font-size: 20px;
             display: none;
             animation: piscar 0.5s infinite alternate;
         }
@@ -109,26 +121,26 @@
         }
 
         #game-over h2 {
-            font-size: 45px;
+            font-size: 60px;
             color: #FF0000;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 5px #000;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px #000;
         }
 
         #game-over p {
-            font-size: 20px;
-            margin-bottom: 20px;
+            font-size: 26px;
+            margin-bottom: 30px;
         }
 
         #game-over button {
-            padding: 12px 25px;
-            font-size: 18px;
+            padding: 15px 35px;
+            font-size: 22px;
             font-weight: bold;
             cursor: pointer;
             background: #FF0000;
             color: white;
             border: 2px solid white;
-            border-radius: 5px;
+            border-radius: 8px;
             transition: 0.2s;
         }
 
@@ -146,6 +158,8 @@
             <div id="power-status">⚡ SUPER PODER ATIVADO!</div>
         </div>
         
+        <div id="floor"></div>
+
         <div id="player" style="bottom: 0px;"></div>
         <div id="obstacle"></div>
 
@@ -159,6 +173,7 @@
 
     <script>
         // Elementos da Tela
+        const gameContainer = document.getElementById('game-container');
         const player = document.getElementById('player');
         const obstacle = document.getElementById('obstacle');
         const scoreDisplay = document.getElementById('score-display');
@@ -171,11 +186,11 @@
         let score = 0;
         let isJumping = false;
         let isGameOver = false; 
-        let obstaclePosition = -40;
+        let obstaclePosition = -60;
 
         // Configurações Iniciais de Física e Velocidade
-        let jumpHeight = 140;     
-        let obstacleSpeed = 7;    
+        let jumpHeight = 180; // Ajustado levemente para combinar com a proporção da tela cheia    
+        let obstacleSpeed = 9;    
         let currentLevel = 0;
 
         // Cores do São Paulo (Muda a cada 200 pontos)
@@ -190,9 +205,9 @@
         function initGame() {
             score = 0;
             currentLevel = 0;
-            jumpHeight = 140;
-            obstacleSpeed = 7;
-            obstaclePosition = -40;
+            jumpHeight = 180;
+            obstacleSpeed = 9;
+            obstaclePosition = -60;
             isGameOver = false;
             isJumping = false;
             
@@ -224,8 +239,8 @@
                 player.style.backgroundColor = coresSpfc[indexCor];
 
                 // 2. Aplica os Superpoderes (Pula mais alto / Jogo fica mais rápido)
-                jumpHeight = 140 + (currentLevel * 25); 
-                obstacleSpeed = 7 + (currentLevel * 2.5); 
+                jumpHeight = 180 + (currentLevel * 30); 
+                obstacleSpeed = 9 + (currentLevel * 3); 
 
                 // 3. Alerta na tela
                 powerStatus.innerText = `⚡ PODER NÍVEL ${currentLevel}! CORRIDA + ALTO PULO`;
@@ -239,13 +254,12 @@
 
         /* --- CONTROLE DE PULO EXCLUSIVO NO ESPAÇO --- */
         document.addEventListener('keydown', (event) => {
-            // Verifica apenas se a tecla pressionada é o Espaço ("Space")
             if (event.code === 'Space' && !isJumping && !isGameOver) {
                 executarPulo();
             }
         });
 
-        function executarPulo() {
+        function ejecutarPulo() {
             isJumping = true;
             let p_bottom = 0;
             
@@ -261,33 +275,38 @@
                             p_bottom = 0;
                             isJumping = false;
                         } else {
-                            p_bottom -= 6;
+                            p_bottom -= 8;
                         }
                         player.style.bottom = p_bottom + 'px';
                     }, 15);
 
                 } else {
-                    p_bottom += 6;
+                    p_bottom += 8;
                 }
                 player.style.bottom = p_bottom + 'px';
             }, 15);
         }
 
-        // ENGINE PRINCIPAL: Movimento e Verificação de Colisões
+        // ENGINE PRINCIPAL: Movimento e Verificação de Colisões (Adaptada para Tela Cheia)
         function gameEngine() {
             if (!isGameOver) {
                 obstaclePosition += obstacleSpeed;
                 
-                if (obstaclePosition > 840) {
-                    obstaclePosition = -40;
+                // Se o obstáculo passar do limite esquerdo da tela, reseta ele para a direita
+                if (obstaclePosition > (window.innerWidth + 60)) {
+                    obstaclePosition = -60;
                 }
                 obstacle.style.right = obstaclePosition + 'px';
 
-                let playerBottom = parseInt(player.style.bottom) || 0;
-                let obstacleLeft = 800 - obstaclePosition - 30; 
+                // Lógica de colisão baseada na posição exata da tela em pixels
+                let playerBounds = player.getBoundingClientRect();
+                let obstacleBounds = obstacle.getBoundingClientRect();
 
-                // Detecção de colisão
-                if (obstacleLeft < 100 && obstacleLeft > 50 && playerBottom < 50) {
+                if (
+                    playerBounds.right > obstacleBounds.left &&
+                    playerBounds.left < obstacleBounds.right &&
+                    playerBounds.bottom > obstacleBounds.top
+                ) {
                     isGameOver = true;
                     finalScoreDisplay.innerText = "Pontos Finais: " + score;
                     gameOverScreen.style.display = 'flex';
