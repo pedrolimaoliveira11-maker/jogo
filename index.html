@@ -3,317 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fortune Tiger Tricolor Completo 🐯🇾🇪</title>
+    <title>Minha Máquina de Prêmios</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial Black', Gadget, sans-serif;
-        }
-
         body {
-            /* Fundo com o Escudo do São Paulo centralizado e nítido */
-            background-color: #120101;
-            background-image: 
-                linear-gradient(to bottom, rgba(20, 2, 2, 0.88), rgba(0, 0, 0, 0.92)),
-                url('https://upload.wikimedia.org/wikipedia/pt/4/4b/S%C3%A3o_Paulo_Futebol_Clube.svg');
-            background-size: 650px;
-            background-position: center 45%;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
-        .casino-container {
-            text-align: center;
-            background: linear-gradient(145deg, rgba(43, 4, 4, 0.95), rgba(17, 1, 1, 0.95));
-            padding: 25px;
-            border-radius: 30px;
-            box-shadow: 0 0 35px #ff0000, inset 0 0 15px #ffffff;
-            border: 4px solid #cc0000;
-            max-width: 420px;
-            width: 100%;
-            position: relative;
-            backdrop-filter: blur(5px);
-        }
-
-        .casino-container::before {
-            content: '🐯 FORTUNE TIGER 🇾🇪';
-            display: block;
-            font-size: 1.5rem;
-            color: #fff;
-            background: linear-gradient(90deg, #ff0000, #000000, #ff0000);
-            padding: 10px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            border: 2px solid #fff;
-            text-shadow: 2px 2px 0px #000;
-        }
-
-        /* Painel Superior de Informações */
-        .painel-topo {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            gap: 10px;
-        }
-
-        .painel-saldo {
-            flex: 2;
-            background-color: #000;
-            padding: 10px;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            border: 2px solid #ffcc00;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-        }
-
-        #saldo {
-            color: #ffcc00;
-            text-shadow: 0 0 8px #ffcc00;
-            font-weight: bold;
-        }
-
-        /* Botão de Adicionar Dinheiro / Recarregar */
-        .btn-recarregar {
-            flex: 1;
-            background: linear-gradient(180deg, #00ff66, #009933);
+            background-color: #222;
             color: white;
-            border: 2px solid #fff;
-            padding: 10px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 3px 10px rgba(0, 255, 102, 0.3);
-            text-shadow: 1px 1px 1px #000;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
         }
-
-        .btn-recarregar:active {
-            transform: scale(0.95);
-        }
-
-        /* Slots do Jogo */
-        .slots-box {
-            display: flex;
-            justify-content: space-between;
-            background: linear-gradient(180deg, #3a0000, #990000);
-            padding: 15px;
-            border-radius: 20px;
+        /* Estilo do botão que parece uma alavanca/painel */
+        .caixa-jogo {
+            background-color: #333;
             border: 5px solid #ffcc00;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-            margin-bottom: 20px;
-        }
-
-        .rolo {
-            width: 100px;
-            height: 120px;
-            background: #fff;
             border-radius: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3.5rem;
-            border: 3px solid #333;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
-            transition: transform 0.1s ease;
+            display: inline-block;
+            padding: 30px;
+            box-shadow: 0px 0px 20px #ffcc00;
         }
-
-        /* Animação de Giro */
-        .girando {
-            animation: rodarTigre 0.08s linear infinite;
-        }
-
-        @keyframes rodarTigre {
-            0% { transform: translateY(3px) filter: blur(3px); }
-            50% { transform: translateY(-3px) filter: blur(5px); }
-            100% { transform: translateY(3px) filter: blur(3px); }
-        }
-
-        /* Controles de Aposta */
-        .controles {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .botoes-aposta {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-ajuste {
-            background: #fff;
-            color: #000;
-            border: 2px solid #cc0000;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            font-size: 1.4rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-
-        .btn-ajuste:active { transform: scale(0.9); }
-
-        input[type="number"] {
-            width: 110px;
-            padding: 8px;
-            border-radius: 10px;
-            border: 2px solid #ffcc00;
-            background-color: #000;
-            color: #fff;
-            text-align: center;
-            font-size: 1.3rem;
-            outline: none;
-        }
-
-        /* Botões Principais de Ação */
-        .area-botoes {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-girar {
-            flex: 2;
-            background: linear-gradient(180deg, #ffcc00, #ff6600);
+        .botao-alavanca {
+            background-color: #ff3333;
             color: white;
-            border: 3px solid #fff;
-            padding: 16px;
-            font-size: 1.5rem;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 102, 0, 0.5);
-            text-shadow: 2px 2px 2px #000;
-        }
-
-        .btn-carta {
-            flex: 1;
-            background: linear-gradient(180deg, #ff0000, #8b0000);
-            color: white;
-            border: 3px solid #ffcc00;
-            padding: 16px;
-            font-size: 1.1rem;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
-            text-shadow: 1px 1px 1px #000;
-        }
-
-        .btn-girar:disabled, .btn-carta:disabled, .btn-recarregar:disabled {
-            background: #555 !important;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-
-        #mensagem {
-            margin-top: 15px;
-            font-size: 1.1rem;
-            min-height: 25px;
-        }
-        
-        .perdeu { color: #ff3333; }
-
-        /* TELA DE GANHO GIGANTE (POP-UP MEIO DA TELA) */
-        .pop-up-ganho {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.88);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .conteudo-ganho {
-            background: linear-gradient(145deg, #ffd700, #ff8c00);
-            border: 5px solid #fff;
-            padding: 45px 30px;
-            border-radius: 30px;
-            text-align: center;
-            box-shadow: 0 0 60px #ffcc00;
-            animation: surgir 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            max-width: 90%;
-            width: 380px;
-        }
-
-        @keyframes surgir {
-            0% { transform: scale(0.4); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .conteudo-ganho h2 {
-            font-size: 2.3rem;
-            color: #fff;
-            text-shadow: 3px 3px 0px #ff0000, -2px -2px 0px #000;
-            margin-bottom: 15px;
-            letter-spacing: 1px;
-        }
-
-        .conteudo-ganho .premio {
-            font-size: 3.2rem;
-            color: #fff;
-            text-shadow: 2px 2px 12px #000;
-            background: #000;
-            padding: 12px;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            border: 2px solid #fff;
-        }
-
-        .btn-fechar {
-            background: #fff;
-            color: #000;
             border: none;
-            padding: 14px 40px;
-            font-size: 1.3rem;
+            padding: 15px 30px;
+            font-size: 20px;
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0px 8px #990000;
             transition: 0.1s;
         }
-
-        .btn-fechar:active { transform: scale(0.95); }
+        /* Efeito de clique (botão afundando) */
+        .botao-alavanca:active {
+            box-shadow: 0px 2px #990000;
+            transform: translateY(6px);
+        }
+        #resultado {
+            font-size: 24px;
+            margin-top: 20px;
+            color: #ffcc00;
+            height: 30px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="pop-up-ganho" id="popUpGanho">
-        <div class="conteudo-ganho">
-            <h2 id="tituloPopUp">🎉 MEGA WIN 🎉</h2>
-            <div class="premio" id="valorPopUp">R$ 0.00</div>
-            <button class="btn-fechar" onclick="fecharPopUp()">COLETAR REAIS 💰</button>
-        </div>
+    <div class="caixa-jogo">
+        <h1>Sorteio da Sorte!</h1>
+        <p>Clique no botão para girar a alavanca</p>
+        
+        <button class="botao-alavanca" onclick="puxarAlavanca()">Puxar Alavanca! 🕹️</button>
+        
+        <div id="resultado"></div>
     </div>
 
-    <div class="casino-container">
-        <div class="painel-topo">
-            <div class="painel-saldo">
-                💰 R$ <span id="saldo">100.00</span>
-            </div>
-            <button class="btn-recarregar" id="btnRecarregar" onclick="recarregarDinheiro()">+ SALDO 💸</button>
-        </div>
+    <script>
+        // Lista de prêmios do seu jogo
+        const premios = [
+            "💎 100 Diamantes!",
+            "⚔️ Espada Lendária",
+            "🛡️ Escudo de Bronze",
+            "💥 Super Poder por 1 minuto",
+            "❌ Tente Novamente!"
+        ];
 
-        <div class="slots-box">
-            <div class="rolo" id="rolo1">🐯</div>
-            <div class
+        function puxarAlavanca() {
+            const displayResultado = document.getElementById("resultado");
+            
+            // Efeito de "carregando/girando"
+            displayResultado.innerText = "Girando... 🎰";
+            
+            // Espera 1 segundo para dar suspense e mostra o resultado
+            setTimeout(() => {
+                const numeroAleatorio = Math.floor(Math.random() * premios.length);
+                const premioGanho = premios[numeroAleatorio];
+                displayResultado.innerText = premioGanho;
+            }, 1000);
+        }
+    </script>
+
+</body>
+</html>
