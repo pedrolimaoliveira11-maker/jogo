@@ -3,84 +3,320 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Máquina de Prêmios</title>
+    <title>Cyber Jump - Tela Cheia</title>
     <style>
-        body {
-            background-color: #222;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 50px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-shadow: border-box;
+            user-select: none;
         }
-        /* Estilo do botão que parece uma alavanca/painel */
-        .caixa-jogo {
-            background-color: #333;
-            border: 5px solid #ffcc00;
-            border-radius: 15px;
-            display: inline-block;
-            padding: 30px;
-            box-shadow: 0px 0px 20px #ffcc00;
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0d0e15;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .botao-alavanca {
-            background-color: #ff3333;
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        /* Telas de Menu e Game Over */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(13, 14, 21, 0.85);
+            color: #fff;
+            z-index: 10;
+            transition: opacity 0.3s ease;
+        }
+        .escondido {
+            opacity: 0;
+            pointer-events: none;
+        }
+        h1 {
+            font-size: 4rem;
+            color: #00ffcc;
+            text-shadow: 0 0 20px #00ffcc;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+        p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #a0a5c0;
+        }
+        .btn {
+            background: linear-gradient(45deg, #ff007f, #7f00ff);
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 20px;
+            padding: 15px 40px;
+            font-size: 1.5rem;
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0px 8px #990000;
-            transition: 0.1s;
+            box-shadow: 0 0 15px #ff007f;
+            transition: transform 0.1s, box-shadow 0.2s;
         }
-        /* Efeito de clique (botão afundando) */
-        .botao-alavanca:active {
-            box-shadow: 0px 2px #990000;
-            transform: translateY(6px);
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px #7f00ff;
         }
-        #resultado {
-            font-size: 24px;
-            margin-top: 20px;
-            color: #ffcc00;
-            height: 30px;
+        .btn:active {
+            transform: scale(0.98);
         }
+        /* Placar no topo */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: monospace;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .score-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        #score { color: #00ffcc; }
+        #highscore { color: #ff007f; }
     </style>
 </head>
 <body>
 
-    <div class="caixa-jogo">
-        <h1>Sorteio da Sorte!</h1>
-        <p>Clique no botão para girar a alavanca</p>
-        
-        <button class="botao-alavanca" onclick="puxarAlavanca()">Puxar Alavanca! 🕹️</button>
-        
-        <div id="resultado"></div>
+    <div id="hud">
+        <div class="score-box">SCORE: <span id="score">0</span></div>
+        <div class="score-box">HI-SCORE: <span id="highscore">0</span></div>
     </div>
 
+    <div id="menu-inicial" class="overlay">
+        <h1>Cyber Jump</h1>
+        <p>Pule os blocos de energia para sobreviver!</p>
+        <button class="btn" onclick="iniciarJogo()">JOGAR (Espaço)</button>
+    </div>
+
+    <div id="tela-gameover" class="overlay escondido">
+        <h1 style="color: #ff007f; text-shadow: 0 0 20px #ff007f;">Game Over</h1>
+        <p id="pontuacao-final">Você fez 0 pontos</p>
+        <button class="btn" onclick="reiniciarJogo()">TENTAR DE NOVO</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
     <script>
-        // Lista de prêmios do seu jogo
-        const premios = [
-            "💎 100 Diamantes!",
-            "⚔️ Espada Lendária",
-            "🛡️ Escudo de Bronze",
-            "💥 Super Poder por 1 minuto",
-            "❌ Tente Novamente!"
-        ];
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-        function puxarAlavanca() {
-            const displayResultado = document.getElementById("resultado");
-            
-            // Efeito de "carregando/girando"
-            displayResultado.innerText = "Girando... 🎰";
-            
-            // Espera 1 segundo para dar suspense e mostra o resultado
-            setTimeout(() => {
-                const numeroAleatorio = Math.floor(Math.random() * premios.length);
-                const premioGanho = premios[numeroAleatorio];
-                displayResultado.innerText = premioGanho;
-            }, 1000);
+        // Elementos da Interface
+        const menuInicial = document.getElementById("menu-inicial");
+        const telaGameOver = document.getElementById("tela-gameover");
+        const txtScore = document.getElementById("score");
+        const txtHighScore = document.getElementById("highscore");
+        const txtFinalScore = document.getElementById("pontuacao-final");
+
+        // Ajustar tamanho do Canvas para Tela Cheia
+        function ajustarTela() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
-    </script>
+        window.addEventListener("resize", ajustarTela);
+        ajustarTela();
 
+        // Estado do Jogo
+        let jogoRodando = false;
+        let score = 0;
+        let highscore = localStorage.getItem("highscore") || 0;
+        txtHighScore.innerText = highscore;
+
+        let velocidadeMundo = 6;
+        const gravidade = 1.2;
+
+        // Objeto do Jogador (Cubo)
+        const jogador = {
+            x: 100,
+            y: 0,
+            largura: 50,
+            altura: 50,
+            velocidadeY: 0,
+            forcaPulo: -22,
+            noChao: false,
+            cor: "#00ffcc",
+            atualizar() {
+                // Aplicar gravidade
+                this.velocidadeY += gravidade;
+                this.y += this.velocidadeY;
+
+                // Definir a linha do chão baseada no tamanho da tela
+                const linhaChao = canvas.height - 120 - this.altura;
+
+                if (this.y >= linhaChao) {
+                    this.y = linhaChao;
+                    this.velocidadeY = 0;
+                    this.noChao = true;
+                }
+            },
+            pular() {
+                if (this.noChao && jogoRodando) {
+                    this.velocidadeY = this.forcaPulo;
+                    this.noChao = false;
+                }
+            },
+            desenhar() {
+                ctx.fillStyle = this.cor;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.cor;
+                ctx.fillRect(this.x, this.y, this.largura, this.altura);
+                ctx.shadowBlur = 0; // reseta efeito neon para o resto
+            }
+        };
+
+        // Classe dos Obstáculos
+        class Obstaculo {
+            constructor() {
+                this.largura = 30 + Math.random() * 40; // largura aleatória
+                this.altura = 40 + Math.random() * 50;  // altura aleatória
+                this.x = canvas.width + 100;
+                this.y = canvas.height - 120 - this.altura;
+                this.cor = "#ff007f";
+            }
+            atualizar() {
+                this.x -= velocidadeMundo;
+            }
+            desenhar() {
+                ctx.fillStyle = this.cor;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.cor;
+                ctx.fillRect(this.x, this.y, this.largura, this.altura);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        let listaObstaculos = [];
+        let tempoProximoObstaculo = 0;
+
+        // Controlar comandos de pulo (Teclado e Clique na tela)
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "Space" || e.code === "ArrowUp") {
+                if (!jogoRodando && menuInicial.style.display !== "none") {
+                    iniciarJogo();
+                } else {
+                    jogador.pular();
+                }
+            }
+        });
+        window.addEventListener("touchstart", () => { jogador.pular(); });
+        window.addEventListener("mousedown", () => { jogador.pular(); });
+
+        function iniciarJogo() {
+            menuInicial.style.display = "none";
+            telaGameOver.classList.add("escondido");
+            score = 0;
+            velocidadeMundo = 7;
+            listaObstaculos = [];
+            tempoProximoObstaculo = 0;
+            jogador.y = canvas.height - 120 - jogador.altura;
+            jogoRodando = true;
+        }
+
+        function gameOver() {
+            jogoRodando = false;
+            telaGameOver.classList.remove("escondido");
+            txtFinalScore.innerText = `Você sobreviveu por ${Math.floor(score)} pontos!`;
+            
+            if (Math.floor(score) > highscore) {
+                highscore = Math.floor(score);
+                localStorage.setItem("highscore", highscore);
+                txtHighScore.innerText = highscore;
+            }
+        }
+
+        function reiniciarJogo() {
+            iniciarJogo();
+        }
+
+        // Loop Principal do Jogo (Roda a 60 FPS)
+        function gameLoop() {
+            // 1. Limpar a tela
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Desenhar o Cenário (Chão e Linhas de fundo)
+            const linhaChaoY = canvas.height - 120;
+            ctx.strokeStyle = "#33374b";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(0, linhaChaoY);
+            ctx.lineTo(canvas.width, linhaChaoY);
+            ctx.stroke();
+
+            if (jogoRodando) {
+                // Aumentar score e velocidade gradualmente
+                score += 0.15;
+                txtScore.innerText = Math.floor(score);
+                velocidadeMundo += 0.002;
+
+                // 3. Atualizar e desenhar jogador
+                jogador.atualizar();
+
+                // 4. Gerenciar obstáculos de forma aleatória
+                tempoProximoObstaculo--;
+                if (tempoProximoObstaculo <= 0) {
+                    listaObstaculos.push(new Obstaculo());
+                    // Define um tempo aleatório para o próximo vir (entre 1 e 2 segundos)
+                    tempoProximoObstaculo = 60 + Math.random() * 70; 
+                }
+
+                // 5. Mover e testar colisão dos obstáculos
+                for (let i = listaObstaculos.length - 1; i >= 0; i--) {
+                    let obs = listaObstaculos[i];
+                    obs.atualizar();
+                    obs.desenhar();
+
+                    // Remover obstáculos que saíram da tela para não travar o jogo
+                    if (obs.x + obs.largura < 0) {
+                        listaObstaculos.splice(i, 1);
+                        continue;
+                    }
+
+                    // Checar Colisão (AABB Hitbox)
+                    if (
+                        jogador.x < obs.x + obs.largura &&
+                        jogador.x + jogador.largura > obs.x &&
+                        jogador.y < obs.y + obs.altura &&
+                        jogador.y + jogador.altura > obs.y
+                    ) {
+                        gameOver();
+                    }
+                }
+            }
+
+            // Sempre desenha o jogador na posição atual dele
+            jogador.desenhar();
+
+            // Chama o próximo frame
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Inicia o motor do loop
+        gameLoop();
+    </script>
 </body>
 </html>
