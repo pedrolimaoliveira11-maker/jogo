@@ -3,460 +3,375 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fuga na Favela: Tricolor Edition 🏍️⚡</title>
+    <title>São Paulo Obstacle Runner</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Impact', sans-serif;
-        }
-
-        body {
-            background: #0f0202;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-            flex-direction: column;
-        }
-
-        /* TELA DE LOGIN */
-        #telaLogin {
-            position: fixed;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.95)), 
-                        url('https://upload.wikimedia.org/wikipedia/pt/4/4b/S%C3%A3o_Paulo_Futebol_Clube.svg') no-repeat center;
-            background-size: 400px;
-            z-index: 2000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .caixa-login {
-            background: #fff;
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 0 25px rgba(255, 0, 0, 0.5);
-            max-width: 350px;
-            width: 100%;
-        }
-
-        .caixa-login h2 {
-            color: #000;
-            margin-bottom: 25px;
-            font-size: 1.8rem;
-            letter-spacing: 1px;
-        }
-
-        .btn-google {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            width: 100%;
-            background: #4285F4;
-            color: white;
-            border: none;
-            padding: 12px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
             font-family: 'Arial', sans-serif;
         }
 
-        .btn-google:hover {
-            background: #357ae8;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
-        .btn-google img {
-            width: 22px;
-            background: white;
-            border-radius: 50%;
-            padding: 2px;
-        }
-
-        /* CONTEÚDO DO JOGO */
-        .game-wrapper {
-            display: none; /* Escondido até logar */
-            position: relative;
-            box-shadow: 0 0 35px rgba(255, 0, 0, 0.6);
-            border: 4px solid #cc0000;
-            border-radius: 12px;
+        body {
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             overflow: hidden;
         }
 
-        canvas {
-            display: block;
-            /* Imagem de fundo fixa do São Paulo FC dentro do Canvas */
-            background-image: linear-gradient(rgba(18, 1, 1, 0.88), rgba(0, 0, 0, 0.92)),
-                              url('https://upload.wikimedia.org/wikipedia/pt/4/4b/S%C3%A3o_Paulo_Futebol_Clube.svg');
-            background-size: 450px;
-            background-position: center;
-            background-repeat: no-repeat;
+        /* TELA DE LOGIN */
+        #login-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            color: white;
         }
 
-        .instrucoes {
-            display: none;
-            color: #fff;
-            margin-top: 15px;
+        .login-box {
+            background: white;
+            color: black;
+            padding: 30px;
+            border-radius: 15px;
             text-align: center;
-            font-size: 1.1rem;
-            max-width: 800px;
-            line-height: 1.5;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            border-top: 5px solid #FF0000;
+            border-bottom: 5px solid #000;
         }
 
-        .instrucoes span { color: #ff3333; }
-        .instrucoes .poder { color: #00ffcc; }
+        .login-box h1 {
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .login-box p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #4285F4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        .google-btn:hover {
+            background: #357AE8;
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #4285F4;
+            font-size: 14px;
+        }
+
+        /* ÁREA DO JOGO */
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 400px;
+            /* Foto de fundo do São Paulo (Estádio do MorumBIS) */
+            background-image: url('https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?q=80&w=800&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+            border: 4px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; /* Escondido até fazer login */
+        }
+
+        /* Personagem */
+        #player {
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            width: 50px;
+            height: 60px;
+            background-color: #FF0000; /* Cor inicial: Vermelho */
+            border: 3px solid #FFF;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        /* Obstáculo */
+        #obstacle {
+            position: absolute;
+            bottom: 0;
+            right: -40px;
+            width: 30px;
+            height: 50px;
+            background-color: #000;
+            border: 2px solid #FFF;
+            border-radius: 3px;
+        }
+
+        /* Interface de Pontos e Poderes */
+        #ui-layer {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        #power-status {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 2px solid #fff;
+            font-size: 16px;
+            display: none;
+        }
+
+        /* Tela de Game Over */
+        #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            display: none;
+        }
+
+        #game-over h2 {
+            font-size: 40px;
+            color: #FF0000;
+            margin-bottom: 10px;
+        }
+
+        #game-over button {
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #FFF;
+            border: none;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
 
-    <div id="telaLogin">
-        <div class="caixa-login">
-            <h2>ENTRAR NO JOGO</h2>
-            <button class="btn-google" onclick="fazerLoginGoogle()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_認證圖標.svg" alt="Google">
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>São Paulo Runner</h1>
+            <p>Faça login para salvar sua pontuação</p>
+            <button class="google-btn" onclick="loginComGoogle()">
+                <div class="google-icon">G</div>
                 Entrar com o Google
             </button>
         </div>
     </div>
 
-    <div class="game-wrapper" id="gameWrapper">
-        <canvas id="gameCanvas" width="800" height="400"></canvas>
-    </div>
+    <div id="game-container">
+        <div id="ui-layer">
+            <div id="score-display">Pontos: 0</div>
+            <div id="power-status">⚡ PODER ATIVADO!</div>
+        </div>
+        
+        <div id="player"></div>
+        <div id="obstacle"></div>
 
-    <div class="instrucoes" id="gameInstrucoes">
-        <span>W / S / A / D</span> = Pilotar | Segure <span>ESPAÇO</span> = Dá Grau | Aperte <span class="poder">C</span> = PULO SUPER ALTO 🦘<br>
-        Colete os poderes na pista: <span class="poder">⚡ (Super Velocidade)</span> e <span class="poder">🍄 (Ativa Pulo Alto)</span>!
+        <div id="game-over">
+            <h2>FIM DE JOGO</h2>
+            <p id="final-score">Pontos: 0</p>
+            <button onclick="resetGame()">Jogar Novamente</button>
+        </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        // Elementos do HTML
+        const loginScreen = document.getElementById('login-screen');
+        const gameContainer = document.getElementById('game-container');
+        const player = document.getElementById('player');
+        const obstacle = document.getElementById('obstacle');
+        const scoreDisplay = document.getElementById('score-display');
+        const powerStatus = document.getElementById('power-status');
+        const gameOverScreen = document.getElementById('game-over');
+        const finalScoreDisplay = document.getElementById('final-score');
 
-        // Fluxo de Login
-        function fazerLoginGoogle() {
-            document.getElementById('telaLogin').style.display = 'none';
-            document.getElementById('gameWrapper').style.display = 'block';
-            document.getElementById('gameInstrucoes').style.display = 'block';
-            // Inicia o motor do jogo após o clique
-            loop();
+        // Variáveis de mecânica do jogo
+        let score = 0;
+        let isJumping = false;
+        let isGameOver = false;
+        let gameLoopInterval;
+        let scoreInterval;
+
+        // Configurações de Física Dinâmica (Mudam com os poderes)
+        let jumpHeight = 150;     // Altura padrão do pulo
+        let obstacleSpeed = 8;    // Velocidade padrão do obstáculo
+        let currentLevel = 0;
+
+        // Lista de cores que o jogador vai alternar a cada 200 pontos
+        const coresSpfc = ["#FF0000", "#FFFFFF", "#000000", "#FFD700"]; 
+
+        // 1. Simulação de Login do Google
+        function loginComGoogle() {
+            loginScreen.style.display = 'none';
+            gameContainer.style.display = 'block';
+            startGame();
         }
 
-        // Estado Geral do Jogo
-        let jogoAtivo = true;
-        let pontuacao = 0;
-        let velocidadeCenario = 5;
-        let contadorSirene = 0;
-        let corRua = '#222';
-        let corLinhaRua = '#fff';
-
-        // Modificadores de Poderes
-        let timerVelocidade = 0;
-        let possuiPuloAlto = false;
-
-        // Moto do Jogador
-        const moto = {
-            x: 220,
-            y: 340,
-            baseY: 340, // Guarda a linha de pista atual
-            largura: 65,
-            heightFisico: 40,
-            puloY: 0, // Altura do pulo atual
-            velPulo: 0,
-            gravidade: 0.6,
-            estaEmpinando: false,
-            anguloGrau: 0,
-            velocidadeMovimento: 5.5
-        };
-
-        const policia = { x: 20, y: 330, largura: 80, altura: 45 };
-
-        // Teclas do teclado
-        const teclas = {
-            KeyW: false, ArrowUp: false,
-            KeyS: false, ArrowDown: false,
-            KeyA: false, ArrowLeft: false,
-            KeyD: false, ArrowRight: false,
-            Space: false, KeyC: false
-        };
-
-        // Itens, Obstáculos e Carros
-        let obstaculos = [];
-        let tempoProximoObstaculo = 0;
-        const tiposElementos = ['🚗', '🚕', '📦', '⚡', '🍄']; // Carros, Caixas e os Itens de Poder
-
-        function loop() {
-            if (!jogoAtivo) {
-                desenharGameOver();
-                return;
-            }
-            atualizar();
-            desenhar();
-            requestAnimationFrame(loop);
-        }
-
-        function atualizar() {
-            // Se estiver com o poder da velocidade ativo, ganha pontuação dobrada
-            pontuacao += (timerVelocidade > 0) ? 4 : (moto.estaEmpinando ? 2 : 1);
+        // 2. Iniciar o Jogo
+        function startGame() {
+            isGameOver = false;
+            score = 0;
+            currentLevel = 0;
+            jumpHeight = 150;
+            obstacleSpeed = 8;
+            player.style.backgroundColor = coresSpfc[0];
+            powerStatus.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            obstacle.style.right = '-40px';
             
-            // Reduz contadores de poder
-            if (timerVelocidade > 0) timerVelocidade--;
+            // Sistema de Pontuação (Ganha pontos por tempo vivo)
+            scoreInterval = setInterval(() => {
+                if (!isGameOver) {
+                    score += 10;
+                    scoreDisplay.innerText = "Pontos: " + score;
+                    verificarEvolucao();
+                }
+            }, 100);
 
-            // DINÂMICA DE MUDANÇA DE COR A CADA 200 PONTOS
-            let faseAtual = Math.floor(pontuacao / 200);
-            if (faseAtual % 3 === 0) {
-                corRua = '#222'; // Rua Clássica Preta
-                corLinhaRua = '#ffffff';
-            } else if (faseAtual % 3 === 1) {
-                corRua = '#4d1313'; // Rua Vermelha (São Paulo)
-                corLinhaRua = '#ffcc00';
-            } else {
-                corRua = '#143d29'; // Avenida Verde Neon
-                corLinhaRua = '#00ffcc';
-            }
+            // Loop de movimentação do obstáculo e colisões
+            gameLoop();
+        }
 
-            // Define velocidade base
-            velocidadeCenario = (timerVelocidade > 0) ? 12 : (5 + Math.floor(pontuacao / 600));
-            contadorSirene++;
+        // 3. Sistema de Evolução (A cada 200 pontos)
+        function verificarEvolucao() {
+            // Calcula em qual "nível de 200 pontos" o jogador está
+            let level doMomento = Math.floor(score / 200);
 
-            policia.y += ((moto.y + moto.puloY) - policia.y) * 0.06;
-
-            // --- MOVIMENTAÇÃO VERTICAL/HORIZONTAL ---
-            if (teclas.KeyW || teclas.ArrowUp) {
-                if (moto.baseY > 300) moto.baseY -= moto.velocidadeMovimento;
-            }
-            if (teclas.KeyS || teclas.ArrowDown) {
-                if (moto.baseY < 365) moto.baseY += moto.velocidadeMovimento;
-            }
-            if (teclas.KeyA || teclas.ArrowLeft) {
-                if (moto.x > 10) moto.x -= moto.velocidadeMovimento;
-            }
-            if (teclas.KeyD || teclas.ArrowRight) {
-                if (moto.x < canvas.width - 90) moto.x += moto.velocidadeMovimento;
-            }
-
-            // Mecânica do Pulo (Física)
-            moto.puloY += moto.velPulo;
-            if (moto.puloY < 0) {
-                moto.velPulo += moto.gravidade; // Aplica gravidade no ar
-            } else {
-                moto.puloY = 0;
-                moto.velPulo = 0;
-            }
-
-            // Aciona o Pulo Manual (Tecla C)
-            if (teclas.KeyC && moto.puloY === 0) {
-                // Se tiver o poder do Cogumelo (🍄), pula o dobro da altura
-                moto.velPulo = possuiPuloAlto ? -13 : -7.5; 
-            }
-
-            // Atualiza posição real combinando pista + pulo
-            moto.y = moto.baseY + moto.puloY;
-
-            // Controle do Grau
-            if (teclas.Space && moto.puloY === 0) {
-                moto.estaEmpinando = true;
-                if (moto.anguloGrau < 0.55) moto.anguloGrau += 0.07;
-            } else {
-                moto.estaEmpinando = false;
-                if (moto.anguloGrau > 0) moto.anguloGrau -= 0.07;
-            }
-
-            // Captura pela Polícia
-            if (moto.x < policia.x + policia.largura - 10 &&
-                moto.y < policia.y + policia.altura &&
-                moto.y + moto.heightFisico > policia.y) {
-                jogoAtivo = false;
-            }
-
-            // --- GERADOR DE TRÁFEGO E PODERES ---
-            tempoProximoObstaculo++;
-            if (tempoProximoObstaculo > Math.random() * 40 + 30) {
-                let ySorteado = 300 + Math.random() * 65;
-                let tipoSorteado = tiposElementos[Math.floor(Math.random() * tiposElementos.length)];
+            if (level doMomento > currentLevel) {
+                currentLevel = level doMomento;
                 
-                let extraVel = (tipoSorteado === '🚗' || tipoSorteado === '🚕') ? 2 : 0;
+                // Troca a cor do boneco baseado na lista do São Paulo
+                let novaCorIndex = currentLevel % coresSpfc.length;
+                player.style.backgroundColor = coresSpfc[novaCorIndex];
 
-                obstaculos.push({
-                    x: canvas.width,
-                    y: ySorteado,
-                    largura: (tipoSorteado === '⚡' || tipoSorteado === '🍄') ? 25 : 45,
-                    altura: 30,
-                    tipo: tipoSorteado,
-                    velX: velocidadeCenario + extraVel
-                });
-                tempoProximoObstaculo = 0;
-            }
+                // ATIVA OS PODERES: Pular mais alto e correr mais rápido (obstáculo vem mais rápido)
+                jumpHeight = 150 + (currentLevel * 30); // Pula cada vez mais alto
+                obstacleSpeed = 8 + (currentLevel * 3);  // Jogo fica mais rápido
 
-            // Varredura de colisões
-            for (let i = obstaculos.length - 1; i >= 0; i--) {
-                obstaculos[i].x -= obstaculos[i].velX;
-
-                let mHitX = moto.x + 10;
-                let mHitY = moto.y + 5;
-
-                // Verificação de Hitbox completa
-                if (
-                    mHitX < obstaculos[i].x + obstaculos[i].largura &&
-                    mHitX + (moto.largura - 15) > obstaculos[i].x &&
-                    mHitY < obstaculos[i].y + obstaculos[i].heightFisico &&
-                    mHitY + (moto.heightFisico - 10) > obstaculos[i].y
-                ) {
-                    // SE COLETAR UM PODER:
-                    if (obstaculos[i].tipo === '⚡') {
-                        timerVelocidade = 180; // Ativa super velocidade por 180 frames (~3s)
-                        obstaculos.splice(i, 1);
-                        continue;
-                    } 
-                    else if (obstaculos[i].tipo === '🍄') {
-                        possuiPuloAlto = true; // Desbloqueia o super pulo permanente até bater
-                        obstaculos.splice(i, 1);
-                        continue;
-                    } 
-                    else {
-                        // Se for carro ou caixa, é GAME OVER, a menos que esteja pulando por cima!
-                        jogoAtivo = false; 
-                    }
-                }
-
-                if (obstaculos[i].x + 60 < 0) obstaculos.splice(i, 1);
+                // Mostra o alerta de Poder
+                powerStatus.innerText = `⚡ PODER NÍVEL ${currentLevel}!`;
+                powerStatus.style.display = 'block';
+                
+                // Pisca o aviso de poder
+                setTimeout(() => { powerStatus.style.display = 'none'; }, 2000);
             }
         }
 
-        function desenhar() {
-            // Limpa a tela preservando a imagem de fundo CSS do canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // 1. ANIMAÇÃO DE FLASHLIGHT DO GIROFLEX POLICIAL
-            if (Math.floor(contadorSirene / 6) % 2 === 0) {
-                ctx.fillStyle = 'rgba(0, 50, 255, 0.12)';
-            } else {
-                ctx.fillStyle = 'rgba(255, 0, 0, 0.12)';
-            }
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // 2. DESENHO E ESTILIZAÇÃO DO ASFALTO (DINÂMICO POR NÍVEL)
-            ctx.fillStyle = corRua;
-            ctx.fillRect(0, 300, canvas.width, 100);
-            
-            ctx.fillStyle = corLinhaRua;
-            let deslocamentoLinha = (pontuacao * velocidadeCenario) % 100;
-            for (let i = -deslocamentoLinha; i < canvas.width; i += 100) {
-                ctx.fillRect(i, 345, 35, 4);
-            }
-
-            // Border superior da avenida
-            ctx.fillStyle = '#111';
-            ctx.fillRect(0, 296, canvas.width, 4);
-
-            // 3. DESENHO DOS ELEMENTOS (OBSTÁCULOS / PODERES)
-            obstaculos.forEach(obs => {
-                ctx.font = (obs.tipo === '⚡' || obs.tipo === '🍄') ? "26px Arial" : "34px Arial";
-                ctx.fillText(obs.tipo, obs.x, obs.y + 25);
-            });
-
-            // 4. DESENHO DA POLÍCIA PERSEGUIDORA
-            ctx.save();
-            ctx.translate(policia.x, policia.y);
-            ctx.font = "48px Arial";
-            ctx.scale(-1, 1);
-            ctx.fillText("🚓", -policia.largura, 35);
-            ctx.restore();
-
-            // Giroflex físico no topo do carro
-            ctx.fillStyle = (Math.floor(contadorSirene / 4) % 2 === 0) ? '#ff0000' : '#0000ff';
-            ctx.beginPath();
-            ctx.arc(policia.x + 45, policia.y, 10, 0, Math.PI * 2);
-            ctx.fill();
-
-            // 5. DESENHO DO PROTAGONISTA (MOTO)
-            ctx.save();
-            ctx.translate(moto.x + 15, moto.y + 15); 
-            ctx.rotate(-moto.anguloGrau);
-            ctx.font = "45px Arial";
-            ctx.scale(-1, 1); 
-            ctx.fillText("🏍️", -35, 15);
-            ctx.restore();
-
-            // Sombra/Indicador de Pulo no chão se o jogador estiver voando
-            if (moto.puloY < 0) {
-                ctx.fillStyle = 'rgba(0,0,0,0.4)';
-                ctx.beginPath();
-                ctx.ellipse(moto.x + 30, moto.baseY + 35, 20, 5, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // 6. PAINEL DE CONTROLE / INFORMAÇÕES (HUD)
-            ctx.fillStyle = '#fff';
-            ctx.font = '22px Impact';
-            ctx.fillText(`SCORE: ${Math.floor(pontuacao)}m`, 20, 35);
-            
-            // Indicadores de poderes ativos
-            if (timerVelocidade > 0) {
-                ctx.fillStyle = '#00ffcc';
-                ctx.fillText(`⚡ VELOCIDADE MAXIMA ATIVA!`, 20, 65);
-            }
-            if (possuiPuloAlto) {
-                ctx.fillStyle = '#ffcc00';
-                ctx.fillText(`🦘 SUPER PULO DESBLOQUEADO (C)`, 20, timerVelocidade > 0 ? 95 : 65);
-            }
-        }
-
-        function desenharGameOver() {
-            ctx.fillStyle = 'rgba(0,0,0,0.92)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#ff3333';
-            ctx.font = '50px Impact';
-            ctx.fillText('FIM DE PAPO! VOCÊ CAIU! 💥🚓', canvas.width / 2, canvas.height / 2 - 20);
-
-            ctx.fillStyle = '#fff';
-            ctx.font = '24px Impact';
-            ctx.fillText(`Pontuação de Fuga: ${Math.floor(pontuacao)} metros`, canvas.width / 2, canvas.height / 2 + 25);
-            
-            ctx.fillStyle = '#00ffcc';
-            ctx.font = '18px Arial';
-            ctx.fillText('Pressione ESPAÇO para acelerar de novo', canvas.width / 2, canvas.height / 2 + 75);
-        }
-
-        // --- ENTRADA DE COMANDOS ---
-        window.addEventListener('keydown', e => {
-            if (e.code in teclas) {
-                teclas[e.code] = true;
-                if (e.code === 'Space' && !jogoAtivo) {
-                    // Reinicialização total das variáveis
-                    moto.x = 220;
-                    moto.baseY = 340;
-                    moto.y = 340;
-                    moto.puloY = 0;
-                    moto.velPulo = 0;
-                    moto.anguloGrau = 0;
-                    possuiPuloAlto = false;
-                    timerVelocidade = 0;
-                    policia.y = 330;
-                    obstaculos = [];
-                    pontuacao = 0;
-                    jogoAtivo = true;
-                    ctx.textAlign = 'left';
-                    loop();
-                }
+        // 4. Comando de Pulo (Espaço ou Seta para Cima ou Toque na tela)
+        document.addEventListener('keydown', (event) => {
+            if ((event.code === 'Space' || event.code === 'ArrowUp') && !isJumping && !isGameOver) {
+                pular();
             }
         });
 
-        window.addEventListener('keyup', e => {
-            if (e.code in teclas) teclas[e.code] = false;
-        });
+        function pular() {
+            isJumping = true;
+            let position = 0;
+            
+            // Subida do Pulo (Usa a variável dinâmica jumpHeight)
+            let upInterval = setInterval(() => {
+                if (position >= jumpHeight) {
+                    clearInterval(upInterval);
+                    
+                    // Descida do Pulo
+                    let downInterval = setInterval(() => {
+                        if (position <= 0) {
+                            clearInterval(downInterval);
+                            isJumping = false;
+                        }
+                        position -= 6;
+                        player.style.bottom = position + 'px';
+                    }, 20);
+                }
+                position += 6;
+                player.style.bottom = position + 'px';
+            }, 20);
+        }
+
+        // 5. Movimentação do Obstáculo e Checagem de Hitbox
+        function gameLoop() {
+            let obstaclePosition = -40;
+            obstacle.style.right = obstaclePosition + 'px';
+
+            function update() {
+                if (isGameOver) return;
+
+                // Move o obstáculo para a esquerda baseado na velocidade atual
+                obstaclePosition += obstacleSpeed;
+                if (obstaclePosition > 840) {
+                    obstaclePosition = -40; // Reseta a posição quando sai da tela
+                }
+                obstacle.style.right = obstaclePosition + 'px';
+
+                // Lógica de colisão corrigida para coordenadas do CSS
+                let playerBottom = parseInt(player.style.bottom) || 0;
+                
+                // Transforma a posição da direita para correspondência com a esquerda do jogador
+                // O jogador está fixo a 50px da esquerda. O container tem 800px.
+                let obstacleLeft = 800 - obstaclePosition - 30; 
+
+                if (obstacleLeft < 100 && obstacleLeft > 50 && playerBottom < 50) {
+                    // Se bateu, é Fim de Jogo!
+                    isGameOver = true;
+                    clearInterval(scoreInterval);
+                    finalScoreDisplay.innerText = "Pontos Finais: " + score;
+                    gameOverScreen.style.display = 'flex';
+                }
+
+                requestAnimationFrame(update);
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        // 6. Reiniciar o jogo
+        function resetGame() {
+            startGame();
+        }
     </script>
 </body>
 </html>
