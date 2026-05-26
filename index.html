@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>São Paulo Obstacle Runner - Tela Cheia Escura</title>
+    <title>São Paulo Run 3D</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -11,326 +12,385 @@
             box-sizing: border-box;
             font-family: 'Arial', sans-serif;
         }
-
-        /* Deixa a página em tela cheia e remove barras de rolagem */
         body, html {
             width: 100%;
             height: 100%;
-            background: #111;
             overflow: hidden;
+            background-color: #111;
+        }
+        /* Tela de Login */
+        #login-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1543269664-76bc3997d9ea?q=80&w=1200') no-repeat center center/cover;
             display: flex;
             justify-content: center;
             align-items: center;
-            user-select: none; 
-        }
-
-        /* ÁREA DO JOGO EM TELA CHEIA */
-        #game-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            /* Foto de fundo do São Paulo FC (Estádio do MorumBIS) */
-            background-image: url('https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?q=80&w=800&auto=format&fit=crop'); 
-            background-size: cover;
-            background-position: center;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        /* CAMADA SUTIL PARA ESCURECER O FUNDO */
-        #dark-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4); /* Escurece o fundo em 40% */
-            z-index: 1;
-            pointer-events: none; /* Deixa os cliques passarem direto para o jogo */
-        }
-
-        /* ELEMENTOS DO JOGO (Z-index alto para ficarem na frente da camada escura) */
-        #player {
-            position: absolute;
-            bottom: 0;
-            left: 8%;
-            width: 60px;
-            height: 70px;
-            background-color: #FF0000; /* Cor Inicial: Vermelho */
-            border: 3px solid #FFF;
-            border-radius: 8px;
-            z-index: 5;
-        }
-
-        #obstacle {
-            position: absolute;
-            bottom: 0;
-            right: -50px;
-            width: 35px;
-            height: 60px;
-            background-color: #000000;
-            border: 2px solid #FFF;
-            border-radius: 5px;
-            z-index: 5;
-        }
-
-        /* PLACAR E ALERTAS */
-        #ui-layer {
-            position: absolute;
-            top: 25px;
-            left: 25px;
-            right: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-            font-size: 26px;
-            font-weight: bold;
-            text-shadow: 2px 2px 5px #000;
-            pointer-events: none;
             z-index: 10;
+            transition: opacity 0.5s ease;
         }
-
-        #power-status {
-            background: rgba(255, 0, 0, 0.9);
-            padding: 8px 20px;
-            border-radius: 20px;
-            border: 2px solid #fff;
-            font-size: 18px;
+        .login-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+            border-top: 5px solid #e11a22; /* Cor SPFC */
+        }
+        .login-box h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .login-box p {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            color: #757575;
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        .google-btn:hover {
+            background: #f7f7f7;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .google-btn img {
+            width: 22px;
+            height: 22px;
+            margin-right: 15px;
+        }
+        /* Interface do Jogo */
+        #game-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 5;
             display: none;
-            animation: piscar 0.5s infinite alternate;
+            pointer-events: none;
         }
-
-        @keyframes piscar {
-            from { opacity: 1; }
-            to { opacity: 0.5; }
+        #powerup-notice {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #00ffcc;
+            display: none;
+            border-left: 5px solid #00ffcc;
+            animation: pulse 1.5s infinite;
         }
-
-        /* TELA DE GAME OVER */
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        /* Tela de Game Over */
         #game-over {
             position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.8);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             color: white;
+            z-index: 8;
             display: none;
-            z-index: 50;
-            cursor: default;
         }
-
-        #game-over h2 {
-            font-size: 55px;
-            color: #FF0000;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 5px #000;
-        }
-
-        #game-over p {
-            font-size: 24px;
-            margin-bottom: 25px;
-        }
-
+        #game-over h2 { font-size: 48px; color: #ff3333; margin-bottom: 20px; }
         #game-over button {
-            padding: 15px 35px;
-            font-size: 20px;
+            padding: 12px 30px;
+            font-size: 18px;
             font-weight: bold;
-            cursor: pointer;
-            background: #FF0000;
+            background: #e11a22;
             color: white;
-            border: 2px solid white;
-            border-radius: 8px;
-            transition: 0.2s;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
         }
-
-        #game-over button:hover {
-            background: #cc0000;
+        #game-over button:hover { background: #b8141a; }
+        /* Canvas do fundo de SP */
+        #bg-canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: url('https://images.unsplash.com/photo-1543269664-76bc3997d9ea?q=80&w=1600') no-repeat center center/cover;
+            opacity: 0.4; /* Fundo suave atrás do 3D */
+        }
+        #three-canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
         }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        
-        <div id="dark-overlay"></div>
+    <div id="bg-canvas"></div>
 
-        <div id="ui-layer">
-            <div id="score-display">Pontos: 0</div>
-            <div id="power-status">⚡ SUPER PODER ATIVADO!</div>
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>São Paulo Obstacle Run 3D</h1>
+            <p>Faça login para salvar seu recorde e correr pelas ruas de SP!</p>
+            <button class="google-btn" onclick="startGame()">
+                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" alt="Google">
+                Entrar com o Google
+            </button>
         </div>
-        
-        <div id="player" style="bottom: 0px;"></div>
-        <div id="obstacle"></div>
-
-        <div id="game-over">
-            <h2>FIM DE JOGO</h2>
-            <p id="final-score">Pontos: 0</p>
-            <button id="btn-restart">Jogar Novamente</button>
-        </div>
-
     </div>
 
+    <div id="game-ui">
+        Pontos: <span id="score-val">0</span>
+    </div>
+    <div id="powerup-notice" class="powerup-hud">
+        ⚡ PODERES ATIVADOS: Correr Mais Rápido + Pulo Super Alto!
+    </div>
+
+    <div id="game-over">
+        <h2>FIM DE JOGO</h2>
+        <p>Você bateu na barreira!</p>
+        <p>Pontuação Final: <span id="final-score">0</span></p>
+        <button onclick="restartGame()">Jogar Novamente</button>
+    </div>
+
+    <canvas id="three-canvas"></canvas>
+
     <script>
-        // Elementos da Tela
-        const gameContainer = document.getElementById('game-container');
-        const player = document.getElementById('player');
-        const obstacle = document.getElementById('obstacle');
-        const scoreDisplay = document.getElementById('score-display');
-        const powerStatus = document.getElementById('power-status');
-        const gameOverScreen = document.getElementById('game-over');
-        const finalScoreDisplay = document.getElementById('final-score');
-        const btnRestart = document.getElementById('btn-restart');
-
-        // Mecânicas do Jogo
+        // --- VARIÁVEIS GLOBAIS DO JOGO ---
+        let scene, camera, renderer;
+        let player, obstacles = [];
         let score = 0;
-        let isJumping = false;
-        let isGameOver = false; 
-        let obstaclePosition = -50;
-
-        // Configurações Iniciais Ajustadas para Tela Cheia
-        let jumpHeight = 180;     
-        let obstacleSpeed = 9;    
-        let currentLevel = 0;
-
-        // Cores do São Paulo (Muda a cada 200 pontos)
-        const coresSpfc = ["#FF0000", "#FFFFFF", "#000000", "#FFD700"]; 
-
-        // Reiniciar o jogo no botão do Game Over
-        btnRestart.addEventListener('click', (event) => {
-            event.stopPropagation(); // Impede que o clique chame o pulo
-            initGame();
-        });
-
-        // Inicializador / Reset do Jogo
-        function initGame() {
-            score = 0;
-            currentLevel = 0;
-            jumpHeight = 180;
-            obstacleSpeed = 9;
-            obstaclePosition = -50;
-            isGameOver = false;
-            isJumping = false;
-            
-            player.style.backgroundColor = coresSpfc[0];
-            player.style.bottom = "0px";
-            powerStatus.style.display = 'none';
-            gameOverScreen.style.display = 'none';
-            scoreDisplay.innerText = "Pontos: 0";
-        }
-
-        // Sistema de loop de Pontos (Sobe de 10 em 10)
-        setInterval(() => {
-            if (!isGameOver) {
-                score += 10;
-                scoreDisplay.innerText = "Pontos: " + score;
-                testarEvolucaoPoderes();
-            }
-        }, 150);
-
-        // MECÂNICA: Troca de cor e upgrade de poderes a cada 200 pontos
-        function testarEvolucaoPoderes() {
-            let passoAtual = Math.floor(score / 200);
-
-            if (passoAtual > currentLevel) {
-                currentLevel = passoAtual;
-                
-                // 1. Troca a cor do personagem
-                let indexCor = currentLevel % coresSpfc.length;
-                player.style.backgroundColor = coresSpfc[indexCor];
-
-                // 2. Aplica os Superpoderes dinamicamente na proporção da tela
-                jumpHeight = 180 + (currentLevel * 30); 
-                obstacleSpeed = 9 + (currentLevel * 3); 
-
-                // 3. Alerta na tela
-                powerStatus.innerText = `⚡ PODER NÍVEL ${currentLevel}! VELOCIDADE + PULO ALTO`;
-                powerStatus.style.display = 'block';
-                
-                setTimeout(() => {
-                    powerStatus.style.display = 'none';
-                }, 2500);
-            }
-        }
-
-        /* --- CONTROLES MANTIDOS: PULO NO ESPAÇO E NO CLIQUE (BOTÃO DE PULAR) --- */
+        let gameActive = false;
         
-        // 1. Pular com a barra de Espaço
-        document.addEventListener('keydown', (event) => {
-            if (event.code === 'Space' && !isJumping && !isGameOver) {
-                executarPulo();
-            }
-        });
+        // Atributos de movimentação e poderes
+        let speed = 0.15;
+        let jumpVelocity = 0.22;
+        let gravity = 0.01;
+        
+        let playerVelocityY = 0;
+        let isJumping = false;
+        let currentColorStage = 0;
 
-        // 2. Pular ao clicar com o mouse na tela (o container vira o botão de pulo)
-        gameContainer.addEventListener('mousedown', () => {
-            if (!isJumping && !isGameOver) {
-                executarPulo();
-            }
-        });
+        // Materiais para troca de cores (Cores dos blocos mudam)
+        let playerMaterial, trackMaterial, obstacleMaterial;
 
-        function executarPulo() {
-            isJumping = true;
-            let p_bottom = 0;
+        // Inicialização do ambiente 3D
+        function init3D() {
+            const canvas = document.getElementById('three-canvas');
+            scene = new THREE.Scene();
             
-            // Subindo...
-            let upInterval = setInterval(() => {
-                if (p_bottom >= jumpHeight) {
-                    clearInterval(upInterval);
+            // Câmera posicionada atrás e acima do jogador
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 4, 8);
+            camera.lookAt(0, 1, -2);
+
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Iluminação
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            dirLight.position.set(5, 10, 7);
+            scene.add(dirLight);
+
+            // Criar Materiais Iniciais
+            playerMaterial = new THREE.MeshStandardMaterial({ color: 0xe11a22 }); // Vermelho SPFC inicial
+            trackMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });  // Pista escura
+            obstacleMaterial = new THREE.MeshStandardMaterial({ color: 0xffcc00 }); // Barreiras amarelas
+
+            // Criar a pista de corrida (rua)
+            const trackGeo = new THREE.BoxGeometry(6, 0.2, 100);
+            const track = new THREE.Mesh(trackGeo, trackMaterial);
+            track.position.set(0, -0.1, -40);
+            scene.add(track);
+
+            // Criar o Jogador (Um bloco/personagem 3D)
+            const playerGeo = new THREE.BoxGeometry(0.8, 1.5, 0.8);
+            player = new THREE.Mesh(playerGeo, playerMaterial);
+            player.position.set(0, 0.75, 2);
+            scene.add(player);
+
+            // Gerar primeiros obstáculos
+            spawnObstacle(-15);
+            spawnObstacle(-35);
+            spawnObstacle(-55);
+        }
+
+        // Função para criar uma barreira na pista
+        function spawnObstacle(zPos) {
+            const width = Math.random() > 0.5 ? 2.5 : 4; // Larguras variadas
+            const obstacleGeo = new THREE.BoxGeometry(width, 1.2, 0.6);
+            const obstacle = new THREE.Mesh(obstacleGeo, obstacleMaterial);
+            
+            // Define uma posição X aleatória na pista
+            const posX = (Math.random() - 0.5) * (6 - width);
+            obstacle.position.set(posX, 0.6, zPos);
+            
+            scene.add(obstacle);
+            obstacles.push(obstacle);
+        }
+
+        // Ação ao clicar em "Entrar com o Google"
+        function startGame() {
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('game-ui').style.display = 'block';
+                init3D();
+                gameActive = true;
+                animate();
+            }, 500);
+        }
+
+        // Loop principal de animação e lógica
+        function animate() {
+            if (!gameActive) return;
+            requestAnimationFrame(animate);
+
+            // Lógica do Pulo (Gravidade)
+            if (isJumping) {
+                player.position.y += playerVelocityY;
+                playerVelocityY -= gravity;
+
+                // Se tocou o chão novamente
+                if (player.position.y <= 0.75) {
+                    player.position.y = 0.75;
+                    isJumping = false;
+                    playerVelocityY = 0;
+                }
+            }
+
+            // Movimentação dos obstáculos em direção ao jogador
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].position.z += speed;
+
+                // Checagem de Colisão simples (Caixas delimitadoras)
+                let pBox = new THREE.Box3().setFromObject(player);
+                let oBox = new THREE.Box3().setFromObject(obstacles[i]);
+
+                if (pBox.intersectsBox(oBox)) {
+                    gameOver();
+                    return;
+                }
+
+                // Se o obstáculo passou do jogador, reseta ele lá na frente e ganha pontos
+                if (obstacles[i].position.z > 5) {
+                    obstacles[i].position.z = -55;
+                    obstacles[i].position.x = (Math.random() - 0.5) * (6 - obstacles[i].geometry.parameters.width);
                     
-                    // Descendo...
-                    let downInterval = setInterval(() => {
-                        if (p_bottom <= 0) {
-                            clearInterval(downInterval);
-                            p_bottom = 0;
-                            isJumping = false;
-                        } else {
-                            p_bottom -= 8; // Velocidade de descida corrigida
-                        }
-                        player.style.bottom = p_bottom + 'px';
-                    }, 15);
+                    // Somar pontos
+                    score += 50;
+                    document.getElementById('score-val').innerText = score;
 
-                } else {
-                    p_bottom += 8; // Velocidade de subida corrigida
-                }
-                player.style.bottom = p_bottom + 'px';
-            }, 15);
-        }
-
-        // ENGINE PRINCIPAL: Movimento e Verificação de Colisões Responsiva
-        function gameEngine() {
-            if (!isGameOver) {
-                let larguraTela = gameContainer.offsetWidth;
-                obstaclePosition += obstacleSpeed;
-                
-                // Reseta o obstáculo quando ele cruza toda a tela cheia
-                if (obstaclePosition > (larguraTela + 100)) {
-                    obstaclePosition = -50;
-                }
-                obstacle.style.right = obstaclePosition + 'px';
-
-                // Lógica adaptada para pegar a colisão exata em qualquer tamanho de monitor
-                let playerBottom = parseInt(player.style.bottom) || 0;
-                let playerLeft = player.offsetLeft;
-                let obstacleLeft = larguraTela - obstaclePosition - 35; 
-
-                // Caixa de colisão exata
-                if (obstacleLeft < (playerLeft + 60) && obstacleLeft > playerLeft && playerBottom < 60) {
-                    isGameOver = true;
-                    finalScoreDisplay.innerText = "Pontos Finais: " + score;
-                    gameOverScreen.style.display = 'flex';
+                    // Checa evolução de poderes e cores a cada 200 pontos
+                    checkMilestones();
                 }
             }
-            
-            requestAnimationFrame(gameEngine);
+
+            renderer.render(scene, camera);
         }
 
-        // Inicializa o motor gráfico adaptado para o novo layout
-        requestAnimationFrame(gameEngine);
+        // Gerencia a troca de cores e poderes a cada 200 pontos
+        function checkMilestones() {
+            let stage = Math.floor(score / 200);
+            
+            if (stage > currentColorStage) {
+                currentColorStage = stage;
+                
+                // 1. ATIVAR PODERES (Aumenta velocidade e capacidade de pulo)
+                speed += 0.04;
+                jumpVelocity += 0.03; // Pula mais alto
+                
+                // Mostrar aviso na tela
+                const notice = document.getElementById('powerup-notice');
+                notice.style.display = 'block';
+                setTimeout(() => { notice.style.display = 'none'; }, 3000);
+
+                // 2. TROCAR AS CORES DO AMBIENTE (Muda dinamicamente)
+                const randomColorPlayer = Math.random() * 0xffffff;
+                const randomColorObstacle = Math.random() * 0xffffff;
+                
+                playerMaterial.color.setHex(randomColorPlayer);
+                obstacleMaterial.color.setHex(randomColorObstacle);
+            }
+        }
+
+        // Comandos de controle (Espaço ou Seta para Cima para pular)
+        window.addEventListener('keydown', (e) => {
+            if ((e.code === 'Space' || e.code === 'ArrowUp') && !isJumping && gameActive) {
+                isJumping = true;
+                playerVelocityY = jumpVelocity;
+            }
+        });
+
+        // Fim de jogo
+        function gameOver() {
+            gameActive = false;
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('game-over').style.display = 'flex';
+        }
+
+        // Reiniciar Partida
+        function restartGame() {
+            // Resetar variáveis
+            score = 0;
+            speed = 0.15;
+            jumpVelocity = 0.22;
+            currentColorStage = 0;
+            document.getElementById('score-val').innerText = score;
+            document.getElementById('game-over').style.display = 'none';
+
+            // Resetar materiais
+            playerMaterial.color.setHex(0xe11a22);
+            obstacleMaterial.color.setHex(0xffcc00);
+
+            // Resetar posições
+            player.position.set(0, 0.75, 2);
+            isJumping = false;
+            playerVelocityY = 0;
+
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].position.z = -15 - (i * 20);
+            }
+
+            gameActive = true;
+            animate();
+        }
+
+        // Ajustar tela caso o usuário mude o tamanho da janela
+        window.addEventListener('resize', () => {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
     </script>
 </body>
 </html>
