@@ -3,245 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Craft 8-Bit Edition</title>
+    <title>Jogo de Guerra 2D - Linhas de Frente</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            font-family: 'Courier New', Courier, monospace;
-            user-select: none;
-            background-color: #000;
+            background-color: #2e3d23;
+            font-family: sans-serif;
         }
-        #crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 10px;
-            height: 10px;
-            transform: translate(-50%, -50%);
-            color: #fff;
-            font-size: 24px;
-            font-weight: bold;
-            pointer-events: none;
-            text-shadow: 2px 2px #000;
-        }
-        #instructions {
+        #ui {
             position: absolute;
             top: 10px;
             left: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #55ff55;
+            color: white;
+            background: rgba(0, 0, 0, 0.8);
             padding: 15px;
-            border: 3px solid #55ff55;
-            border-radius: 0px;
+            border-radius: 8px;
             pointer-events: none;
-            font-size: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-        /* Efeito de linhas de varredura CRT opcional para dar mais clima retrô */
-        #crt-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 4px, 6px 100%;
-            pointer-events: none;
+        #controles {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #ccc;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div id="crosshair">+</div>
-    <div id="instructions">
-        === MINI CRAFT 8-BIT ===<br><br>
-        CLIQUE NA TELA PARA JOGAR<br>
-        W, A, S, D - MOVER<br>
-        ESPAÇO      - PULAR<br>
-        BOTÃO ESQ.  - DESTRUIR<br>
-        BOTÃO DIR.  - CONSTRUIR
+    <div id="ui">
+        <h2>Painel de Controle (2D)</h2>
+        <p>Unidade Atual: <strong id="unidade-ativa" style="color: #00ff00;">Soldado</strong></p>
+        <hr>
+        <div id="controles">
+            <strong>Mudar de Unidade Aliada:</strong><br>
+            [1] Soldado | [2] Tanque | [3] Avião<br><br>
+            <strong>Movimentação:</strong><br>
+            W / S - Andar para Frente / Trás<br>
+            A / D - Girar Direção<br>
+            Espaço - Turbo (Apenas Avião)
+        </div>
     </div>
-    <div id="crt-overlay"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 
     <script>
-        // --- CONFIGURAÇÃO DA CENA ---
+        // --- CONFIGURAÇÃO DO AMBIENTE 2D ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x4a74b4); // Azul retro
-        scene.fog = new THREE.FogExp2(0x4a74b4, 0.03);
 
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: false }); // Antialias falso ajuda no look pixelado
+        // Criando uma Câmera Ortográfica ideal para jogos 2D/Top-down
+        const aspecto = window.innerWidth / window.innerHeight;
+        const tamanhoVisao = 40; 
+        const camera = new THREE.OrthographicCamera(
+            -tamanhoVisao * aspecto, tamanhoVisao * aspecto, 
+            tamanhoVisao, -tamanhoVisao, 
+            0.1, 1000
+        );
+        
+        // Posiciona a câmera diretamente olhando de cima para baixo
+        camera.position.set(0, 0, 50); 
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // --- PÓS-PROCESSAMENTO (EFEITO 8-BIT / PIXELADO) ---
-        const composer = new THREE.EffectComposer(renderer);
-        const renderPass = new THREE.RenderPass(scene, camera);
-        composer.addPass(renderPass);
-
-        // Shader customizado para reduzir a resolução da imagem renderizada
-        const PixelShader = {
-            uniforms: {
-                "tDiffuse": { value: null },
-                "resolution": { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-                "pixelSize": { value: 6.0 } // QUANTO MAIOR O NÚMERO, MAIS 8-BIT FICA
-            },
-            vertexShader: `
-                varying vec2 vUv;
-                void main() {
-                    vUv = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform sampler2D tDiffuse;
-                uniform vec2 resolution;
-                uniform float pixelSize;
-                varying vec2 vUv;
-                void main() {
-                    vec2 dxy = pixelSize / resolution;
-                    vec2 coord = dxy * Math.floor(vUv / dxy);
-                    gl_FragColor = texture2D(tDiffuse, coord);
-                }
-            `
-        };
-
-        // Correção de sintaxe para o shader nativo rodar no WebGL do Three.js
-        PixelShader.fragmentShader = PixelShader.fragmentShader.replace('Math.floor', 'floor'); 
-
-        const pixelPass = new THREE.ShaderPass(PixelShader);
-        composer.addPass(pixelPass);
-
-        // --- CONTROLES ---
-        const controls = new THREE.PointerLockControls(camera, document.body);
-        document.body.addEventListener('click', () => { controls.lock(); });
-
-        const keys = { w: false, a: false, s: false, d: false, space: false };
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyW') keys.w = true;
-            if (e.code === 'KeyA') keys.a = true;
-            if (e.code === 'KeyS') keys.s = true;
-            if (e.code === 'KeyD') keys.d = true;
-            if (e.code === 'Space') keys.space = true;
-        });
-        document.addEventListener('keyup', (e) => {
-            if (e.code === 'KeyW') keys.w = false;
-            if (e.code === 'KeyA') keys.a = false;
-            if (e.code === 'KeyS') keys.s = false;
-            if (e.code === 'KeyD') keys.d = false;
-            if (e.code === 'Space') keys.space = false;
-        });
-
-        // --- ILUMINAÇÃO ESTILO RETRÔ ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        // Iluminação simples para destacar as cores no plano
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        directionalLight.position.set(20, 40, 20);
-        scene.add(directionalLight);
+        // --- VARIÁVEIS DE JOGO ---
+        let tipoUnidade = 'soldado'; 
+        const teclado = {};
+        const unidadesAliadas = {};
+        const unidadesInimigas = [];
 
-        // --- GERAÇÃO DE BLOCOS ---
-        const blocks = [];
-        const materials = {
-            grass: new THREE.MeshLambertMaterial({ color: 0x38733c }), // Cores saturadas estilo NES/Brick
-            dirt: new THREE.MeshLambertMaterial({ color: 0x6e473b }),
-            stone: new THREE.MeshLambertMaterial({ color: 0x666666 })
-        };
-        const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
+        // --- CRIAÇÃO DE MODELOS 2D ---
 
-        function createBlock(x, y, z, type) {
-            const mesh = new THREE.Mesh(blockGeometry, materials[type]);
-            mesh.position.set(x, y, z);
-            scene.add(mesh);
-            blocks.push(mesh);
+        // 1. Soldado (Círculo com indicador de direção)
+        function criarSoldado2D(cor) {
+            const grupo = new THREE.Group();
+            const corpo = new THREE.Mesh(new THREE.CircleGeometry(1, 32), new THREE.MeshBasicMaterial({ color: cor }));
+            grupo.add(corpo);
+            
+            const indicador = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.2), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+            indicador.position.y = 0.8; 
+            grupo.add(indicador);
+            return grupo;
         }
 
-        // Gerar Mapa Pequeno e Compacto
-        const worldSize = 14;
-        for (let x = -worldSize/2; x < worldSize/2; x++) {
-            for (let z = -worldSize/2; z < worldSize/2; z++) {
-                let height = Math.floor(Math.sin(x * 0.4) * 1.5 + Math.cos(z * 0.4) * 1.5);
-                
-                createBlock(x, height, z, 'grass');
-                createBlock(x, height - 1, z, 'dirt');
-                createBlock(x, height - 2, z, 'stone');
-            }
+        // 2. Tanque (Retângulo com canhão)
+        function criarTanque2D(cor) {
+            const grupo = new THREE.Group();
+            const base = new THREE.Mesh(new THREE.BoxGeometry(3, 4), new THREE.MeshBasicMaterial({ color: cor }));
+            grupo.add(base);
+
+            const canhao = new THREE.Mesh(new THREE.BoxGeometry(0.6, 3), new THREE.MeshBasicMaterial({ color: 0x111111 }));
+            canhao.position.y = 2;
+            grupo.add(canhao);
+            return grupo;
         }
 
-        camera.position.set(0, 4, 0);
+        // 3. Avião (Formato de Cruz/Asas)
+        function criarAviao2D(cor) {
+            const grupo = new THREE.Group();
+            const corpo = new THREE.Mesh(new THREE.BoxGeometry(0.8, 5), new THREE.MeshBasicMaterial({ color: cor }));
+            grupo.add(corpo);
 
-        // --- FÍSICA ---
-        let velocityY = 0;
-        const gravity = -0.015;
-        const jumpForce = 0.22;
-        const playerSpeed = 0.08;
-
-        function updatePhysics() {
-            if (!controls.isLocked) return;
-
-            velocityY += gravity;
-            camera.position.y += velocityY;
-
-            let floorY = 2.8; // Altura fixa de colisão simplificada
-            if (camera.position.y < floorY) {
-                camera.position.y = floorY;
-                velocityY = 0;
-                if (keys.space) velocityY = jumpForce;
-            }
-
-            if (keys.w) controls.moveForward(playerSpeed);
-            if (keys.s) controls.moveForward(-playerSpeed);
-            if (keys.a) controls.moveRight(-playerSpeed);
-            if (keys.d) controls.moveRight(playerSpeed);
+            const asas = new THREE.Mesh(new THREE.BoxGeometry(5, 0.8), new THREE.MeshBasicMaterial({ color: cor }));
+            asas.position.y = 0.5;
+            grupo.add(asas);
+            return grupo;
         }
 
-        // --- CONSTRUIR E DESTRUIR ---
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2(0, 0);
+        // --- POSICIONAMENTO DAS LINHAS DE FRENTE (ESQUERDA VS DIREITA) ---
 
-        window.addEventListener('pointerdown', (e) => {
-            if (!controls.isLocked) return;
+        // LADO ESQUERDO: Seus Aliados (Verdes e Azul)
+        unidadesAliadas.soldado = criarSoldado2D(0x2e8b57);
+        unidadesAliadas.tanque = criarTanque2D(0x556b2f);
+        unidadesAliadas.aviao = criarAviao2D(0x4682b4);
 
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(blocks);
+        unidadesAliadas.soldado.position.set(-25, 10, 0);
+        unidadesAliadas.tanque.position.set(-25, -10, 0);
+        unidadesAliadas.aviao.position.set(-35, 0, 0);
 
-            if (intersects.length > 0 && intersects[0].distance < 6) {
-                const intersect = intersects[0];
+        // Virar todos para a direita inicialmente (eixo X positivo)
+        unidadesAliadas.soldado.rotation.z = -Math.PI / 2;
+        unidadesAliadas.tanque.rotation.z = -Math.PI / 2;
+        unidadesAliadas.aviao.rotation.z = -Math.PI / 2;
 
-                if (e.button === 0) { // Clique Esquerdo: Quebrar
-                    scene.remove(intersect.object);
-                    const index = blocks.indexOf(intersect.object);
-                    if (index > -1) blocks.splice(index, 1);
-                } 
-                else if (e.button === 2) { // Clique Direito: Construir
-                    const position = intersect.point.clone().add(intersect.face.normal.clone().multiplyScalar(0.5));
-                    createBlock(Math.round(position.x), Math.round(position.y), Math.round(position.z), 'stone');
-                }
-            }
+        scene.add(unidadesAliadas.soldado);
+        scene.add(unidadesAliadas.tanque);
+        scene.add(unidadesAliadas.aviao);
+
+        // LADO DIREITO: Inimigos (Vermelhos)
+        const configsInimigos = [
+            { tipo: 'soldado', pos: [25, 15] },
+            { tipo: 'soldado', pos: [25, 5] },
+            { tipo: 'tanque', pos: [25, -10] },
+            { tipo: 'aviao', pos: [35, 0] }
+        ];
+
+        configsInimigos.forEach(cfg => {
+            let inimigo;
+            if (cfg.tipo === 'soldado') inimigo = criarSoldado2D(0x8b0000);
+            if (cfg.tipo === 'tanque') inimigo = criarTanque2D(0x5c0000);
+            if (cfg.tipo === 'aviao') inimigo = criarAviao2D(0x800000);
+            
+            inimigo.position.set(cfg.pos[0], cfg.pos[1], 0);
+            
+            // Virar inimigos para a esquerda (olhando para os aliados)
+            inimigo.rotation.z = Math.PI / 2;
+            
+            scene.add(inimigo);
+            unidadesInimigas.push(inimigo);
         });
 
-        window.addEventListener('contextmenu', e => e.preventDefault());
-
-        // --- LOOP DE REDIRECIONAMENTO ---
-        function animate() {
-            requestAnimationFrame(animate);
-            updatePhysics();
+        // --- ENTRADAS DE TECLADO ---
+        window.addEventListener('keydown', (e) => {
+            teclado[e.key.toLowerCase()] = true;
             
-            // Renderiza usando o Composer (que aplica o filtro pixelado) em vez do renderer padrão
-            composer.render();
+            if (e.key === '1') { tipoUnidade = 'soldado'; atualizarUI('Soldado'); }
+            if (e.key === '2') { tipoUnidade = 'tanque'; atualizarUI('Tanque'); }
+            if (e.key === '3') { tipoUnidade = 'aviao'; atualizarUI('Avião'); }
+        });
+        window.addEventListener('keyup', (e) => { teclado[e.key.toLowerCase()] = false; });
+
+        function atualizarUI(nome) {
+            document.getElementById('unidade-ativa').innerText = nome;
         }
 
+        // --- SISTEMA DE MOVIMENTAÇÃO 2D ---
+        const clock = new THREE.Clock();
+
+        function atualizarMovimento(delta) {
+            const atual = unidadesAliadas[tipoUnidade];
+
+            // Velocidades customizadas por tipo
+            let velocidade = 12 * delta;
+            let velRotacao = 4 * delta;
+
+            if (tipoUnidade === 'tanque') {
+                velocidade = 7 * delta;
+                velRotacao = 2 * delta;
+            } else if (tipoUnidade === 'aviao') {
+                // O avião move-se constantemente para frente em 2D
+                velocidade = (teclado[' '] ? 22 : 14) * delta; 
+                velRotacao = 3 * delta;
+                atual.translateY(velocidade);
+            }
+
+            // Controles de rotação (A e D rotacionam no eixo Z no ambiente 2D)
+            if (teclado['a']) atual.rotation.z += velRotacao;
+            if (teclado['d']) atual.rotation.z -= velRotacao;
+
+            // Movimento de avanço e recuo (Para Soldado e Tanque)
+            if (tipoUnidade !== 'aviao') {
+                if (teclado['w']) atual.translateY(velocidade);
+                if (teclado['s']) atual.translateY(-velocidade);
+            }
+
+            // Câmera 2D segue suavemente a posição da unidade ativa no plano X e Y
+            camera.position.x = atual.position.x;
+            camera.position.y = atual.position.y;
+        }
+
+        // --- LOOP PRINCIPAL ---
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+
+            atualizarMovimento(delta);
+
+            // Pequena movimentação patrulha de simulação para o avião inimigo
+            const aviaoInimigo = unidadesInimigas[3];
+            aviaoInimigo.position.y = Math.sin(clock.getElapsedTime()) * 5;
+
+            renderer.render(scene, camera);
+        }
+
+        // Redimensionamento de tela para manter a proporção ortográfica correta
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            const novoAspecto = window.innerWidth / window.innerHeight;
+            camera.left = -tamanhoVisao * novoAspecto;
+            camera.right = tamanhoVisao * novoAspecto;
+            camera.top = tamanhoVisao;
+            camera.bottom = -tamanhoVisao;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-            composer.setSize(window.innerWidth, window.innerHeight);
-            pixelPass.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
         });
 
         animate();
