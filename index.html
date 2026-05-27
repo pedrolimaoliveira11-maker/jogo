@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo de Guerra 6DoF</title>
+    <title>Jogo de Guerra 6DoF - Linhas de Frente</title>
     <style>
         body {
             margin: 0;
@@ -36,18 +36,18 @@
         <p>Unidade Atual: <strong id="unidade-ativa" style="color: #00ff00;">Soldado</strong></p>
         <hr>
         <div id="controles">
-            <strong>Mudar de Unidade:</strong><br>
+            <strong>Mudar de Unidade Aliada:</strong><br>
             [1] Soldado | [2] Tanque | [3] Avião<br><br>
             <strong>Movimentação:</strong><br>
             W, A, S, D - Mover / Rotacionar<br>
-            Espaço / Shift - Subir / Descer (Avião - 6DoF)
+            Espaço / Shift - Subir / Descer (Avião)
         </div>
     </div>
 
     <script>
         // --- CONFIGURAÇÃO INICIAL DO CENÁRIO ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x334422); // Cor de fundo (campo)
+        scene.background = new THREE.Color(0x334422); 
         scene.fog = new THREE.FogExp2(0x334422, 0.015);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -73,14 +73,14 @@
         scene.add(floor);
 
         // --- VARIÁVEIS DE JOGO ---
-        let tipoUnidade = 'soldado'; // soldado, tanque, aviao
+        let tipoUnidade = 'soldado'; 
         const teclado = {};
         const unidadesAliadas = {};
         const unidadesInimigas = [];
 
-        // --- CRIAÇÃO MODELOS 3D BÁSICOS (GEOMETRIAS) ---
+        // --- CRIAÇÃO MODELOS 3D BÁSICOS ---
 
-        // 1. Soldado (Cápsula/Cilindro)
+        // 1. Soldado
         function criarSoldado(cor) {
             const grupo = new THREE.Group();
             const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.8), new THREE.MeshStandardMaterial({ color: cor }));
@@ -88,14 +88,13 @@
             corpo.castShadow = true;
             grupo.add(corpo);
             
-            // Indicador de direção (arma)
             const arma = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.8), new THREE.MeshStandardMaterial({ color: 0x111 }));
             arma.position.set(0, 1.2, 0.5);
             grupo.add(arma);
             return grupo;
         }
 
-        // 2. Tanque (Caixas e Cilindro)
+        // 2. Tanque
         function criarTanque(cor) {
             const grupo = new THREE.Group();
             const base = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 3), new THREE.MeshStandardMaterial({ color: cor }));
@@ -114,7 +113,7 @@
             return grupo;
         }
 
-        // 3. Avião (Cruz/Asas)
+        // 3. Avião
         function criarAviao(cor) {
             const grupo = new THREE.Group();
             const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.2, 3), new THREE.MeshStandardMaterial({ color: cor }));
@@ -131,28 +130,34 @@
             return grupo;
         }
 
-        // --- INICIALIZAR UNIDADES NO MAPA ---
+        // --- ALINHAMENTO DAS LINHAS DE FRENTE ---
 
-        // Aliados Jogáveis
-        unidadesAliadas.soldado = criarSoldado(0x2e8b57); // Verde Marinho
-        unidadesAliadas.tanque = criarTanque(0x556b2f);   // Verde Oliva
-        unidadesAliadas.aviao = criarAviao(0x4682b4);     // Azul Aço
+        // LADO ESQUERDO: Seus Soldados e Veículos (Aliados - Verdes/Azul)
+        unidadesAliadas.soldado = criarSoldado(0x2e8b57);
+        unidadesAliadas.tanque = criarTanque(0x556b2f);  
+        unidadesAliadas.aviao = criarAviao(0x4682b4);    
 
-        // Posicionamento inicial dos aliados
-        unidadesAliadas.soldado.position.set(-10, 0, 0);
-        unidadesAliadas.tanque.position.set(0, 0, 0);
-        unidadesAliadas.aviao.position.set(10, 15, 0);
+        // Posicionados no eixo X negativo, olhando para a direita (X positivo)
+        unidadesAliadas.soldado.position.set(-30, 0, -10);
+        unidadesAliadas.tanque.position.set(-30, 0, 10);
+        unidadesAliadas.aviao.position.set(-40, 15, 0);
+
+        // Rotacionar para olhar para o lado do inimigo (Direita)
+        unidadesAliadas.soldado.rotation.y = Math.PI / 2;
+        unidadesAliadas.tanque.rotation.y = Math.PI / 2;
+        unidadesAliadas.aviao.rotation.y = Math.PI / 2;
 
         scene.add(unidadesAliadas.soldado);
         scene.add(unidadesAliadas.tanque);
         scene.add(unidadesAliadas.aviao);
 
-        // Criar Inimigos (Vermelhos)
+
+        // LADO DIREITO: Inimigos (Vermelhos)
         const configsInimigos = [
-            { tipo: 'soldado', pos: [-15, 0, -30] },
-            { tipo: 'soldado', pos: [15, 0, -35] },
-            { tipo: 'tanque', pos: [0, 0, -50] },
-            { tipo: 'aviao', pos: [0, 20, -60] }
+            { tipo: 'soldado', pos: [30, 0, -15] },
+            { tipo: 'soldado', pos: [30, 0, -5] },
+            { tipo: 'tanque', pos: [30, 0, 10] },
+            { tipo: 'aviao', pos: [40, 20, 0] }
         ];
 
         configsInimigos.forEach(cfg => {
@@ -162,8 +167,10 @@
             if (cfg.tipo === 'aviao') inimigo = criarAviao(0x800000);
             
             inimigo.position.set(cfg.pos[0], cfg.pos[1], cfg.pos[2]);
-            // Girar inimigos de frente para o jogador
-            inimigo.rotation.y = Math.PI;
+            
+            // Rotacionar para olhar para o seu lado (Esquerda)
+            inimigo.rotation.y = -Math.PI / 2;
+            
             scene.add(inimigo);
             unidadesInimigas.push(inimigo);
         });
@@ -172,10 +179,9 @@
         window.addEventListener('keydown', (e) => {
             teclado[e.key.toLowerCase()] = true;
             
-            // Troca de personagens pelas teclas 1, 2 e 3
             if (e.key === '1') { tipoUnidade = 'soldado'; atualizarUI('Soldado'); }
             if (e.key === '2') { tipoUnidade = 'tanque'; atualizarUI('Tanque'); }
-            if (e.key === '3') { tipoUnidade = 'aviao'; atualizarUI('Avião (6DoF)'); }
+            if (e.key === '3') { tipoUnidade = 'aviao'; atualizarUI('Avião'); }
         });
         window.addEventListener('keyup', (e) => { teclado[e.key.toLowerCase()] = false; });
 
@@ -183,91 +189,69 @@
             document.getElementById('unidade-ativa').innerText = nome;
         }
 
-        // --- LÓGICA DE MOVIMENTAÇÃO E FÍSICA (6DoF) ---
+        // --- LÓGICA DE MOVIMENTAÇÃO ---
         const clock = new THREE.Clock();
 
         function atualizarMovimento(delta) {
             const atual = unidadesAliadas[tipoUnidade];
 
-            if (tipoUnidade === 'soldado') {
-                // Controle padrão terrestre (3D clássico)
-                const vel = 8 * delta;
-                const rotVel = 3 * delta;
+            if (tipoUnidade === 'soldado' || tipoUnidade === 'tanque') {
+                const vel = (tipoUnidade === 'soldado' ? 8 : 5) * delta;
+                const rotVel = (tipoUnidade === 'soldado' ? 3 : 1.5) * delta;
+                
+                // Mover para frente/trás baseado na direção atual do modelo
                 if (teclado['w']) atual.translateZ(vel);
                 if (teclado['s']) atual.translateZ(-vel);
                 if (teclado['a']) atual.rotation.y += rotVel;
                 if (teclado['d']) atual.rotation.y -= rotVel;
-                // Prender no chão
-                atual.position.y = 0;
-            } 
-            
-            else if (tipoUnidade === 'tanque') {
-                // Controle de tanque pesado
-                const vel = 5 * delta;
-                const rotVel = 1.5 * delta;
-                if (teclado['w']) atual.translateZ(vel);
-                if (teclado['s']) atual.translateZ(-vel);
-                if (teclado['a']) atual.rotation.y += rotVel;
-                if (teclado['d']) node = atual.rotation.y -= rotVel;
                 atual.position.y = 0;
             } 
             
             else if (tipoUnidade === 'aviao') {
-                // Mecânica Simulada de 6 Graus de Liberdade (6DoF)
                 const velVoo = 15 * delta;
                 const velRot = 2 * delta;
 
-                // Propulsão constante para frente
+                // Avanço contínuo
                 atual.translateZ(velVoo);
 
-                // Controles de Arfagem (Pitch - Inclinar para cima/baixo)
+                // Controles de inclinação e rotação (6DoF)
                 if (teclado['w']) atual.rotateX(velRot);
                 if (teclado['s']) atual.rotateX(-velRot);
-
-                // Controles de Rolamento (Roll - Inclinar asas)
                 if (teclado['a']) atual.rotateZ(velRot);
                 if (teclado['d']) atual.rotateZ(-velRot);
+                if (teclado[' ']) atual.position.y += velVoo * 0.5; 
+                if (teclado['shift']) atual.position.y -= velVoo * 0.5; 
 
-                // Controles de Guinada / Altitude extra (Yaw/Heave)
-                if (teclado[' ']) atual.position.y += velVoo * 0.5; // Espaço sobre
-                if (teclado['shift']) atual.position.y -= velVoo * 0.5; // Shift desce
-
-                // Evitar que o avião atravesse o chão
                 if (atual.position.y < 1) atual.position.y = 1;
             }
 
-            // --- CÂMERA SEGUINDO A UNIDADE ATIVA ---
-            const offset = new THREE.Vector3(0, 5, -12); // Posição atrás e acima do veículo
+            // Câmera posicionada atrás da unidade selecionada
+            const offset = new THREE.Vector3(0, 4, -10); 
             offset.applyQuaternion(atual.quaternion);
             camera.position.copy(atual.position).add(offset);
             camera.lookAt(atual.position.clone().add(new THREE.Vector3(0, 1, 0)));
         }
 
-        // --- Loop Principal de Renderização ---
+        // --- LOOP PRINCIPAL ---
         function animate() {
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
 
             atualizarMovimento(delta);
 
-            // Pequena animação de flutuação para os inimigos aéreos
-            unidadesInimigas.forEach((inimigo, index) => {
-                if(index === 3) { // O avião inimigo
-                    inimigo.position.y = 20 + Math.sin(clock.getElapsedTime() + index) * 2;
-                }
-            });
+            // Animação leve para o avião inimigo pairar no ar
+            const aviaoInimigo = unidadesInimigas[3];
+            aviaoInimigo.position.y = 20 + Math.sin(clock.getElapsedTime() * 1.5) * 2;
 
             renderer.render(scene, camera);
         }
 
-        // Ajustar tela caso mude o tamanho do navegador
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Iniciar o jogo
         animate();
     </script>
 </body>
