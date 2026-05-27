@@ -3,240 +3,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>São Paulo 4D: War Zone & Dimensions</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <title>Jogo de Guerra 6DoF</title>
     <style>
-        * {
+        body {
             margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body, html {
-            width: 100%;
-            height: 100%;
             overflow: hidden;
-            background-color: #020202;
+            background-color: #000;
+            font-family: sans-serif;
         }
-        /* Tela de Login */
-        #login-screen {
+        #ui {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1543269664-76bc3997d9ea?q=80&w=1200') no-repeat center center/cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
-        .login-box {
-            background: rgba(20, 20, 20, 0.95);
-            padding: 40px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 0 30px rgba(225, 26, 34, 0.4);
-            max-width: 420px;
-            width: 90%;
-            color: #fff;
-            border: 2px solid #e11a22;
-        }
-        .login-box h1 { font-size: 26px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;}
-        .login-box p { color: #ccc; margin-bottom: 25px; font-size: 14px; }
-        .google-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #ffffff;
-            color: #222;
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 16px;
-            width: 100%;
-            transition: background 0.2s;
-        }
-        .google-btn:hover { background: #e5e5e5; }
-        .google-btn img { width: 22px; height: 22px; margin-right: 15px; }
-
-        /* HUD Superior */
-        #game-ui {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 10px;
+            left: 10px;
             color: white;
-            font-size: 18px;
-            font-weight: bold;
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(0, 0, 0, 0.7);
             padding: 15px;
             border-radius: 8px;
-            border-left: 5px solid #e11a22;
-            z-index: 5;
-            display: none;
+            pointer-events: none;
         }
-        #controls-ui {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            color: #00ffcc;
+        #controles {
+            margin-top: 10px;
             font-size: 14px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #00ffcc;
-            z-index: 5;
-            display: none;
-        }
-        #powerup-notice {
-            position: absolute;
-            top: 30%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 0, 85, 0.9);
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 22px;
-            font-weight: bold;
-            color: #fff;
-            display: none;
-            box-shadow: 0 0 25px #ff0055;
-            z-index: 6;
-            text-align: center;
-        }
-
-        /* Telas de Fim de Jogo */
-        #game-over {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            z-index: 8;
-            display: none;
-        }
-        #game-over h2 { font-size: 42px; color: #ff3333; margin-bottom: 20px; }
-        #game-over button {
-            padding: 12px 35px;
-            font-size: 18px;
-            font-weight: bold;
-            background: #e11a22;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 25px;
-        }
-
-        /* Background de SP */
-        #bg-canvas {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            background: url('https://images.unsplash.com/photo-1543269664-76bc3997d9ea?q=80&w=1600') no-repeat center center/cover;
-            opacity: 0.25;
-        }
-        #three-canvas {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
+            color: #aaa;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div id="bg-canvas"></div>
-
-    <div id="login-screen">
-        <div class="login-box">
-            <h1>São Paulo 4D: Battlefield</h1>
-            <p>Controle tanques, aviões e infantaria na dimensão de guerra!</p>
-            <button class="google-btn" onclick="startGame()">
-                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" alt="Google">
-                Entrar com o Google
-            </button>
+    <div id="ui">
+        <h2>Painel de Controle</h2>
+        <p>Unidade Atual: <strong id="unidade-ativa" style="color: #00ff00;">Soldado</strong></p>
+        <hr>
+        <div id="controles">
+            <strong>Mudar de Unidade:</strong><br>
+            [1] Soldado | [2] Tanque | [3] Avião<br><br>
+            <strong>Movimentação:</strong><br>
+            W, A, S, D - Mover / Rotacionar<br>
+            Espaço / Shift - Subir / Descer (Avião - 6DoF)
         </div>
     </div>
 
-    <div id="game-ui">
-        PONTOS: <span id="score-val">0</span><br>
-        DIMENSÃO: <span id="dim-val" style="color: #ff0055;">3D REALITY</span><br>
-        CONTROLANDO: <span id="unit-val" style="color: #00ffcc;">SOLDADO</span>
-    </div>
-
-    <div id="controls-ui">
-        <strong>COMANDOS DE COMBATE:</strong><br>
-        • Mover: Setas / WASD<br>
-        • Pular / Subir: Espaço<br>
-        • <span style="color: #ffcc00; font-weight:bold;">Mudar Veículo/Unidade: Tecla [ E ]</span>
-    </div>
-
-    <div id="powerup-notice">
-        🌀 DOBRA TEMPORAL 4D (200 PTS)!<br>
-        <span style="font-size:14px; font-weight:normal;">Mundo distorcido + Velocidade Máxima Ativada!</span>
-    </div>
-
-    <div id="game-over">
-        <h2>UNIDADE DESTRUÍDA</h2>
-        <p>Você caiu em combate nas ruas de São Paulo!</p>
-        <p>Pontuação de Guerra: <span id="final-score">0</span></p>
-        <button onclick="restartGame()">Implantar Nova Linha Temporal</button>
-    </div>
-
-    <canvas id="three-canvas"></canvas>
-
     <script>
-        let scene, camera, renderer, clock;
-        let gameActive = false;
-        let score = 0;
-        let currentStage = 0;
-        let 4dFactor = 0;
+        // --- CONFIGURAÇÃO INICIAL DO CENÁRIO ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x334422); // Cor de fundo (campo)
+        scene.fog = new THREE.FogExp2(0x334422, 0.015);
 
-        // Entidades do jogo
-        let playerGroup; // O contêiner de quem você controla
-        let currentVehicleType = 0; // 0 = Soldado, 1 = Tanque, 2 = Avião
-        let enemies = [];
-        let timeTrails = [];
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
 
-        // Configurações de Física Dinâmica
-        let input = { left: false, right: false, up: false, down: false };
-        let speed = 0.2;
-        let jumpVelocity = 0.25;
-        let gravity = 0.01;
-        let velocityY = 0;
-        let isJumping = false;
+        // Iluminação
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(20, 40, 20);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
 
-        // Materiais com cores de facção
-        let allyMat, enemyMat, trackMat;
+        // Chão (Campo de Batalha)
+        const floorGeo = new THREE.PlaneGeometry(500, 500);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x556b2f });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
 
-        function initGame() {
-            const canvas = document.getElementById('three-canvas');
-            scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x020202, 0.012);
-            clock = new THREE.Clock();
+        // --- VARIÁVEIS DE JOGO ---
+        let tipoUnidade = 'soldado'; // soldado, tanque, aviao
+        const teclado = {};
+        const unidadesAliadas = {};
+        const unidadesInimigas = [];
 
-            camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // --- CRIAÇÃO MODELOS 3D BÁSICOS (GEOMETRIAS) ---
+
+        // 1. Soldado (Cápsula/Cilindro)
+        function criarSoldado(cor) {
+            const grupo = new THREE.Group();
+            const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.8), new THREE.MeshStandardMaterial({ color: cor }));
+            corpo.position.y = 0.9;
+            corpo.castShadow = true;
+            grupo.add(corpo);
             
-            renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+            // Indicador de direção (arma)
+            const arma = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.8), new THREE.MeshStandardMaterial({ color: 0x111 }));
+            arma.position.set(0, 1.2, 0.5);
+            grupo.add(arma);
+            return grupo;
+        }
+
+        // 2. Tanque (Caixas e Cilindro)
+        function criarTanque(cor) {
+            const grupo = new THREE.Group();
+            const base = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 3), new THREE.MeshStandardMaterial({ color: cor }));
+            base.position.y = 0.5;
+            base.castShadow = true;
+            grupo.add(base);
+
+            const torre = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.6, 1.5), new THREE.MeshStandardMaterial({ color: cor - 0x111111 }));
+            torre.position.set(0, 1.3, -0.2);
+            grupo.add(torre);
+
+            const canhao = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 2), new THREE.MeshStandardMaterial({ color: 0x222222 }));
+            canhao.rotation.x = Math.PI / 2;
+            canhao.position.set(0, 1.3, 1);
+            grupo.add(canhao);
+            return grupo;
+        }
+
+        // 3. Avião (Cruz/Asas)
+        function criarAviao(cor) {
+            const grupo = new THREE.Group();
+            const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.2, 3), new THREE.MeshStandardMaterial({ color: cor }));
+            corpo.rotation.x = Math.PI / 2;
+            grupo.add(corpo);
+
+            const asas = new THREE.Mesh(new THREE.BoxGeometry(4, 0.1, 1), new THREE.MeshStandardMaterial({ color: cor }));
+            asas.position.set(0, 0, 0.2);
+            grupo.add(asas);
+
+            const cauda = new THREE.Mesh(new THREE.BoxGeometry(1, 0.5, 0.1), new THREE.MeshStandardMaterial({ color: cor }));
+            cauda.position.set(0, 0.3, -1.3);
+            grupo.add(cauda);
+            return grupo;
+        }
+
+        // --- INICIALIZAR UNIDADES NO MAPA ---
+
+        // Aliados Jogáveis
+        unidadesAliadas.soldado = criarSoldado(0x2e8b57); // Verde Marinho
+        unidadesAliadas.tanque = criarTanque(0x556b2f);   // Verde Oliva
+        unidadesAliadas.aviao = criarAviao(0x4682b4);     // Azul Aço
+
+        // Posicionamento inicial dos aliados
+        unidadesAliadas.soldado.position.set(-10, 0, 0);
+        unidadesAliadas.tanque.position.set(0, 0, 0);
+        unidadesAliadas.aviao.position.set(10, 15, 0);
+
+        scene.add(unidadesAliadas.soldado);
+        scene.add(unidadesAliadas.tanque);
+        scene.add(unidadesAliadas.aviao);
+
+        // Criar Inimigos (Vermelhos)
+        const configsInimigos = [
+            { tipo: 'soldado', pos: [-15, 0, -30] },
+            { tipo: 'soldado', pos: [15, 0, -35] },
+            { tipo: 'tanque', pos: [0, 0, -50] },
+            { tipo: 'aviao', pos: [0, 20, -60] }
+        ];
+
+        configsInimigos.forEach(cfg => {
+            let inimigo;
+            if (cfg.tipo === 'soldado') inimigo = criarSoldado(0x8b0000);
+            if (cfg.tipo === 'tanque') inimigo = criarTanque(0x5c0000);
+            if (cfg.tipo === 'aviao') inimigo = criarAviao(0x800000);
+            
+            inimigo.position.set(cfg.pos[0], cfg.pos[1], cfg.pos[2]);
+            // Girar inimigos de frente para o jogador
+            inimigo.rotation.y = Math.PI;
+            scene.add(inimigo);
+            unidadesInimigas.push(inimigo);
+        });
+
+        // --- SISTEMA DE ENTRADA (TECLADO) ---
+        window.addEventListener('keydown', (e) => {
+            teclado[e.key.toLowerCase()] = true;
+            
+            // Troca de personagens pelas teclas 1, 2 e 3
+            if (e.key === '1') { tipoUnidade = 'soldado'; atualizarUI('Soldado'); }
+            if (e.key === '2') { tipoUnidade = 'tanque'; atualizarUI('Tanque'); }
+            if (e.key === '3') { tipoUnidade = 'aviao'; atualizarUI('Avião (6DoF)'); }
+        });
+        window.addEventListener('keyup', (e) => { teclado[e.key.toLowerCase()] = false; });
+
+        function atualizarUI(nome) {
+            document.getElementById('unidade-ativa').innerText = nome;
+        }
+
+        // --- LÓGICA DE MOVIMENTAÇÃO E FÍSICA (6DoF) ---
+        const clock = new THREE.Clock();
+
+        function atualizarMovimento(delta) {
+            const atual = unidadesAliadas[tipoUnidade];
+
+            if (tipoUnidade === 'soldado') {
+                // Controle padrão terrestre (3D clássico)
+                const vel = 8 * delta;
+                const rotVel = 3 * delta;
+                if (teclado['w']) atual.translateZ(vel);
+                if (teclado['s']) atual.translateZ(-vel);
+                if (teclado['a']) atual.rotation.y += rotVel;
+                if (teclado['d']) atual.rotation.y -= rotVel;
+                // Prender no chão
+                atual.position.y = 0;
+            } 
+            
+            else if (tipoUnidade === 'tanque') {
+                // Controle de tanque pesado
+                const vel = 5 * delta;
+                const rotVel = 1.5 * delta;
+                if (teclado['w']) atual.translateZ(vel);
+                if (teclado['s']) atual.translateZ(-vel);
+                if (teclado['a']) atual.rotation.y += rotVel;
+                if (teclado['d']) node = atual.rotation.y -= rotVel;
+                atual.position.y = 0;
+            } 
+            
+            else if (tipoUnidade === 'aviao') {
+                // Mecânica Simulada de 6 Graus de Liberdade (6DoF)
+                const velVoo = 15 * delta;
+                const velRot = 2 * delta;
+
+                // Propulsão constante para frente
+                atual.translateZ(velVoo);
+
+                // Controles de Arfagem (Pitch - Inclinar para cima/baixo)
+                if (teclado['w']) atual.rotateX(velRot);
+                if (teclado['s']) atual.rotateX(-velRot);
+
+                // Controles de Rolamento (Roll - Inclinar asas)
+                if (teclado['a']) atual.rotateZ(velRot);
+                if (teclado['d']) atual.rotateZ(-velRot);
+
+                // Controles de Guinada / Altitude extra (Yaw/Heave)
+                if (teclado[' ']) atual.position.y += velVoo * 0.5; // Espaço sobre
+                if (teclado['shift']) atual.position.y -= velVoo * 0.5; // Shift desce
+
+                // Evitar que o avião atravesse o chão
+                if (atual.position.y < 1) atual.position.y = 1;
+            }
+
+            // --- CÂMERA SEGUINDO A UNIDADE ATIVA ---
+            const offset = new THREE.Vector3(0, 5, -12); // Posição atrás e acima do veículo
+            offset.applyQuaternion(atual.quaternion);
+            camera.position.copy(atual.position).add(offset);
+            camera.lookAt(atual.position.clone().add(new THREE.Vector3(0, 1, 0)));
+        }
+
+        // --- Loop Principal de Renderização ---
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+
+            atualizarMovimento(delta);
+
+            // Pequena animação de flutuação para os inimigos aéreos
+            unidadesInimigas.forEach((inimigo, index) => {
+                if(index === 3) { // O avião inimigo
+                    inimigo.position.y = 20 + Math.sin(clock.getElapsedTime() + index) * 2;
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        // Ajustar tela caso mude o tamanho do navegador
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+        });
 
-            // Luzes de Combate
-            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambient);
-            const sun = new THREE.DirectionalLight(0xffaa66, 0.8);
-            sun.position.set(10, 20, 10);
-            scene.add(sun);
-
-            // Definição de Cores Base
-            allyMat = new THREE.MeshStandardMaterial({ color: 0x0077ff, roughness: 0.4 }); // Aliados (Azul)
-            enemyMat = new THREE.MeshStandardMaterial({ color: 0xff1133, roughness: 0.4 }); // Inimigos (Vermelho)
-            trackMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-
-            // Campo/Rua de Combate (Marginal Pinheiros estilizada)
-            const streetGeo = new THREE.BoxGeometry(16, 0.2
+        // Iniciar o jogo
+        animate();
+    </script>
+</body>
+</html>
