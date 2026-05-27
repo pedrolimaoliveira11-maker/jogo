@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warzone 6D - Malsi Annihilation</title>
+    <title>São Paulo 4D: War Zone & Dimensions</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         body, html {
             width: 100%;
@@ -18,170 +18,225 @@
             overflow: hidden;
             background-color: #020202;
         }
+        /* Tela de Login */
+        #login-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1543269664-76bc3997d9ea?q=80&w=1200') no-repeat center center/cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .login-box {
+            background: rgba(20, 20, 20, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(225, 26, 34, 0.4);
+            max-width: 420px;
+            width: 90%;
+            color: #fff;
+            border: 2px solid #e11a22;
+        }
+        .login-box h1 { font-size: 26px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;}
+        .login-box p { color: #ccc; margin-bottom: 25px; font-size: 14px; }
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            color: #222;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .google-btn:hover { background: #e5e5e5; }
+        .google-btn img { width: 22px; height: 22px; margin-right: 15px; }
+
         /* HUD Superior */
-        #hud {
+        #game-ui {
             position: absolute;
             top: 20px;
             left: 20px;
-            color: #ff3333;
-            font-size: 20px;
-            font-weight: bold;
-            z-index: 10;
-            text-shadow: 0 0 8px rgba(255,0,0,0.8);
-            pointer-events: none;
-        }
-        #hud div { margin-bottom: 5px; }
-        
-        /* Indicador de Status 6D */
-        #dimension-status {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            color: #00ffff;
+            color: white;
             font-size: 18px;
-            z-index: 10;
-            text-shadow: 0 0 10px #00ffff;
-            text-align: right;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #e11a22;
+            z-index: 5;
+            display: none;
+        }
+        #controls-ui {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #00ffcc;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #00ffcc;
+            z-index: 5;
+            display: none;
+        }
+        #powerup-notice {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 85, 0.9);
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+            display: none;
+            box-shadow: 0 0 25px #ff0055;
+            z-index: 6;
+            text-align: center;
         }
 
-        /* Tela de fundo real de guerra (suave atrás da renderização quântica) */
-        #war-bg {
+        /* Telas de Fim de Jogo */
+        #game-over {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 8;
+            display: none;
+        }
+        #game-over h2 { font-size: 42px; color: #ff3333; margin-bottom: 20px; }
+        #game-over button {
+            padding: 12px 35px;
+            font-size: 18px;
+            font-weight: bold;
+            background: #e11a22;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 25px;
+        }
+
+        /* Background de SP */
+        #bg-canvas {
             position: absolute;
             width: 100%;
             height: 100%;
             z-index: 1;
-            background: url('https://images.unsplash.com/photo-1508615070457-7baebd4003ab?q=80&w=1600') no-repeat center center/cover;
+            background: url('https://images.unsplash.com/photo-1543269664-76bc3997d9ea?q=80&w=1600') no-repeat center center/cover;
             opacity: 0.25;
-            filter: grayscale(30%) contrast(120%);
         }
-
         #three-canvas {
             position: absolute;
             width: 100%;
             height: 100%;
             z-index: 2;
         }
-
-        /* Efeito de Flash Quântico na Tela */
-        #flash-effect {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 5;
-            pointer-events: none;
-            box-shadow: inset 0 0 0px rgba(0, 255, 255, 0);
-            transition: box-shadow 0.1s ease;
-        }
-
-        /* Controles/Instruções na tela */
-        #controls-info {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #fff;
-            background: rgba(0,0,0,0.7);
-            padding: 10px 20px;
-            border-radius: 5px;
-            border: 1px solid #ff3333;
-            font-size: 14px;
-            z-index: 10;
-            text-align: center;
-            pointer-events: none;
-        }
-
-        /* Tela de Derrota / Ruína Temporal */
-        #game-over {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            z-index: 20;
-            display: none;
-        }
-        #game-over h1 { font-size: 40px; color: #ff0000; margin-bottom: 20px; text-shadow: 0 0 15px #ff0000; }
-        #game-over button {
-            padding: 12px 30px;
-            font-size: 18px;
-            background: #ff3333;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 0 10px #ff3333;
-        }
     </style>
 </head>
 <body>
 
-    <div id="war-bg"></div>
-    <div id="flash-effect"></div>
+    <div id="bg-canvas"></div>
 
-    <div id="hud">
-        <div>ALVOS MALSI ELIMINADOS: <span id="score">0</span></div>
-        <div>INTEGRIDADE DA TRANCHEIRA: <span id="health">100</span>%</div>
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>São Paulo 4D: Battlefield</h1>
+            <p>Controle tanques, aviões e infantaria na dimensão de guerra!</p>
+            <button class="google-btn" onclick="startGame()">
+                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" alt="Google">
+                Entrar com o Google
+            </button>
+        </div>
     </div>
 
-    <div id="dimension-status">
-        ESTADO: <span id="status-txt" style="color: #ff0055;">GUERRA ATIVA</span><br>
-        MATRIZ DIMENSIONAL: <span id="dim-layer">6D COMPRESSED</span>
+    <div id="game-ui">
+        PONTOS: <span id="score-val">0</span><br>
+        DIMENSÃO: <span id="dim-val" style="color: #ff0055;">3D REALITY</span><br>
+        CONTROLANDO: <span id="unit-val" style="color: #00ffcc;">SOLDADO</span>
     </div>
 
-    <div id="controls-info">
-        [A / D] ou [Setas Esquerda/Direita] para Mover Torreta | [ESPAÇO] para Disparar Laser Quântico
+    <div id="controls-ui">
+        <strong>COMANDOS DE COMBATE:</strong><br>
+        • Mover: Setas / WASD<br>
+        • Pular / Subir: Espaço<br>
+        • <span style="color: #ffcc00; font-weight:bold;">Mudar Veículo/Unidade: Tecla [ E ]</span>
+    </div>
+
+    <div id="powerup-notice">
+        🌀 DOBRA TEMPORAL 4D (200 PTS)!<br>
+        <span style="font-size:14px; font-weight:normal;">Mundo distorcido + Velocidade Máxima Ativada!</span>
     </div>
 
     <div id="game-over">
-        <h1>LINHA TEMPORAL COLAPSADA</h1>
-        <p style="margin-bottom: 20px;">Os Malsis romperam as defesas da sua dimensão.</p>
-        <button onclick="resetGame()">Reiniciar Universo (6D)</button>
+        <h2>UNIDADE DESTRUÍDA</h2>
+        <p>Você caiu em combate nas ruas de São Paulo!</p>
+        <p>Pontuação de Guerra: <span id="final-score">0</span></p>
+        <button onclick="restartGame()">Implantar Nova Linha Temporal</button>
     </div>
 
     <canvas id="three-canvas"></canvas>
 
     <script>
-        // Variáveis do motor 3D
-        let scene, camera, renderer;
-        let player, malsiEnemies = [], lasers = [];
+        let scene, camera, renderer, clock;
+        let gameActive = false;
         let score = 0;
-        let health = 100;
-        let gameActive = true;
+        let currentStage = 0;
+        let 4dFactor = 0;
 
-        // Parâmetros de Controle e Movimento
-        let playerX = 0;
-        let keys = { ArrowLeft: false, ArrowRight: false, KeyA: false, KeyD: false, Space: false };
-        let canShoot = true;
+        // Entidades do jogo
+        let playerGroup; // O contêiner de quem você controla
+        let currentVehicleType = 0; // 0 = Soldado, 1 = Tanque, 2 = Avião
+        let enemies = [];
+        let timeTrails = [];
 
-        // Fatores das dimensões superiores (Tempo, Multiverso e Entropia)
-        let timeScale = 1.0; 
-        let entropyFactor = 0;
-        let clock = new THREE.Clock();
-        
-        let malsiMaterial, playerMaterial, particleGeometry;
+        // Configurações de Física Dinâmica
+        let input = { left: false, right: false, up: false, down: false };
+        let speed = 0.2;
+        let jumpVelocity = 0.25;
+        let gravity = 0.01;
+        let velocityY = 0;
+        let isJumping = false;
 
-        function init() {
+        // Materiais com cores de facção
+        let allyMat, enemyMat, trackMat;
+
+        function initGame() {
             const canvas = document.getElementById('three-canvas');
             scene = new THREE.Scene();
-            
-            // Nevoeiro de guerra volumétrico (Simula distorção atmosférica)
-            scene.fog = new THREE.FogExp2(0x0a0505, 0.02);
+            scene.fog = new THREE.FogExp2(0x020202, 0.012);
+            clock = new THREE.Clock();
 
             camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 5, 12);
-            camera.lookAt(0, 2, -5);
-
+            
             renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
 
-            // Iluminação caótica de combate
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-            scene.add(ambientLight);
+            // Luzes de Combate
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambient);
+            const sun = new THREE.DirectionalLight(0xffaa66, 0.8);
+            sun.position.set(10, 20, 10);
+            scene.add(sun);
 
-            const redAlertLight = new THREE.PointLight(0xff0033, 3, 100);
-            redAlertLight.position.set(0, 10, 5);
-            scene.add(redAlertLight);
+            // Definição de Cores Base
+            allyMat = new THREE.MeshStandardMaterial({ color: 0x0077ff, roughness: 0.4 }); // Aliados (Azul)
+            enemyMat = new THREE.MeshStandardMaterial({ color: 0xff1133, roughness: 0.4 }); // Inimigos (Vermelho)
+            trackMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+
+            // Campo/Rua de Combate (Marginal Pinheiros estilizada)
+            const streetGeo = new THREE.BoxGeometry(16, 0.2
