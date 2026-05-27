@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Craft Clone</title>
+    <title>Mini Craft 8-Bit Edition</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            font-family: 'Courier New', Courier, monospace;
             user-select: none;
+            background-color: #000;
         }
         #crosshair {
             position: absolute;
@@ -18,19 +19,30 @@
             width: 10px;
             height: 10px;
             transform: translate(-50%, -50%);
-            color: white;
-            font-size: 20px;
+            color: #fff;
+            font-size: 24px;
             font-weight: bold;
             pointer-events: none;
+            text-shadow: 2px 2px #000;
         }
         #instructions {
             position: absolute;
             top: 10px;
             left: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #55ff55;
+            padding: 15px;
+            border: 3px solid #55ff55;
+            border-radius: 0px;
+            pointer-events: none;
+            font-size: 12px;
+        }
+        /* Efeito de linhas de varredura CRT opcional para dar mais clima retrô */
+        #crt-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 6px 100%;
             pointer-events: none;
         }
     </style>
@@ -39,35 +51,75 @@
 
     <div id="crosshair">+</div>
     <div id="instructions">
-        <strong>Controles:</strong><br>
-        Clique na tela para ativar o mouse<br>
-        W, A, S, D - Mover<br>
-        Espaço - Pular<br>
-        Clique Esquerdo - Quebrar Bloco<br>
-        Clique Direito - Criar Bloco
+        === MINI CRAFT 8-BIT ===<br><br>
+        CLIQUE NA TELA PARA JOGAR<br>
+        W, A, S, D - MOVER<br>
+        ESPAÇO      - PULAR<br>
+        BOTÃO ESQ.  - DESTRUIR<br>
+        BOTÃO DIR.  - CONSTRUIR
     </div>
+    <div id="crt-overlay"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 
     <script>
-        // --- CONFIGURAÇÃO INICIAL ---
+        // --- CONFIGURAÇÃO DA CENA ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x7ec0ee); // Cor do céu
-        scene.fog = new THREE.FogExp2(0x7ec0ee, 0.02);
+        scene.background = new THREE.Color(0x4a74b4); // Azul retro
+        scene.fog = new THREE.FogExp2(0x4a74b4, 0.03);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: false }); // Antialias falso ajuda no look pixelado
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // --- CONTROLES DE MOVIMENTO (PointerLock) ---
+        // --- PÓS-PROCESSAMENTO (EFEITO 8-BIT / PIXELADO) ---
+        const composer = new THREE.EffectComposer(renderer);
+        const renderPass = new THREE.RenderPass(scene, camera);
+        composer.addPass(renderPass);
+
+        // Shader customizado para reduzir a resolução da imagem renderizada
+        const PixelShader = {
+            uniforms: {
+                "tDiffuse": { value: null },
+                "resolution": { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+                "pixelSize": { value: 6.0 } // QUANTO MAIOR O NÚMERO, MAIS 8-BIT FICA
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D tDiffuse;
+                uniform vec2 resolution;
+                uniform float pixelSize;
+                varying vec2 vUv;
+                void main() {
+                    vec2 dxy = pixelSize / resolution;
+                    vec2 coord = dxy * Math.floor(vUv / dxy);
+                    gl_FragColor = texture2D(tDiffuse, coord);
+                }
+            `
+        };
+
+        // Correção de sintaxe para o shader nativo rodar no WebGL do Three.js
+        PixelShader.fragmentShader = PixelShader.fragmentShader.replace('Math.floor', 'floor'); 
+
+        const pixelPass = new THREE.ShaderPass(PixelShader);
+        composer.addPass(pixelPass);
+
+        // --- CONTROLES ---
         const controls = new THREE.PointerLockControls(camera, document.body);
-        
-        document.body.addEventListener('click', () => {
-            controls.lock();
-        });
+        document.body.addEventListener('click', () => { controls.lock(); });
 
         const keys = { w: false, a: false, s: false, d: false, space: false };
         document.addEventListener('keydown', (e) => {
@@ -85,25 +137,22 @@
             if (e.code === 'Space') keys.space = false;
         });
 
-        // --- ILUMINAÇÃO ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        // --- ILUMINAÇÃO ESTILO RETRÔ ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
-        directionalLight.position.set(10, 20, 15);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(20, 40, 20);
         scene.add(directionalLight);
 
-        // --- GERADOR DE MUNDO (BLOCO) ---
-        const blockSize = 1;
+        // --- GERAÇÃO DE BLOCOS ---
         const blocks = [];
-        
-        // Texturas básicas usando cores sólidas (Grama, Terra, Pedra)
         const materials = {
-            grass: new THREE.MeshLambertMaterial({ color: 0x557a2b }),
-            dirt: new THREE.MeshLambertMaterial({ color: 0x866043 }),
-            stone: new THREE.MeshLambertMaterial({ color: 0x808080 })
+            grass: new THREE.MeshLambertMaterial({ color: 0x38733c }), // Cores saturadas estilo NES/Brick
+            dirt: new THREE.MeshLambertMaterial({ color: 0x6e473b }),
+            stone: new THREE.MeshLambertMaterial({ color: 0x666666 })
         };
-        const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+        const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
 
         function createBlock(x, y, z, type) {
             const mesh = new THREE.Mesh(blockGeometry, materials[type]);
@@ -112,105 +161,87 @@
             blocks.push(mesh);
         }
 
-        // Gerar um terreno simples de 16x16
-        const worldSize = 16;
+        // Gerar Mapa Pequeno e Compacto
+        const worldSize = 14;
         for (let x = -worldSize/2; x < worldSize/2; x++) {
             for (let z = -worldSize/2; z < worldSize/2; z++) {
-                // Altura básica usando seno para fazer pequenas ondulações
-                let height = Math.floor(Math.sin(x * 0.2) * 2 + Math.cos(z * 0.2) * 2);
+                let height = Math.floor(Math.sin(x * 0.4) * 1.5 + Math.cos(z * 0.4) * 1.5);
                 
-                // Camada de Grama
                 createBlock(x, height, z, 'grass');
-                // Camadas de Terra por baixo
                 createBlock(x, height - 1, z, 'dirt');
                 createBlock(x, height - 2, z, 'stone');
             }
         }
 
-        // Posição inicial da câmera (Jogador)
-        camera.position.set(0, 5, 0);
+        camera.position.set(0, 4, 0);
 
-        // --- FÍSICA E GRAVIDADE SIMPLES ---
+        // --- FÍSICA ---
         let velocityY = 0;
-        const gravity = -0.012;
-        const jumpForce = 0.25;
-        const playerSpeed = 0.1;
-        const playerHeight = 1.8;
+        const gravity = -0.015;
+        const jumpForce = 0.22;
+        const playerSpeed = 0.08;
 
         function updatePhysics() {
             if (!controls.isLocked) return;
 
-            // Gravidade
             velocityY += gravity;
             camera.position.y += velocityY;
 
-            // Colisão simples com o chão (y = 0 considerando a altura do relevo aproximada)
-            // Para um jogo real, seria necessário checar o bloco exato abaixo.
-            let terrainHeight = 1; 
-            if (camera.position.y < terrainHeight + playerHeight) {
-                camera.position.y = terrainHeight + playerHeight;
+            let floorY = 2.8; // Altura fixa de colisão simplificada
+            if (camera.position.y < floorY) {
+                camera.position.y = floorY;
                 velocityY = 0;
-                if (keys.space) {
-                    velocityY = jumpForce; // Pular
-                }
+                if (keys.space) velocityY = jumpForce;
             }
 
-            // Movimento estrafado (frente/trás/lados)
             if (keys.w) controls.moveForward(playerSpeed);
             if (keys.s) controls.moveForward(-playerSpeed);
             if (keys.a) controls.moveRight(-playerSpeed);
             if (keys.d) controls.moveRight(playerSpeed);
         }
 
-        // --- QUEBRAR E COLOCAR BLOCOS (Raycasting) ---
+        // --- CONSTRUIR E DESTRUIR ---
         const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2(0, 0); // Centro da tela
+        const mouse = new THREE.Vector2(0, 0);
 
         window.addEventListener('pointerdown', (e) => {
             if (!controls.isLocked) return;
 
-            // Aponta o raio para o centro da tela
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(blocks);
 
             if (intersects.length > 0 && intersects[0].distance < 6) {
                 const intersect = intersects[0];
 
-                if (e.button === 0) {
-                    // Botão Esquerdo: Quebrar bloco
+                if (e.button === 0) { // Clique Esquerdo: Quebrar
                     scene.remove(intersect.object);
                     const index = blocks.indexOf(intersect.object);
                     if (index > -1) blocks.splice(index, 1);
                 } 
-                else if (e.button === 2) {
-                    // Botão Direito: Colocar bloco baseado na face clicada
+                else if (e.button === 2) { // Clique Direito: Construir
                     const position = intersect.point.clone().add(intersect.face.normal.clone().multiplyScalar(0.5));
-                    
-                    // Alinha com a grade do cenário
-                    const bx = Math.round(position.x);
-                    const by = Math.round(position.y);
-                    const bz = Math.round(position.z);
-
-                    createBlock(bx, by, bz, 'dirt');
+                    createBlock(Math.round(position.x), Math.round(position.y), Math.round(position.z), 'stone');
                 }
             }
         });
 
-        // Previnir menu de contexto do clique direito
         window.addEventListener('contextmenu', e => e.preventDefault());
 
-        // --- LOOP DE ANIMAÇÃO ---
+        // --- LOOP DE REDIRECIONAMENTO ---
         function animate() {
             requestAnimationFrame(animate);
             updatePhysics();
-            renderer.render(scene, camera);
+            
+            // Renderiza usando o Composer (que aplica o filtro pixelado) em vez do renderer padrão
+            composer.render();
         }
 
-        // Ajustar tela caso mude de tamanho
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+            pixelPass.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
         });
 
         animate();
