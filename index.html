@@ -3,52 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo de Guerra 6DoF - Linhas de Frente</title>
+    <title>Mini Craft Clone</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #000;
-            font-family: sans-serif;
+            font-family: Arial, sans-serif;
+            user-select: none;
         }
-        #ui {
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+        #instructions {
             position: absolute;
             top: 10px;
             left: 10px;
+            background: rgba(0, 0, 0, 0.5);
             color: white;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 5px;
             pointer-events: none;
         }
-        #controles {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #aaa;
-        }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div id="ui">
-        <h2>Painel de Controle</h2>
-        <p>Unidade Atual: <strong id="unidade-ativa" style="color: #00ff00;">Soldado</strong></p>
-        <hr>
-        <div id="controles">
-            <strong>Mudar de Unidade Aliada:</strong><br>
-            [1] Soldado | [2] Tanque | [3] Avião<br><br>
-            <strong>Movimentação:</strong><br>
-            W, A, S, D - Mover / Rotacionar<br>
-            Espaço / Shift - Subir / Descer (Avião)
-        </div>
+    <div id="crosshair">+</div>
+    <div id="instructions">
+        <strong>Controles:</strong><br>
+        Clique na tela para ativar o mouse<br>
+        W, A, S, D - Mover<br>
+        Espaço - Pular<br>
+        Clique Esquerdo - Quebrar Bloco<br>
+        Clique Direito - Criar Bloco
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+
     <script>
-        // --- CONFIGURAÇÃO INICIAL DO CENÁRIO ---
+        // --- CONFIGURAÇÃO INICIAL ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x334422); 
-        scene.fog = new THREE.FogExp2(0x334422, 0.015);
+        scene.background = new THREE.Color(0x7ec0ee); // Cor do céu
+        scene.fog = new THREE.FogExp2(0x7ec0ee, 0.02);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -56,196 +62,151 @@
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // Iluminação
+        // --- CONTROLES DE MOVIMENTO (PointerLock) ---
+        const controls = new THREE.PointerLockControls(camera, document.body);
+        
+        document.body.addEventListener('click', () => {
+            controls.lock();
+        });
+
+        const keys = { w: false, a: false, s: false, d: false, space: false };
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyW') keys.w = true;
+            if (e.code === 'KeyA') keys.a = true;
+            if (e.code === 'KeyS') keys.s = true;
+            if (e.code === 'KeyD') keys.d = true;
+            if (e.code === 'Space') keys.space = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'KeyW') keys.w = false;
+            if (e.code === 'KeyA') keys.a = false;
+            if (e.code === 'KeyS') keys.s = false;
+            if (e.code === 'KeyD') keys.d = false;
+            if (e.code === 'Space') keys.space = false;
+        });
+
+        // --- ILUMINAÇÃO ---
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(20, 40, 20);
-        dirLight.castShadow = true;
-        scene.add(dirLight);
 
-        // Chão (Campo de Batalha)
-        const floorGeo = new THREE.PlaneGeometry(500, 500);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x556b2f });
-        const floor = new THREE.Mesh(floorGeo, floorMat);
-        floor.rotation.x = -Math.PI / 2;
-        floor.receiveShadow = true;
-        scene.add(floor);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        directionalLight.position.set(10, 20, 15);
+        scene.add(directionalLight);
 
-        // --- VARIÁVEIS DE JOGO ---
-        let tipoUnidade = 'soldado'; 
-        const teclado = {};
-        const unidadesAliadas = {};
-        const unidadesInimigas = [];
+        // --- GERADOR DE MUNDO (BLOCO) ---
+        const blockSize = 1;
+        const blocks = [];
+        
+        // Texturas básicas usando cores sólidas (Grama, Terra, Pedra)
+        const materials = {
+            grass: new THREE.MeshLambertMaterial({ color: 0x557a2b }),
+            dirt: new THREE.MeshLambertMaterial({ color: 0x866043 }),
+            stone: new THREE.MeshLambertMaterial({ color: 0x808080 })
+        };
+        const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
 
-        // --- CRIAÇÃO MODELOS 3D BÁSICOS ---
-
-        // 1. Soldado
-        function criarSoldado(cor) {
-            const grupo = new THREE.Group();
-            const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.8), new THREE.MeshStandardMaterial({ color: cor }));
-            corpo.position.y = 0.9;
-            corpo.castShadow = true;
-            grupo.add(corpo);
-            
-            const arma = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.8), new THREE.MeshStandardMaterial({ color: 0x111 }));
-            arma.position.set(0, 1.2, 0.5);
-            grupo.add(arma);
-            return grupo;
+        function createBlock(x, y, z, type) {
+            const mesh = new THREE.Mesh(blockGeometry, materials[type]);
+            mesh.position.set(x, y, z);
+            scene.add(mesh);
+            blocks.push(mesh);
         }
 
-        // 2. Tanque
-        function criarTanque(cor) {
-            const grupo = new THREE.Group();
-            const base = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 3), new THREE.MeshStandardMaterial({ color: cor }));
-            base.position.y = 0.5;
-            base.castShadow = true;
-            grupo.add(base);
-
-            const torre = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.6, 1.5), new THREE.MeshStandardMaterial({ color: cor - 0x111111 }));
-            torre.position.set(0, 1.3, -0.2);
-            grupo.add(torre);
-
-            const canhao = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 2), new THREE.MeshStandardMaterial({ color: 0x222222 }));
-            canhao.rotation.x = Math.PI / 2;
-            canhao.position.set(0, 1.3, 1);
-            grupo.add(canhao);
-            return grupo;
-        }
-
-        // 3. Avião
-        function criarAviao(cor) {
-            const grupo = new THREE.Group();
-            const corpo = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.2, 3), new THREE.MeshStandardMaterial({ color: cor }));
-            corpo.rotation.x = Math.PI / 2;
-            grupo.add(corpo);
-
-            const asas = new THREE.Mesh(new THREE.BoxGeometry(4, 0.1, 1), new THREE.MeshStandardMaterial({ color: cor }));
-            asas.position.set(0, 0, 0.2);
-            grupo.add(asas);
-
-            const cauda = new THREE.Mesh(new THREE.BoxGeometry(1, 0.5, 0.1), new THREE.MeshStandardMaterial({ color: cor }));
-            cauda.position.set(0, 0.3, -1.3);
-            grupo.add(cauda);
-            return grupo;
-        }
-
-        // --- ALINHAMENTO DAS LINHAS DE FRENTE ---
-
-        // LADO ESQUERDO: Seus Soldados e Veículos (Aliados - Verdes/Azul)
-        unidadesAliadas.soldado = criarSoldado(0x2e8b57);
-        unidadesAliadas.tanque = criarTanque(0x556b2f);  
-        unidadesAliadas.aviao = criarAviao(0x4682b4);    
-
-        // Posicionados no eixo X negativo, olhando para a direita (X positivo)
-        unidadesAliadas.soldado.position.set(-30, 0, -10);
-        unidadesAliadas.tanque.position.set(-30, 0, 10);
-        unidadesAliadas.aviao.position.set(-40, 15, 0);
-
-        // Rotacionar para olhar para o lado do inimigo (Direita)
-        unidadesAliadas.soldado.rotation.y = Math.PI / 2;
-        unidadesAliadas.tanque.rotation.y = Math.PI / 2;
-        unidadesAliadas.aviao.rotation.y = Math.PI / 2;
-
-        scene.add(unidadesAliadas.soldado);
-        scene.add(unidadesAliadas.tanque);
-        scene.add(unidadesAliadas.aviao);
-
-
-        // LADO DIREITO: Inimigos (Vermelhos)
-        const configsInimigos = [
-            { tipo: 'soldado', pos: [30, 0, -15] },
-            { tipo: 'soldado', pos: [30, 0, -5] },
-            { tipo: 'tanque', pos: [30, 0, 10] },
-            { tipo: 'aviao', pos: [40, 20, 0] }
-        ];
-
-        configsInimigos.forEach(cfg => {
-            let inimigo;
-            if (cfg.tipo === 'soldado') inimigo = criarSoldado(0x8b0000);
-            if (cfg.tipo === 'tanque') inimigo = criarTanque(0x5c0000);
-            if (cfg.tipo === 'aviao') inimigo = criarAviao(0x800000);
-            
-            inimigo.position.set(cfg.pos[0], cfg.pos[1], cfg.pos[2]);
-            
-            // Rotacionar para olhar para o seu lado (Esquerda)
-            inimigo.rotation.y = -Math.PI / 2;
-            
-            scene.add(inimigo);
-            unidadesInimigas.push(inimigo);
-        });
-
-        // --- SISTEMA DE ENTRADA (TECLADO) ---
-        window.addEventListener('keydown', (e) => {
-            teclado[e.key.toLowerCase()] = true;
-            
-            if (e.key === '1') { tipoUnidade = 'soldado'; atualizarUI('Soldado'); }
-            if (e.key === '2') { tipoUnidade = 'tanque'; atualizarUI('Tanque'); }
-            if (e.key === '3') { tipoUnidade = 'aviao'; atualizarUI('Avião'); }
-        });
-        window.addEventListener('keyup', (e) => { teclado[e.key.toLowerCase()] = false; });
-
-        function atualizarUI(nome) {
-            document.getElementById('unidade-ativa').innerText = nome;
-        }
-
-        // --- LÓGICA DE MOVIMENTAÇÃO ---
-        const clock = new THREE.Clock();
-
-        function atualizarMovimento(delta) {
-            const atual = unidadesAliadas[tipoUnidade];
-
-            if (tipoUnidade === 'soldado' || tipoUnidade === 'tanque') {
-                const vel = (tipoUnidade === 'soldado' ? 8 : 5) * delta;
-                const rotVel = (tipoUnidade === 'soldado' ? 3 : 1.5) * delta;
+        // Gerar um terreno simples de 16x16
+        const worldSize = 16;
+        for (let x = -worldSize/2; x < worldSize/2; x++) {
+            for (let z = -worldSize/2; z < worldSize/2; z++) {
+                // Altura básica usando seno para fazer pequenas ondulações
+                let height = Math.floor(Math.sin(x * 0.2) * 2 + Math.cos(z * 0.2) * 2);
                 
-                // Mover para frente/trás baseado na direção atual do modelo
-                if (teclado['w']) atual.translateZ(vel);
-                if (teclado['s']) atual.translateZ(-vel);
-                if (teclado['a']) atual.rotation.y += rotVel;
-                if (teclado['d']) atual.rotation.y -= rotVel;
-                atual.position.y = 0;
-            } 
-            
-            else if (tipoUnidade === 'aviao') {
-                const velVoo = 15 * delta;
-                const velRot = 2 * delta;
+                // Camada de Grama
+                createBlock(x, height, z, 'grass');
+                // Camadas de Terra por baixo
+                createBlock(x, height - 1, z, 'dirt');
+                createBlock(x, height - 2, z, 'stone');
+            }
+        }
 
-                // Avanço contínuo
-                atual.translateZ(velVoo);
+        // Posição inicial da câmera (Jogador)
+        camera.position.set(0, 5, 0);
 
-                // Controles de inclinação e rotação (6DoF)
-                if (teclado['w']) atual.rotateX(velRot);
-                if (teclado['s']) atual.rotateX(-velRot);
-                if (teclado['a']) atual.rotateZ(velRot);
-                if (teclado['d']) atual.rotateZ(-velRot);
-                if (teclado[' ']) atual.position.y += velVoo * 0.5; 
-                if (teclado['shift']) atual.position.y -= velVoo * 0.5; 
+        // --- FÍSICA E GRAVIDADE SIMPLES ---
+        let velocityY = 0;
+        const gravity = -0.012;
+        const jumpForce = 0.25;
+        const playerSpeed = 0.1;
+        const playerHeight = 1.8;
 
-                if (atual.position.y < 1) atual.position.y = 1;
+        function updatePhysics() {
+            if (!controls.isLocked) return;
+
+            // Gravidade
+            velocityY += gravity;
+            camera.position.y += velocityY;
+
+            // Colisão simples com o chão (y = 0 considerando a altura do relevo aproximada)
+            // Para um jogo real, seria necessário checar o bloco exato abaixo.
+            let terrainHeight = 1; 
+            if (camera.position.y < terrainHeight + playerHeight) {
+                camera.position.y = terrainHeight + playerHeight;
+                velocityY = 0;
+                if (keys.space) {
+                    velocityY = jumpForce; // Pular
+                }
             }
 
-            // Câmera posicionada atrás da unidade selecionada
-            const offset = new THREE.Vector3(0, 4, -10); 
-            offset.applyQuaternion(atual.quaternion);
-            camera.position.copy(atual.position).add(offset);
-            camera.lookAt(atual.position.clone().add(new THREE.Vector3(0, 1, 0)));
+            // Movimento estrafado (frente/trás/lados)
+            if (keys.w) controls.moveForward(playerSpeed);
+            if (keys.s) controls.moveForward(-playerSpeed);
+            if (keys.a) controls.moveRight(-playerSpeed);
+            if (keys.d) controls.moveRight(playerSpeed);
         }
 
-        // --- LOOP PRINCIPAL ---
+        // --- QUEBRAR E COLOCAR BLOCOS (Raycasting) ---
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2(0, 0); // Centro da tela
+
+        window.addEventListener('pointerdown', (e) => {
+            if (!controls.isLocked) return;
+
+            // Aponta o raio para o centro da tela
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(blocks);
+
+            if (intersects.length > 0 && intersects[0].distance < 6) {
+                const intersect = intersects[0];
+
+                if (e.button === 0) {
+                    // Botão Esquerdo: Quebrar bloco
+                    scene.remove(intersect.object);
+                    const index = blocks.indexOf(intersect.object);
+                    if (index > -1) blocks.splice(index, 1);
+                } 
+                else if (e.button === 2) {
+                    // Botão Direito: Colocar bloco baseado na face clicada
+                    const position = intersect.point.clone().add(intersect.face.normal.clone().multiplyScalar(0.5));
+                    
+                    // Alinha com a grade do cenário
+                    const bx = Math.round(position.x);
+                    const by = Math.round(position.y);
+                    const bz = Math.round(position.z);
+
+                    createBlock(bx, by, bz, 'dirt');
+                }
+            }
+        });
+
+        // Previnir menu de contexto do clique direito
+        window.addEventListener('contextmenu', e => e.preventDefault());
+
+        // --- LOOP DE ANIMAÇÃO ---
         function animate() {
             requestAnimationFrame(animate);
-            const delta = clock.getDelta();
-
-            atualizarMovimento(delta);
-
-            // Animação leve para o avião inimigo pairar no ar
-            const aviaoInimigo = unidadesInimigas[3];
-            aviaoInimigo.position.y = 20 + Math.sin(clock.getElapsedTime() * 1.5) * 2;
-
+            updatePhysics();
             renderer.render(scene, camera);
         }
 
+        // Ajustar tela caso mude de tamanho
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
