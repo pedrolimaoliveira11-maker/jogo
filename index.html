@@ -3,376 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft 4D - Floresta Realista</title>
+    <title>Jogo de Luta 2D - 2 Jogadores</title>
     <style>
         body {
             margin: 0;
-            overflow: hidden;
-            background-color: #4a758c;
+            padding: 0;
+            background-color: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
         }
-        #ui {
+        #container {
+            position: relative;
+            width: 800px;
+            height: 450px;
+        }
+        canvas {
+            background: linear-gradient(to bottom, #2c3e50, #000);
+            border: 4px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+        .interface {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            background: rgba(0, 0, 0, 0.85);
-            padding: 20px;
-            border-radius: 10px;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
             pointer-events: none;
-            border: 2px solid #444;
         }
-        .destaque {
-            color: #00ffcc;
+        .barra-vida-container {
+            width: 300px;
+            height: 25px;
+            background-color: #555;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .vida {
+            height: 100%;
+            background-color: #00ff00;
+            width: 100%;
+            transition: width 0.1s ease;
+        }
+        #vida-p2 {
+            float: right;
+        }
+        .nome-player {
+            color: #fff;
             font-weight: bold;
+            text-shadow: 2px 2px #000;
+            margin-bottom: 5px;
+        }
+        #p2-info {
+            text-align: right;
+        }
+        #tela-fim {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            color: white;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            border-radius: 4px;
+        }
+        #btn-reiniciar {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-family: inherit;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #btn-reiniciar:hover {
+            background-color: #c0392b;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div id="ui">
-        <h2>Minecraft 4D (Floresta Realista v2)</h2>
-        <p>Posição 3D: <span id="pos3d" class="destaque">X:0, Y:0, Z:0</span></p>
-        <p>Sua Posição W (Ana/Kata): <span id="posW" class="destaque">0.00</span></p>
-        <p>Rotação Vista X-W: <span id="rot4d" class="destaque">0°</span></p>
-        <hr>
-        <div>
-            <strong>Controles de Movimento:</strong><br>
-            W, A, S, D - Andar pela floresta<br>
-            Setas do Teclado - Olhar para os lados/cima<br><br>
-            <strong>Controles do Hiperespaço (4D):</strong><br>
-            Q / E - Rotacionar a câmera para a 4ª Dimensão<br>
-            R / F - Mover-se diretamente no eixo W
+    <div id="container">
+        <div class="interface">
+            <div id="p1-info">
+                <div class="nome-player">JOGADOR 1 (A,D,W + Espaço)</div>
+                <div class="barra-vida-container">
+                    <div id="vida-p1" class="vida"></div>
+                </div>
+            </div>
+            <div id="p2-info">
+                <div class="nome-player">JOGADOR 2 (Setas + Enter)</div>
+                <div class="barra-vida-container">
+                    <div id="vida-p2" class="vida"></div>
+                </div>
+            </div>
         </div>
+
+        <div id="tela-fim">
+            <span id="texto-vencedor">JOGADOR X VENCEU!</span>
+            <button id="btn-reiniciar" onclick="reiniciarJogo()">Jogar Novamente</button>
+        </div>
+
+        <canvas id="jogoCanvas" width="800" height="450"></canvas>
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO DA CENA ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x4a758c);
-        scene.fog = new THREE.FogExp2(0x4a758c, 0.035); // Névoa de floresta densa
+        const canvas = document.getElementById('jogoCanvas');
+        const ctx = canvas.getContext('2d');
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+        // Configurações Globais
+        const gravidade = 0.6;
+        const chaoY = canvas.height - 40;
+        let jogoAtivo = true;
 
-        // Iluminação realista (Luz solar suave de floresta)
-        const luzDirecional = new THREE.DirectionalLight(0xfffaed, 0.85);
-        luzDirecional.position.set(30, 50, 10);
-        scene.add(luzDirecional);
-        scene.add(new THREE.AmbientLight(0x5a785a, 0.6));
+        // Registro de Teclas pressionadas
+        const teclas = {};
 
-        // --- VARIÁVEIS DO JOGADOR ---
-        let jogador = { x: 0, y: 4, z: 12, w: 0 };
-        let angulo4D = 0; 
-        let rotY = 0; 
-        let rotX = 0; 
-
-        const teclado = {};
-        window.addEventListener('keydown', (e) => teclado[e.code] = true);
-        window.addEventListener('keyup', (e) => teclado[e.code] = false);
-
-        // --- PALETA DE CORES DA NATUREZA REALISTA ---
-        const cores = {
-            gramaClara: 0x4d7c32,
-            gramaEscura: 0x3b6125,
-            terra: 0x4d3319,
-            pedra: 0x737373,
-            pedraMusgo: 0x596643,
-            tronco: 0x3d2612,
-            folhaDensa: 0x1e4010,
-            folhaClara: 0x2b5419,
-            florVermelha: 0xcc2424,
-            florAmarela: 0xe5b82b
-        };
-
-        // --- GERADOR DO ECOSSISTEMA DA FLORESTA 4D ---
-        const tamanhoMundo = 18;
-        const blocos4D = [];
-        const malhas3D = [];
-        const geometriaCubo = new THREE.BoxGeometry(0.98, 0.98, 0.98);
-
-        // Função auxiliar para gerar ruído matemático simples (Simulando relevo natural)
-        function obterAlturaRelevo(x, z) {
-            return Math.floor(
-                Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2 + 
-                Math.sin(x * 0.3) * 1.2 + 
-                2.5
-            );
-        }
-
-        for (let x = -tamanhoMundo; x < tamanhoMundo; x++) {
-            for (let z = -tamanhoMundo; z < tamanhoMundo; z++) {
+        // Classe que gerencia os Lutadores
+        class Lutador {
+            constructor({ x, y, cor, lado }) {
+                this.x = x;
+                this.y = y;
+                this.width = 50;
+                this.height = 100;
+                this.cor = cor;
+                this.lado = lado; // 'esquerda' ou 'direita'
                 
-                let alturaMaxima = obterAlturaRelevo(x, z);
-                // Determina a camada W quadridimensional deste pedaço do mapa
-                let w = Math.floor(Math.sin(x * 0.08) * Math.cos(z * 0.08) * 2);
+                this.velocidadeX = 0;
+                this.velocidadeY = 0;
+                this.estaNoChao = false;
+                this.vida = 100;
 
-                // 1. GERAÇÃO DO SOLO (Terra, Pedras e Grama misturadas)
-                for (let y = 0; y <= alturaMaxima; y++) {
-                    let corEscolhida = cores.terra;
-                    
-                    if (y === alturaMaxima) {
-                        // Mistura tipos de grama para não ficar uma cor só
-                        corEscolhida = (Math.abs(x + z) % 3 === 0) ? cores.gramaEscura : cores.gramaClara;
-                        
-                        // Ocasionalmente gera blocos de pedra aflorando no chão como na vida real
-                        if (Math.abs(x * z) % 17 === 0) corEscolhida = cores.pedraMusgo;
-                    } else if (y < alturaMaxima - 2) {
-                        corEscolhida = cores.pedra; // Camadas profundas viram pedra
-                    }
+                // Caixa de Ataque (Soco)
+                this.estaAtacando = false;
+                this.tempoAtaque = 0;
+                this.caixaAtaque = {
+                    width: 60,
+                    height: 40
+                };
+            }
 
-                    blocos4D.push({ origX: x, origY: y, origZ: z, origW: w, cor: corEscolhida });
+            desenhar() {
+                // Desenhar Personagem Principal
+                ctx.fillStyle = this.cor;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+
+                // Desenhar Cabeça/Olhos para dar direção
+                ctx.fillStyle = '#fff';
+                let olhoX = this.lado === 'direita' ? this.x + 35 : this.x + 5;
+                ctx.fillRect(olhoX, this.y + 15, 10, 10);
+
+                // Desenhar soco se estiver atacando
+                if (this.estaAtacando) {
+                    ctx.fillStyle = '#f39c12';
+                    let ataqueX = this.lado === 'direita' ? this.x + this.width : this.x - this.caixaAtaque.width;
+                    ctx.fillRect(ataqueX, this.y + 20, this.caixaAtaque.width, this.caixaAtaque.height);
+                }
+            }
+
+            atualizar() {
+                // Aplicar Gravidade
+                this.velocidadeY += gravidade;
+                this.y += this.velocidadeY;
+                this.x += this.velocidadeX;
+
+                // Colisão com o Chão
+                if (this.y + this.height >= chaoY) {
+                    this.y = chaoY - this.height;
+                    this.velocidadeY = 0;
+                    this.estaNoChao = true;
+                } else {
+                    this.estaNoChao = false;
                 }
 
-                // Não nascem elementos exatamente onde o jogador começa
-                if (Math.abs(x) < 2 && Math.abs(z) < 2) continue;
+                // Limites das Paredes Laterais
+                if (this.x < 0) this.x = 0;
+                if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
 
-                // 2. DETALHES DO CHÃO (Flores, Pedras pequenas e Arbustos rasteiros)
-                let seed = Math.abs(x * 7 + z * 13);
-                let topoY = alturaMaxima + 1;
-
-                if (seed % 23 === 0) {
-                    // Flores Selvagens
-                    let corFlor = (seed % 2 === 0) ? cores.florVermelha : cores.florAmarela;
-                    blocos4D.push({ origX: x, origY: topoY, origZ: z, origW: w, cor: corFlor });
-                } 
-                else if (seed % 29 === 0) {
-                    // Pequenas pedras decorativas jogadas no chão
-                    blocos4D.push({ origX: x, origY: topoY, origZ: z, origW: w, cor: cores.pedra });
-                }
-                else if (seed % 19 === 0) {
-                    // Arbustos pequenos (Mato rasteiro)
-                    blocos4D.push({ origX: x, origY: topoY, origZ: z, origW: w, cor: cores.folhaClara });
-                }
-
-                // 3. GERAÇÃO DE ÁRVORES REAIS (Alturas variadas e copas orgânicas)
-                else if (seed % 14 === 0) {
-                    // Variação de altura da árvore (De 3 a 5 blocos de tronco)
-                    let alturaTronco = 3 + (seed % 3); 
-
-                    // Construir o tronco de madeira
-                    for (let ty = 0; ty < alturaTronco; ty++) {
-                        blocos4D.push({
-                            origX: x, origY: topoY + ty, origZ: z, origW: w,
-                            cor: cores.tronco
-                        });
-                    }
-
-                    // Construir a copa de folhas de forma arredondada/orgânica
-                    let centroFolhasY = topoY + alturaTronco - 1;
-                    let raioFolhas = 2;
-
-                    for (let fx = -raioFolhas; fx <= raioFolhas; fx++) {
-                        for (let fz = -raioFolhas; fz <= raioFolhas; fz++) {
-                            for (let fy = 0; fy <= raioFolhas + 1; fy++) {
-                                
-                                // Geometria de esfera/elipse para as folhas parecerem uma árvore real
-                                let distanciaCentro = (fx*fx) + (fz*fz) + (fy*fy);
-                                if (distanciaCentro > (raioFolhas * raioFolhas + 0.5)) continue;
-
-                                // Evita sobrepor folhas no miolo do tronco inferior
-                                if (fx === 0 && fz === 0 && fy === 0) continue;
-
-                                // Alterna tom das folhas para dar efeito de luz e sombra natural
-                                let corFolha = ((fx + fy + fz) % 2 === 0) ? cores.folhaDensa : cores.folhaClara;
-
-                                blocos4D.push({
-                                    origX: x + fx, 
-                                    origY: centroFolhasY + fy, 
-                                    origZ: z + fz, 
-                                    origW: w, // Integrado na física 4D
-                                    cor: corFolha
-                                });
-                            }
-                        }
+                // Gerenciar tempo de duração do golpe
+                if (this.estaAtacando) {
+                    this.tempoAtaque--;
+                    if (this.tempoAtaque <= 0) {
+                        this.estaAtacando = false;
                     }
                 }
+            }
 
+            atacar() {
+                if (!this.estaAtacando) {
+                    this.estaAtacando = true;
+                    this.tempoAtaque = 10; // Duração do golpe em frames
+                    return true;
+                }
+                return false;
             }
         }
 
-        // --- SISTEMA DE ANIMAIS 4D ---
-        const animais4D = [];
+        // Criando instâncias dos jogadores
+        const p1 = new Lutador({ x: 150, y: 200, cor: '#3498db', lado: 'direita' });
+        const p2 = new Lutador({ x: 600, y: 200, cor: '#e74c3c', lado: 'esquerda' });
 
-        function criarModeloAnimal(cor) {
-            const grupo = new THREE.Group();
-            // Corpo
-            const corpo = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.5, 1.1), new THREE.MeshStandardMaterial({color: cor}));
-            corpo.position.y = 0.4;
-            grupo.add(corpo);
-            // Cabeça
-            const cabeca = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.45, 0.45), new THREE.MeshStandardMaterial({color: cor}));
-            cabeca.position.set(0, 0.7, 0.5);
-            grupo.add(cabeca);
-            // Patas
-            const matPata = new THREE.MeshStandardMaterial({color: 0x1a1a1a});
-            for(let i = 0; i < 4; i++) {
-                const pata = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), matPata);
-                pata.position.set(i % 2 === 0 ? 0.25 : -0.25, 0.1, i < 2 ? 0.35 : -0.35);
-                grupo.add(pata);
+        // Ouvintes do teclado
+        window.addEventListener('keydown', (e) => {
+            teclas[e.code] = true;
+            
+            // Eventos de clique único (Ataque e Pulo)
+            if (e.code === 'Space' && jogoAtivo) {
+                if(p1.atacar()) checarAcerto(p1, p2);
             }
-            return grupo;
-        }
-
-        // Criando 15 animais livres que caminham pela nova floresta
-        for (let i = 0; i < 15; i++) {
-            animais4D.push({
-                x: (Math.random() - 0.5) * 24,
-                y: 3,
-                z: (Math.random() - 0.5) * 24,
-                w: Math.floor((Math.random() - 0.5) * 4),
-                tipo: 'animal',
-                malha: criarModeloAnimal(Math.random() * 0xffffff),
-                tempoDirecao: 0,
-                velX: 0,
-                velZ: 0
-            });
-            scene.add(animais4D[i].malha);
-        }
-
-        // Renderizar dinamicamente todas as geometrias do bioma na memória do navegador
-        blocos4D.forEach((bloco, indice) => {
-            const mat = new THREE.MeshStandardMaterial({ color: bloco.cor, roughness: 0.8 });
-            const cubo = new THREE.Mesh(geometriaCubo, mat);
-            scene.add(cubo);
-            malhas3D[indice] = cubo;
+            if (e.code === 'Enter' && jogoAtivo) {
+                if(p2.atacar()) checarAcerto(p2, p1);
+            }
+            if (e.code === 'KeyW' && p1.estaNoChao && jogoAtivo) {
+                p1.velocidadeY = -14;
+            }
+            if (e.code === 'ArrowUp' && p2.estaNoChao && jogoAtivo) {
+                p2.velocidadeY = -14;
+            }
         });
 
-        // --- MATEMÁTICA DE PROJEÇÃO 4D PARA 3D ---
-        function atualizarProjecao4D() {
-            const cosW = Math.cos(angulo4D);
-            const sinW = Math.sin(angulo4D);
-
-            // 1. Atualizar Blocos da Floresta Realista
-            blocos4D.forEach((bloco, indice) => {
-                const cubo = malhas3D[indice];
-
-                let rx = bloco.origX * cosW - bloco.origW * sinW;
-                let rw = bloco.origX * sinW + bloco.origW * cosW;
-
-                let posX = rx - jogador.x;
-                let posY = bloco.origY - jogador.y;
-                let posZ = bloco.origZ - jogador.z;
-                let posW = rw - jogador.w;
-
-                cubo.position.set(posX, posY, posZ);
-
-                let distW = Math.abs(posW);
-                if (distW > 1.0) {
-                    cubo.visible = false;
-                } else {
-                    cubo.visible = true;
-                    cubo.scale.setScalar(1 - distW * 0.4);
-                }
-            });
-
-            // 2. Atualizar Animais
-            animais4D.forEach((animal) => {
-                let rx = animal.x * cosW - animal.w * sinW;
-                let rw = animal.x * sinW + animal.w * cosW;
-
-                let posX = rx - jogador.x;
-                let posY = animal.y - jogador.y;
-                let posZ = animal.z - jogador.z;
-                let posW = rw - jogador.w;
-
-                animal.malha.position.set(posX, posY, posZ);
-
-                let distW = Math.abs(posW);
-                if (distW > 1.0) {
-                    animal.malha.visible = false;
-                } else {
-                    animal.malha.visible = true;
-                    animal.malha.children.slice(2).forEach((pata, id) => {
-                        pata.rotation.x = Math.sin(Date.now() * 0.01 + id) * 0.5;
-                    });
-                }
-            });
-        }
-
-        // --- MOTOR DE MOVIMENTO E LÓGICA DE AMBIENTE ---
-        const clock = new THREE.Clock();
-
-        function controlarJogo(delta) {
-            const vel = 6 * delta;
-            const velRot = 2 * delta;
-
-            // Rotação do Olhar (Setas)
-            if (teclado['ArrowLeft']) rotY += velRot;
-            if (teclado['ArrowRight']) rotY -= velRot;
-            if (teclado['ArrowUp']) rotX = Math.max(-Math.PI/3, Math.min(Math.PI/3, rotX + velRot));
-            if (teclado['ArrowDown']) rotX = Math.max(-Math.PI/3, Math.min(Math.PI/3, rotX - velRot));
-
-            camera.rotation.set(0, 0, 0);
-            camera.rotation.y = rotY;
-            camera.rotation.x = rotX;
-
-            // Movimentação (W, A, S, D) funcional adaptada à direção da câmera
-            const direcaofrente = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-            const direcaolado = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-            direcaofrente.y = 0; direcaofrente.normalize();
-            direcaolado.y = 0; direcaolado.normalize();
-
-            if (teclado['KeyW']) { jogador.x += direcaofrente.x * vel; jogador.z += direcaofrente.z * vel; }
-            if (teclado['KeyS']) { jogador.x -= direcaofrente.x * vel; jogador.z -= direcaofrente.z * vel; }
-            if (teclado['KeyA']) { jogador.x -= direcaolado.x * vel; jogador.z -= direcaolado.z * vel; }
-            if (teclado['KeyD']) { jogador.x += direcaolado.x * vel; jogador.z += direcaolado.z * vel; }
-
-            // Controles de Hiper-Rotação Espacial 4D
-            if (teclado['KeyQ']) angulo4D += velRot * 0.4;
-            if (teclado['KeyE']) angulo4D -= velRot * 0.4;
-            if (teclado['KeyR']) jogador.w += vel;
-            if (teclado['KeyF']) jogador.w -= vel;
-
-            // Mantém os olhos fixos na altura padrão de simulação humana do personagem
-            camera.position.set(0, 1.7, 0); 
-
-            // IA de Movimento dos Animais ajustado para o novo relevo realista
-            animais4D.forEach(animal => {
-                animal.tempoDirecao -= delta;
-                if(animal.tempoDirecao <= 0) {
-                    animal.tempoDirecao = Math.random() * 4 + 2;
-                    let angulo = Math.random() * Math.PI * 2;
-                    animal.velX = Math.cos(angulo) * 1.5;
-                    animal.velZ = Math.sin(angulo) * 1.5;
-                    animal.malha.rotation.y = -angulo + Math.PI/2;
-                    
-                    if(Math.random() > 0.88) {
-                        animal.w = Math.max(-2, Math.min(2, animal.w + (Math.random() > 0.5 ? 1 : -1)));
-                    }
-                }
-                animal.x += animal.velX * delta;
-                animal.z += animal.velZ * delta;
-                
-                // Adapta dinamicamente os animais para subirem as colinas de forma realista
-                animal.y = obterAlturaRelevo(animal.x, animal.z) + 1.1;
-            });
-
-            atualizarProjecao4D();
-
-            // Atualiza os dados da UI
-            document.getElementById('pos3d').innerText = `X:${jogador.x.toFixed(1)}, Y:${jogador.y.toFixed(1)}, Z:${jogador.z.toFixed(1)}`;
-            document.getElementById('posW').innerText = jogador.w.toFixed(2);
-            document.getElementById('rot4d').innerText = `${Math.round(angulo4D * (180 / Math.PI)) % 360}°`;
-        }
-
-        // --- LOOP PRINCIPAL ---
-        function animate() {
-            requestAnimationFrame(animate);
-            controlarJogo(clock.getDelta());
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        window.addEventListener('keyup', (e) => {
+            teclas[e.code] = false;
         });
 
-        animate();
-    </script>
-</body>
-</html>
+        // Processar movimentação contínua
+        function processarEntradas() {
+            if (!jogoAtivo) return;
+
+            // Movimento Jogador 1
+            p1.velocidadeX = 0;
+            if (teclas['KeyA']) { p1.velocidadeX = -6; p1.lado = 'esquerda'; }
+            if (teclas['KeyD']) { p1.velocidadeX = 6; p1.lado = 'direita'; }
+
+            // Movimento Jogador 2
+            p2.velocidadeX = 0;
+            if (teclas['ArrowLeft']) { p2.velocidadeX = -6; p2.lado = 'esquerda'; }
+            if (teclas['ArrowRight']) { p2.velocidadeX = 6; p2.lado = 'direita'; }
+        }
