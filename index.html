@@ -8,7 +8,7 @@
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #557a95;
+            background-color: #578ba3;
             font-family: 'Courier New', Courier, monospace;
         }
         #ui {
@@ -39,7 +39,7 @@
         <hr>
         <div>
             <strong>Controles de Movimento:</strong><br>
-            W, A, S, D - Andar pela floresta<br>
+            W, A, S, D - Andar pela floresta 3D<br>
             Setas do Teclado - Olhar para os lados/cima<br><br>
             <strong>Controles do Hiperespaço (4D):</strong><br>
             Q / E - Rotacionar a câmera para a 4ª Dimensão<br>
@@ -50,19 +50,19 @@
     <script>
         // --- CONFIGURAÇÃO DA CENA ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x334433); // Tom de floresta fechada
-        scene.fog = new THREE.FogExp2(0x334433, 0.03);
+        scene.background = new THREE.Color(0x578ba3);
+        scene.fog = new THREE.FogExp2(0x578ba3, 0.03);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Luzes
-        const luzDirecional = new THREE.DirectionalLight(0xddeedd, 0.9);
+        // Luzes ambientalizadas para floresta
+        const luzDirecional = new THREE.DirectionalLight(0xffffff, 0.8);
         luzDirecional.position.set(20, 40, 20);
         scene.add(luzDirecional);
-        scene.add(new THREE.AmbientLight(0x667766, 0.6));
+        scene.add(new THREE.AmbientLight(0x779977, 0.6));
 
         // --- VARIÁVEIS DO JOGADOR ---
         let jogador = { x: 0, y: 3, z: 10, w: 0 };
@@ -79,78 +79,61 @@
         const blocos4D = [];
         const malhas3D = [];
         
-        const CORES = {
-            grama: 0x3b5323,
-            terra: 0x5c4033,
-            tronco: 0x3d2314,
-            folhas: 0x134f2a
-        };
+        // Cores do bioma de floresta
+        const corGrama = 0x3b5e2b;
+        const corTerra = 0x5c4033;
+        const corTronco = 0x4a3525;
+        const corFolha = 0x2e5c1e;
 
         const geometriaCubo = new THREE.BoxGeometry(0.98, 0.98, 0.98);
 
-        // Função auxiliar para injetar blocos na lista 4D
-        function adicionarBloco(x, y, z, w, corHex) {
-            blocos4D.push({
-                origX: x, origY: y, origZ: z, origW: w,
-                cor: corHex
-            });
-        }
-
-        // Gerando o Chão e as Árvores da Floresta
+        // Gerando o chão e relevo da floresta
         for (let x = -tamanhoMundo; x < tamanhoMundo; x++) {
             for (let z = -tamanhoMundo; z < tamanhoMundo; z++) {
-                
-                // Determina a camada hiperdimensional (W) base desse quadrante
-                let wBase = Math.floor(Math.sin(x * 0.15) * Math.cos(z * 0.15) * 2);
-                let alturaChao = Math.floor(Math.sin(x * 0.1) * Math.cos(z * 0.1) * 1) + 1;
+                let altura = Math.floor(Math.sin(x * 0.15) * Math.cos(z * 0.15) * 2) + 2;
+                let w = Math.floor(Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2);
 
-                // Cria as camadas de terra e grama
-                for (let y = 0; y <= alturaChao; y++) {
-                    let cor = (y === alturaChao) ? CORES.grama : CORES.terra;
-                    adicionarBloco(x, y, z, wBase, cor);
+                for (let y = 0; y <= altura; y++) {
+                    blocos4D.push({
+                        origX: x, origY: y, origZ: z, origW: w,
+                        cor: y === altura ? corGrama : corTerra
+                    });
                 }
 
-                // Chance de gerar uma árvore nesse bloco do hiperespaço
-                // Evita gerar logo no centro (onde o jogador nasce)
-                if ((x !== 0 || z !== 0) && Math.abs(x) > 2 && Math.abs(z) > 2) {
-                    let chanceArvore = Math.sin(x * 5.0) * Math.cos(z * 5.0);
-                    
-                    if (chanceArvore > 0.65) { 
-                        let alturaTronco = Math.floor(Math.random() * 2) + 3; // Árvores de 3 a 4 blocos de altura
-                        
-                        // 1. Criar o Tronco
-                        for (let ty = 1; ty <= alturaTronco; ty++) {
-                            adicionarBloco(x, alturaChao + ty, z, wBase, CORES.tronco);
-                        }
+                // Chance de gerar uma Árvore 4D no topo do bloco de grama
+                // Adicionado um fator pseudo-aleatório para espalhar pela floresta
+                if ((Math.abs(x * z) % 11 === 0) && (x !== 0 && z !== 0)) {
+                    let alturaTronco = 3 + (Math.abs(x + z) % 3); // árvores de tamanhos diferentes
 
-                        // 2. Criar a Copa de Folhas ao redor do topo
-                        let topoY = alturaChao + alturaTronco;
-                        for (let fx = -1; fx <= 1; fx++) {
-                            for (let fz = -1; fz <= 1; fz++) {
-                                for (let fy = -1; fy <= 1; fy++) {
-                                    // Não colocar folhas onde já tem tronco
-                                    if (fx === 0 && fz === 0 && fy <= 0) continue;
-                                    
-                                    // Cria um formato levemente arredondado de folhas
-                                    if (Math.abs(fx) + Math.abs(fz) + Math.abs(fy) <= 2) {
-                                        adicionarBloco(x + fx, topoY + fy, z + fz, wBase, CORES.folhas);
-                                    }
-                                }
+                    // Criar Tronco
+                    for (let ty = 1; ty <= alturaTronco; ty++) {
+                        blocos4D.push({
+                            origX: x, origY: altura + ty, origZ: z, origW: w,
+                            cor: corTronco
+                        });
+                    }
+
+                    // Criar Copa de Folhas ao redor do topo do tronco
+                    let topoY = altura + alturaTronco;
+                    for (let fx = -1; fx <= 1; fx++) {
+                        for (let fz = -1; fz <= 1; fz++) {
+                            for (let fy = -1; fy <= 1; fy++) {
+                                // Evita colocar folhas exatamente onde já tem tronco
+                                if (fx === 0 && fz === 0 && fy <= 0) continue; 
+                                
+                                blocos4D.push({
+                                    origX: x + fx, 
+                                    origY: topoY + fy, 
+                                    origZ: z + fz, 
+                                    origW: w, // A árvore pertence ao mesmo plano W do seu chão
+                                    cor: corFolha
+                                });
                             }
                         }
                     }
                 }
-
             }
         }
-
-        // --- INSTANCIAR MALHAS NO THREE.JS ---
-        blocos4D.forEach((bloco, indice) => {
-            const mat = new THREE.MeshStandardMaterial({ color: bloco.cor });
-            const cubo = new THREE.Mesh(geometriaCubo, mat);
-            scene.add(cubo);
-            malhas3D[indice] = cubo;
-        });
 
         // --- SISTEMA DE ANIMAIS 4D ---
         const animais4D = [];
@@ -175,14 +158,15 @@
             return grupo;
         }
 
-        // Instanciar Animais pela floresta
-        for (let i = 0; i < 12; i++) {
+        // Criando os mesmos 15 animais livres pela floresta
+        for (let i = 0; i < 15; i++) {
             animais4D.push({
                 x: (Math.random() - 0.5) * 22,
-                y: 2,
+                y: 3,
                 z: (Math.random() - 0.5) * 22,
-                w: Math.floor((Math.random() - 0.5) * 4), 
-                malha: criarModeloAnimal(0xfff3a1), // Cor de criatura da floresta (amarelada/veado)
+                w: Math.floor((Math.random() - 0.5) * 4),
+                tipo: 'animal',
+                malha: criarModeloAnimal(Math.random() * 0xffffff),
                 tempoDirecao: 0,
                 velX: 0,
                 velZ: 0
@@ -190,12 +174,20 @@
             scene.add(animais4D[i].malha);
         }
 
+        // Instanciar blocos do mapa e da floresta na cena
+        blocos4D.forEach((bloco, indice) => {
+            const mat = new THREE.MeshStandardMaterial({ color: bloco.cor });
+            const cubo = new THREE.Mesh(geometriaCubo, mat);
+            scene.add(cubo);
+            malhas3D[indice] = cubo;
+        });
+
         // --- MATEMÁTICA DE PROJEÇÃO 4D PARA 3D ---
         function atualizarProjecao4D() {
             const cosW = Math.cos(angulo4D);
             const sinW = Math.sin(angulo4D);
 
-            // Projetar Blocos (Gramas, Troncos e Folhas)
+            // 1. Projetar Blocos (Chão + Árvores de forma idêntica)
             blocos4D.forEach((bloco, indice) => {
                 const cubo = malhas3D[indice];
 
@@ -218,7 +210,7 @@
                 }
             });
 
-            // Projetar Animais
+            // 2. Projetar Animais
             animais4D.forEach((animal) => {
                 let rx = animal.x * cosW - animal.w * sinW;
                 let rw = animal.x * sinW + animal.w * cosW;
@@ -242,11 +234,85 @@
             });
         }
 
-        // --- LOOP DE ATUALIZAÇÃO ---
+        // --- MOTOR DE MOVIMENTO E LÓGICA ---
         const clock = new THREE.Clock();
 
         function controlarJogo(delta) {
             const vel = 6 * delta;
             const velRot = 2 * delta;
 
-            // Rotação Look-3D (Setas)
+            // Rotação do Olhar (Setas)
+            if (teclado['ArrowLeft']) rotY += velRot;
+            if (teclado['ArrowRight']) rotY -= velRot;
+            if (teclado['ArrowUp']) rotX = Math.max(-Math.PI/3, Math.min(Math.PI/3, rotX + velRot));
+            if (teclado['ArrowDown']) rotX = Math.max(-Math.PI/3, Math.min(Math.PI/3, rotX - velRot));
+
+            camera.rotation.set(0, 0, 0);
+            camera.rotation.y = rotY;
+            camera.rotation.x = rotX;
+
+            // Movimentação (W, A, S, D) baseada no olhar
+            const direcaofrente = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            const direcaolado = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+            direcaofrente.y = 0; direcaofrente.normalize();
+            direcaolado.y = 0; direcaolado.normalize();
+
+            if (teclado['KeyW']) { jogador.x += direcaofrente.x * vel; jogador.z += direcaofrente.z * vel; }
+            if (teclado['KeyS']) { jogador.x -= direcaofrente.x * vel; jogador.z -= direcaofrente.z * vel; }
+            if (teclado['KeyA']) { jogador.x -= direcaolado.x * vel; jogador.z -= direcaolado.z * vel; }
+            if (teclado['KeyD']) { jogador.x += direcaolado.x * vel; jogador.z += direcaolado.z * vel; }
+
+            // Controles de Hiper-Rotação Espacial e Eixo W
+            if (teclado['KeyQ']) angulo4D += velRot * 0.4;
+            if (teclado['KeyE']) angulo4D -= velRot * 0.4;
+            if (teclado['KeyR']) jogador.w += vel;
+            if (teclado['KeyF']) jogador.w -= vel;
+
+            camera.position.set(0, 1.7, 0); 
+
+            // Movimentação Autônoma dos Animais pela floresta
+            animais4D.forEach(animal => {
+                animal.tempoDirecao -= delta;
+                if(animal.tempoDirecao <= 0) {
+                    animal.tempoDirecao = Math.random() * 4 + 2;
+                    let angulo = Math.random() * Math.PI * 2;
+                    animal.velX = Math.cos(angulo) * 1.8;
+                    animal.velZ = Math.sin(angulo) * 1.8;
+                    animal.malha.rotation.y = -angulo + Math.PI/2;
+                    
+                    if(Math.random() > 0.85) {
+                        animal.w = Math.max(-2, Math.min(2, animal.w + (Math.random() > 0.5 ? 1 : -1)));
+                    }
+                }
+                animal.x += animal.velX * delta;
+                animal.z += animal.velZ * delta;
+                
+                // Mantém o animal na altura correta do relevo
+                animal.y = Math.floor(Math.sin(animal.x * 0.15) * Math.cos(animal.z * 0.15) * 2) + 1.2;
+            });
+
+            atualizarProjecao4D();
+
+            // Atualiza os dados da UI
+            document.getElementById('pos3d').innerText = `X:${jogador.x.toFixed(1)}, Y:${jogador.y.toFixed(1)}, Z:${jogador.z.toFixed(1)}`;
+            document.getElementById('posW').innerText = jogador.w.toFixed(2);
+            document.getElementById('rot4d').innerText = `${Math.round(angulo4D * (180 / Math.PI)) % 360}°`;
+        }
+
+        // --- LOOP PRINCIPAL ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controlarJogo(clock.getDelta());
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
