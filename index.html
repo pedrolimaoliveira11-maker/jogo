@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft 4D - Hipercubos</title>
+    <title>Minecraft 4D - Com Movimentação e Animais</title>
     <style>
         body {
             margin: 0;
@@ -16,7 +16,7 @@
             top: 10px;
             left: 10px;
             color: white;
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 10px;
             pointer-events: none;
@@ -32,133 +32,186 @@
 <body>
 
     <div id="ui">
-        <h2>Minecraft 4D (Tesseract Voxels)</h2>
+        <h2>Minecraft 4D (Mundo com Animais)</h2>
         <p>Posição 3D: <span id="pos3d" class="destaque">X:0, Y:0, Z:0</span></p>
-        <p>Posição Ana/Kata (W): <span id="posW" class="destaque">0.00</span></p>
-        <p>Rotação X-W (Olhar 4D): <span id="rot4d" class="destaque">0°</span></p>
+        <p>Sua Posição W (Ana/Kata): <span id="posW" class="destaque">0.00</span></p>
+        <p>Rotação Vista X-W: <span id="rot4d" class="destaque">0°</span></p>
         <hr>
         <div>
-            <strong>Controles Terrestres (3D):</strong><br>
-            W, A, S, D - Movimentação lateral<br>
+            <strong>Controles de Movimento:</strong><br>
+            W, A, S, D - Andar pelo mundo 3D<br>
             Setas do Teclado - Olhar para os lados/cima<br><br>
-            <strong>Controles Hiperespaciais (4D):</strong><br>
-            <span style="color: #ffaa00;">Q / E - Rotacionar a visão para a 4ª Dimensão</span><br>
-            R / F - Mover-se diretamente no eixo W (Ana/Kata)
+            <strong>Controles do Hiperespaço (4D):</strong><br>
+            Q / E - Rotacionar a câmera para a 4ª Dimensão<br>
+            R / F - Mover-se diretamente no eixo W
         </div>
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO DO MOTOR GRÁFICO 3D ---
+        // --- CONFIGURAÇÃO DA CENA ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB); // Céu
-        scene.fog = new THREE.FogExp2(0x87CEEB, 0.03);
+        scene.background = new THREE.Color(0x87CEEB);
+        scene.fog = new THREE.FogExp2(0x87CEEB, 0.025);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Iluminação estilo Voxel
-        const light = new THREE.DirectionalLight(0xffffff, 0.9);
-        light.position.set(10, 20, 15);
-        scene.add(light);
-        scene.add(new THREE.AmbientLight(0xaaaaaa, 0.4));
+        // Luzes
+        const luzDirecional = new THREE.DirectionalLight(0xffffff, 0.9);
+        luzDirecional.position.set(20, 40, 20);
+        scene.add(luzDirecional);
+        scene.add(new THREE.AmbientLight(0x999999, 0.5));
 
-        // --- ESTRUTURA DO MUNDO 4D (X, Y, Z, W) ---
-        // Em um mundo 4D real, os blocos existem em coordenadas X, Y, Z e W.
-        const tamanhoMundo = 12;
-        const blocos4D = [];
-        const malhas3D = []; // O que de fato é renderizado na tela 3D
-
-        // Definição de cores baseadas na profundidade W da quarta dimensão
-        const cores4D = [0x556B2F, 0x8B4513, 0x4682B4, 0x9370DB, 0xFF6347];
-
-        // Gerando o terreno hiperdimensional
-        for (let x = -tamanhoMundo; x < tamanhoMundo; x++) {
-            for (let z = -tamanhoMundo; z < tamanhoMundo; z++) {
-                // O Y (altura) e o W (hiper-profundidade) criam relevos matemáticos complexos
-                let alturaBase = Math.floor(Math.sin(x * 0.3) * Math.cos(z * 0.3) * 2) + 2;
-                
-                for (let y = 0; y <= alturaBase; y++) {
-                    // Espalha os blocos em diferentes camadas do eixo W (-2 a 2)
-                    let w = Math.floor(Math.sin(x * y * 0.1) * 2);
-                    
-                    blocos4D.push({
-                        origX: x,
-                        origY: y,
-                        origZ: z,
-                        origW: w,
-                        cor: cores4D[Math.abs(w) % cores4D.length]
-                    });
-                }
-            }
-        }
-
-        // Geometria padrão de cubo do Minecraft
-        const geometriaCubo = new THREE.BoxGeometry(0.95, 0.95, 0.95);
-
-        // Criar as representações visuais iniciais no cenário
-        blocos4D.forEach((bloco, indice) => {
-            const material = new THREE.MeshStandardMaterial({ color: bloco.cor });
-            const cubo = new THREE.Mesh(geometriaCubo, material);
-            scene.add(cubo);
-            malhas3D[indice] = cubo;
-        });
-
-        // --- VARIÁVEIS DE POSIÇÃO E ROTAÇÃO 4D ---
-        let jogador = { x: 0, y: 5, z: 15, w: 0 };
-        let angulo4D = 0; // Ângulo de rotação no plano X-W
-        let rotY = 0; // Olhar 3D esquerda/direita
-        let rotX = 0; // Olhar 3D cima/baixo
+        // --- VARIÁVEIS DO JOGADOR ---
+        let jogador = { x: 0, y: 3, z: 10, w: 0 };
+        let angulo4D = 0; 
+        let rotY = 0; // Olhar Esquerda/Direita
+        let rotX = 0; // Olhar Cima/Baixo
 
         const teclado = {};
         window.addEventListener('keydown', (e) => teclado[e.code] = true);
         window.addEventListener('keyup', (e) => teclado[e.code] = false);
 
+        // --- CRIAÇÃO DO MUNDO VOXEL 4D ---
+        const tamanhoMundo = 15;
+        const blocos4D = [];
+        const malhas3D = [];
+        const coresTerras = [0x556B2F, 0x6B8E23, 0x8B4513, 0xcd853f];
+
+        const geometriaCubo = new THREE.BoxGeometry(0.98, 0.98, 0.98);
+
+        for (let x = -tamanhoMundo; x < tamanhoMundo; x++) {
+            for (let z = -tamanhoMundo; z < tamanhoMundo; z++) {
+                // Altura gerada por fórmula matemática para criar montanhas
+                let altura = Math.floor(Math.sin(x * 0.2) * Math.cos(z * 0.2) * 2) + 2;
+                
+                for (let y = 0.0; y <= altura; y++) {
+                    // Define em qual camada da quarta dimensão (W) o bloco existe (-2 a 2)
+                    let w = Math.floor(Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2);
+
+                    blocos4D.push({
+                        origX: x, origY: y, origZ: z, origW: w,
+                        tipo: 'bloco',
+                        cor: coresTerras[Math.abs(w) % coresTerras.length]
+                    });
+                }
+            }
+        }
+
+        // --- SISTEMA DE ANIMAIS 4D ---
+        const animais4D = [];
+
+        function criarModeloAnimal(cor) {
+            const grupo = new THREE.Group();
+            // Corpo
+            const corpo = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 1.2), new THREE.MeshStandardMaterial({color: cor}));
+            corpo.position.y = 0.5;
+            grupo.add(corpo);
+            // Cabeça
+            const cabeca = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({color: cor}));
+            cabeca.position.set(0, 0.8, 0.6);
+            grupo.add(cabeca);
+            // Patas
+            const matPata = new THREE.MeshStandardMaterial({color: 0x111111});
+            for(let i = 0; i < 4; i++) {
+                const pata = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.4, 0.15), matPata);
+                pata.position.set(i % 2 === 0 ? 0.3 : -0.3, 0.1, i < 2 ? 0.4 : -0.4);
+                grupo.add(pata);
+            }
+            return grupo;
+        }
+
+        // Criando 15 animais espalhados aleatoriamente pelo hiperespaço
+        for (let i = 0; i < 15; i++) {
+            animais4D.push({
+                x: (Math.random() - 0.5) * 20,
+                y: 3,
+                z: (Math.random() - 0.5) * 20,
+                w: Math.floor((Math.random() - 0.5) * 4), // Existem em diferentes pontos de W
+                tipo: 'animal',
+                malha: criarModeloAnimal(Math.random() * 0xffffff),
+                tempoDirecao: 0,
+                velX: 0,
+                velZ: 0
+            });
+            scene.add(animais4D[i].malha);
+        }
+
+        // Instanciar blocos na cena
+        blocos4D.forEach((bloco, indice) => {
+            const mat = new THREE.MeshStandardMaterial({ color: bloco.cor });
+            const cubo = new THREE.Mesh(geometriaCubo, mat);
+            scene.add(cubo);
+            malhas3D[indice] = cubo;
+        });
+
         // --- MATEMÁTICA DE PROJEÇÃO 4D PARA 3D ---
-        // Esta função pega os blocos 4D e os projeta/rotaciona no espaço 3D que conseguimos ver
-        function renderizarMundo4D() {
+        function atualizarProjecao4D() {
             const cosW = Math.cos(angulo4D);
             const sinW = Math.sin(angulo4D);
 
+            // 1. Projetar Blocos do Cenário
             blocos4D.forEach((bloco, indice) => {
                 const cubo = malhas3D[indice];
 
-                // Aplicando a rotação quadridimensional no plano X e W
-                // Fórmula de rotação de matriz: X' = X*cos - W*sin  |  W' = X*sin + W*cos
-                let rotX4D = bloco.origX * cosW - bloco.origW * sinW;
-                let rotW4D = bloco.origX * sinW + bloco.origW * cosW;
+                // Rotaciona o espaço no plano X-W
+                let rx = bloco.origX * cosW - bloco.origW * sinW;
+                let rw = bloco.origX * sinW + bloco.origW * cosW;
 
-                // Transpõe em relação à posição do jogador
-                let posX3D = rotX4D - jogador.x;
-                let posY3D = bloco.origY - jogador.y;
-                let posZ3D = bloco.origZ - ...jogador.z;
-                let posW3D = rotW4D - jogador.w;
+                // Transpõe o mundo ao redor da posição real do jogador
+                let posX = rx - jogador.x;
+                let posY = bloco.origY - jogador.y;
+                let posZ = bloco.origZ - jogador.z;
+                let posW = rw - jogador.w;
 
-                cubo.position.set(posX3D, posY3D, posZ3D);
+                cubo.position.set(posX, posY, posZ);
 
-                // Efeito de Intersecção 4D: Se o bloco estiver muito longe no eixo W, 
-                // ele desaparece ou fica invisível para o observador 3D.
-                let distanciaW = Math.abs(posW3D);
-                if (distanciaW > 1.2) {
+                // Fatiamento 4D: Esconde o bloco se ele estiver em outro plano W
+                let distW = Math.abs(posW);
+                if (distW > 1.0) {
                     cubo.visible = false;
                 } else {
                     cubo.visible = true;
-                    // Altera a opacidade ou escala dependendo de quão perto o bloco está da nossa fatia 3D
-                    cubo.scale.setScalar(1 - distanciaW * 0.5);
+                    cubo.scale.setScalar(1 - distW * 0.4); // Efeito visual de profundidade dimensional
+                }
+            });
+
+            // 2. Projetar e Atualizar Animais
+            animais4D.forEach((animal) => {
+                let rx = animal.x * cosW - animal.w * sinW;
+                let rw = animal.x * sinW + animal.w * cosW;
+
+                let posX = rx - jogador.x;
+                let posY = animal.y - jogador.y;
+                let posZ = animal.z - jogador.z;
+                let posW = rw - jogador.w;
+
+                animal.malha.position.set(posX, posY, posZ);
+
+                // Fatiamento 4D para os animais
+                let distW = Math.abs(posW);
+                if (distW > 1.0) {
+                    animal.malha.visible = false;
+                } else {
+                    animal.malha.visible = true;
+                    // Faz as perninhas mexerem ritmicamente quando andam
+                    animal.malha.children.slice(2).forEach((pata, id) => {
+                        pata.rotation.x = Math.sin(Date.now() * 0.01 + id) * 0.5;
+                    });
                 }
             });
         }
 
-        // --- LOOP DE ATUALIZAÇÃO E CONTROLES ---
+        // --- MOTOR DE MOVIMENTO E LÓGICA ---
         const clock = new THREE.Clock();
 
-        function update() {
-            const delta = clock.getDelta();
-            const velocidade = 8 * delta;
+        function controlarJogo(delta) {
+            const vel = 6 * delta;
             const velRot = 2 * delta;
 
-            // Controles de Câmera 3D Tradicionais (Setas)
+            // --- ROTAÇÃO DO OLHAR 3D (Setas) ---
             if (teclado['ArrowLeft']) rotY += velRot;
             if (teclado['ArrowRight']) rotY -= velRot;
             if (teclado['ArrowUp']) rotX = Math.max(-Math.PI/3, Math.min(Math.PI/3, rotX + velRot));
@@ -168,41 +221,64 @@
             camera.rotation.y = rotY;
             camera.rotation.x = rotX;
 
-            // Movimentação 3D (W, A, S, D) baseada para onde a câmera aponta
-            const direcao = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-            const lado = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-            direcao.y = 0; direcao.normalize();
-            lado.y = 0; lado.normalize();
+            // --- MOVIMENTO DO JOGADOR (W,A,S,D) ---
+            // Calcula direções de movimento baseadas para onde você olha
+            const direcaofrente = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            const direcaolado = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+            direcaofrente.y = 0; direcaofrente.normalize();
+            direcaolado.y = 0; direcaolado.normalize();
 
-            if (teclado['KeyW']) { jogador.x += direcao.x * velocidade; jogador.z += direcao.z * velocidade; }
-            if (teclado['KeyS']) { jogador.x -= direcao.x * velocidade; jogador.z -= direcao.z * velocidade; }
-            if (teclado['KeyA']) { jogador.x -= lado.x * velocidade; jogador.z -= lado.z * velocidade; }
-            if (teclado['KeyD']) { jogador.x += lado.x * velocidade; jogador.z += lado.z * velocidade; }
+            if (teclado['KeyW']) { jogador.x += direcaofrente.x * vel; jogador.z += direcaofrente.z * vel; }
+            if (teclado['KeyS']) { jogador.x -= direcaofrente.x * vel; jogador.z -= direcaofrente.z * vel; }
+            if (teclado['KeyA']) { jogador.x -= direcaolado.x * vel; jogador.z -= direcaolado.z * vel; }
+            if (teclado['KeyD']) { jogador.x += direcaolado.x * vel; jogador.z += direcaolado.z * vel; }
 
-            // CONTROLES DA QUARTA DIMENSÃO (4D)
-            // Rotação hiperespacial (Muda a perspectiva de transição do mundo)
-            if (teclado['KeyQ']) angulo4D += velRot * 0.5;
-            if (teclado['KeyE']) angulo4D -= velRot * 0.5;
+            // --- CONTROLES DE QUARTA DIMENSÃO ---
+            if (teclado['KeyQ']) angulo4D += velRot * 0.4;
+            if (teclado['KeyE']) angulo4D -= velRot * 0.4;
+            if (teclado['KeyR']) jogador.w += vel;
+            if (teclado['KeyF']) jogador.w -= vel;
 
-            // Deslocamento direto no eixo W (Mudar de hiper-plano)
-            if (teclado['KeyR']) jogador.w += velocidade;
-            if (teclado['KeyF']) jogador.w -= velocidade;
+            // A câmera do ambiente fica fixa no centro, o script translada os blocos para simular o andar
+            camera.position.set(0, 1.7, 0); 
 
-            // Atualiza a câmera física do Three.js na origem (o mundo roda ao redor dela)
-            camera.position.set(0, 1.8, 0); 
+            // --- INTELIGÊNCIA ARTIFICIAL DOS ANIMAIS ---
+            animais4D.forEach(animal => {
+                animal.tempoDirecao -= delta;
+                if(animal.tempoDirecao <= 0) {
+                    // Escolhe uma nova direção aleatória para andar de tempos em tempos
+                    animal.tempoDirecao = Math.random() * 4 + 2;
+                    let angulo = Math.random() * Math.PI * 2;
+                    animal.velX = Math.cos(angulo) * 2;
+                    animal.velZ = Math.sin(angulo) * 2;
+                    animal.malha.rotation.y = -angulo + Math.PI/2;
+                    
+                    // Raramente, o animal decide pular para outra hipercamada W espontaneamente
+                    if(Math.random() > 0.85) {
+                        animal.w = Math.max(-2, Math.min(2, animal.w + (Math.random() > 0.5 ? 1 : -1)));
+                    }
+                }
+                // Aplica o movimento no animal
+                animal.x += animal.velX * delta;
+                animal.z += animal.velZ * delta;
+                
+                // Faz o bicho se ajustar à altura das montanhas aproximadas
+                animal.y = Math.floor(Math.sin(animal.x * 0.2) * Math.cos(animal.z * 0.2) * 2) + 1.2;
+            });
 
-            // Processa a projeção quadridimensional
-            renderizarMundo4D();
+            // Atualiza matriz de renderização espacial
+            atualizarProjecao4D();
 
-            // Atualiza Interface de Usuário (UI)
+            // Atualiza os dados na tela
             document.getElementById('pos3d').innerText = `X:${jogador.x.toFixed(1)}, Y:${jogador.y.toFixed(1)}, Z:${jogador.z.toFixed(1)}`;
             document.getElementById('posW').innerText = jogador.w.toFixed(2);
             document.getElementById('rot4d').innerText = `${Math.round(angulo4D * (180 / Math.PI)) % 360}°`;
         }
 
+        // --- LOOP PRINCIPAL ---
         function animate() {
             requestAnimationFrame(animate);
-            update();
+            controlarJogo(clock.getDelta());
             renderer.render(scene, camera);
         }
 
@@ -212,7 +288,6 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Iniciar o motor
         animate();
     </script>
 </body>
