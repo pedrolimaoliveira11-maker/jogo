@@ -3,251 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo de Luta 2D - 2 Jogadores</title>
+    <title>Campeonato de Boxe - 2 Jogadores</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #111;
+            background-color: #1a1a1a;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Arial Black', Gadget, sans-serif;
             overflow: hidden;
         }
-        #container {
+        #arena-container {
             position: relative;
             width: 800px;
             height: 450px;
         }
         canvas {
-            background: linear-gradient(to bottom, #2c3e50, #000);
-            border: 4px solid #333;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            background: radial-gradient(circle, #444 0%, #111 100%);
+            border: 6px solid #d35400;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
         }
-        .interface {
+        .hud {
             position: absolute;
-            top: 20px;
+            top: 15px;
             left: 20px;
             right: 20px;
             display: flex;
             justify-content: space-between;
             pointer-events: none;
+            user-select: none;
         }
-        .barra-vida-container {
-            width: 300px;
-            height: 25px;
-            background-color: #555;
+        .painel-boxeador {
+            width: 320px;
+        }
+        .nome {
+            color: #fff;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px #000;
+        }
+        .barra-container {
+            height: 16px;
+            background-color: #333;
             border: 2px solid #fff;
-            border-radius: 5px;
+            border-radius: 4px;
             overflow: hidden;
+            margin-bottom: 4px;
         }
         .vida {
             height: 100%;
-            background-color: #00ff00;
+            background-color: #c0392b;
             width: 100%;
             transition: width 0.1s ease;
         }
-        #vida-p2 {
-            float: right;
+        .stamina {
+            height: 100%;
+            background-color: #27ae60;
+            width: 100%;
         }
-        .nome-player {
-            color: #fff;
-            font-weight: bold;
-            text-shadow: 2px 2px #000;
-            margin-bottom: 5px;
-        }
-        #p2-info {
+        #p2-painel {
             text-align: right;
         }
-        #tela-fim {
+        #p2-painel .vida, #p2-painel .stamina {
+            float: right;
+        }
+        #tela-nocaute {
             display: none;
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.85);
-            color: white;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: #f1c40f;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 30px;
-            border-radius: 4px;
+            font-size: 40px;
+            z-index: 10;
         }
-        #btn-reiniciar {
-            margin-top: 20px;
-            padding: 10px 20px;
+        #btn-revanche {
+            margin-top: 25px;
+            padding: 12px 30px;
             font-family: inherit;
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
-            background-color: #e74c3c;
+            background-color: #d35400;
             color: white;
             border: none;
             border-radius: 5px;
+            box-shadow: 0 4px 0 #a04000;
         }
-        #btn-reiniciar:hover {
-            background-color: #c0392b;
+        #btn-revanche:active {
+            transform: translateY(4px);
+            box-shadow: none;
         }
     </style>
 </head>
 <body>
 
-    <div id="container">
-        <div class="interface">
-            <div id="p1-info">
-                <div class="nome-player">JOGADOR 1 (A,D,W + Espaço)</div>
-                <div class="barra-vida-container">
-                    <div id="vida-p1" class="vida"></div>
-                </div>
+    <div id="arena-container">
+        <div class="hud">
+            <div id="p1-painel" class="painel-boxeador">
+                <div class="nome">Boxeador Azul (A/D | W=Guarda | Q=Jab | E=Direto)</div>
+                <div class="barra-container"><div id="vida-p1" class="vida"></div></div>
+                <div class="barra-container"><div id="stamina-p1" class="stamina"></div></div>
             </div>
-            <div id="p2-info">
-                <div class="nome-player">JOGADOR 2 (Setas + Enter)</div>
-                <div class="barra-vida-container">
-                    <div id="vida-p2" class="vida"></div>
-                </div>
+            <div id="p2-painel" class="painel-boxeador">
+                <div class="nome">Boxeador Vermelho (Setas L/R | Seta Up=Guarda | 1=Jab | 2=Direto)</div>
+                <div class="barra-container"><div id="vida-p2" class="vida"></div></div>
+                <div class="barra-container"><div id="stamina-p2" class="stamina"></div></div>
             </div>
         </div>
 
-        <div id="tela-fim">
-            <span id="texto-vencedor">JOGADOR X VENCEU!</span>
-            <button id="btn-reiniciar" onclick="reiniciarJogo()">Jogar Novamente</button>
+        <div id="tela-nocaute">
+            <span id="texto-vencedor">K.O.! JOGADOR X VENCEU!</span>
+            <button id="btn-revanche" onclick="reiniciarCombate()">REVANCHE</button>
         </div>
 
-        <canvas id="jogoCanvas" width="800" height="450"></canvas>
+        <canvas id="ringueCanvas" width="800" height="450"></canvas>
     </div>
 
     <script>
-        const canvas = document.getElementById('jogoCanvas');
+        const canvas = document.getElementById('ringueCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Configurações Globais
-        const gravidade = 0.6;
-        const chaoY = canvas.height - 40;
-        let jogoAtivo = true;
-
-        // Registro de Teclas pressionadas
+        // Configurações Técnicas
+        const chaoY = canvas.height - 60;
+        let partidaAtiva = true;
         const teclas = {};
 
-        // Classe que gerencia os Lutadores
-        class Lutador {
-            constructor({ x, y, cor, lado }) {
+        class Boxeador {
+            constructor({ x, cor, lado, nome }) {
                 this.x = x;
-                this.y = y;
-                this.width = 50;
-                this.height = 100;
+                this.y = chaoY - 140; // Altura fixa no ringue
+                this.width = 60;
+                this.height = 140;
                 this.cor = cor;
-                this.lado = lado; // 'esquerda' ou 'direita'
-                
-                this.velocidadeX = 0;
-                this.velocidadeY = 0;
-                this.estaNoChao = false;
-                this.vida = 100;
+                this.lado = lado; // 'direita' ou 'esquerda'
+                this.nome = nome;
 
-                // Caixa de Ataque (Soco)
-                this.estaAtacando = false;
+                // Atributos de Luta
+                this.vida = 100;
+                this.stamina = 100;
+                
+                // Estados de Ação
+                this.estaDefendendo = false;
+                this.tipoAtaque = null; // 'jab' ou 'direto'
                 this.tempoAtaque = 0;
-                this.caixaAtaque = {
-                    width: 60,
-                    height: 40
-                };
+                this.alcanceSoco = 0;
             }
 
             desenhar() {
-                // Desenhar Personagem Principal
+                // 1. Desenhar o corpo do Boxeador
                 ctx.fillStyle = this.cor;
                 ctx.fillRect(this.x, this.y, this.width, this.height);
 
-                // Desenhar Cabeça/Olhos para dar direção
+                // Shorts de Boxe
                 ctx.fillStyle = '#fff';
-                let olhoX = this.lado === 'direita' ? this.x + 35 : this.x + 5;
-                ctx.fillRect(olhoX, this.y + 15, 10, 10);
+                ctx.fillRect(this.x, this.y + 80, this.width, 25);
 
-                // Desenhar soco se estiver atacando
-                if (this.estaAtacando) {
-                    ctx.fillStyle = '#f39c12';
-                    let ataqueX = this.lado === 'direita' ? this.x + this.width : this.x - this.caixaAtaque.width;
-                    ctx.fillRect(ataqueX, this.y + 20, this.caixaAtaque.width, this.caixaAtaque.height);
+                // Cabeça/Olhar
+                ctx.fillStyle = '#f3c192';
+                ctx.fillRect(this.x + (this.lado === 'direita' ? 15 : 5), this.y - 30, 40, 30);
+                
+                // Olhos focados no oponente
+                ctx.fillStyle = '#000';
+                let olhoX = this.lado === 'direita' ? this.x + 40 : this.x + 10;
+                ctx.fillRect(olhoX, this.y - 20, 8, 6);
+
+                // 2. Renderização das Luvas (Ataque ou Defesa)
+                ctx.fillStyle = this.cor;
+                if (this.estaDefendendo) {
+                    // Posição de Guarda Escudo (Mãos cobrindo o rosto)
+                    let guardaX = this.lado === 'direita' ? this.x + 35 : this.x - 5;
+                    ctx.fillStyle = '#f1c40f'; // Luvas brilham em posição de guarda
+                    ctx.fillRect(guardaX, this.y - 15, 30, 40);
+                } 
+                else if (this.tempoAtaque > 0 && this.tipoAtaque) {
+                    // Desenha o braço esticado desferindo o soco
+                    ctx.fillStyle = '#e67e22';
+                    let socoX = this.lado === 'direita' ? this.x + this.width : this.x - this.alcanceSoco;
+                    ctx.fillRect(socoX, this.y + 15, this.alcanceSoco, 20);
+
+                    // Luva na ponta do soco
+                    ctx.fillStyle = '#000';
+                    let luvaX = this.lado === 'direita' ? socoX + this.alcanceSoco - 15 : socoX;
+                    ctx.fillRect(luvaX, this.y + 10, 20, 30);
+                } 
+                else {
+                    // Posição de repouso básica de boxe
+                    let luvaBaseX = this.lado === 'direita' ? this.x + 40 : this.x - 10;
+                    ctx.fillRect(luvaBaseX, this.y + 25, 30, 30);
                 }
             }
 
             atualizar() {
-                // Aplicar Gravidade
-                this.velocidadeY += gravidade;
-                this.y += this.velocidadeY;
-                this.x += this.velocidadeX;
-
-                // Colisão com o Chão
-                if (this.y + this.height >= chaoY) {
-                    this.y = chaoY - this.height;
-                    this.velocidadeY = 0;
-                    this.estaNoChao = true;
-                } else {
-                    this.estaNoChao = false;
+                // Recuperação natural de stamina
+                if (this.stamina < 100 && this.tipoAtaque === null) {
+                    this.stamina += 0.4;
                 }
 
-                // Limites das Paredes Laterais
-                if (this.x < 0) this.x = 0;
-                if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
-
-                // Gerenciar tempo de duração do golpe
-                if (this.estaAtacando) {
+                // Resfriamento do tempo do soco desferido
+                if (this.tempoAtaque > 0) {
                     this.tempoAtaque--;
                     if (this.tempoAtaque <= 0) {
-                        this.estaAtacando = false;
+                        this.tipoAtaque = null;
                     }
                 }
+
+                // Limitar movimento dentro das cordas do ringue
+                if (this.x < 30) this.x = 30;
+                if (this.x + this.width > canvas.width - 30) this.x = canvas.width - this.width - 30;
             }
 
-            atacar() {
-                if (!this.estaAtacando) {
-                    this.estaAtacando = true;
-                    this.tempoAtaque = 10; // Duração do golpe em frames
-                    return true;
+            atacar(tipo) {
+                if (this.tempoAtaque > 0 || this.estaDefendendo) return false;
+
+                // Custo de stamina baseado na potência do golpe
+                let custoStamina = tipo === 'jab' ? 15 : 30;
+                if (this.stamina < custoStamina) return false; // Cansado demais
+
+                this.tipoAtaque = tipo;
+                this.stamina -= custoStamina;
+
+                if (tipo === 'jab') {
+                    this.tempoAtaque = 8; // Rápido
+                    this.alcanceSoco = 55;
+                } else {
+                    this.tempoAtaque = 15; // Lento e longo
+                    this.alcanceSoco = 95;
                 }
-                return false;
+                return true;
             }
         }
 
-        // Criando instâncias dos jogadores
-        const p1 = new Lutador({ x: 150, y: 200, cor: '#3498db', lado: 'direita' });
-        const p2 = new Lutador({ x: 600, y: 200, cor: '#e74c3c', lado: 'esquerda' });
+        // Criando lutadores (P1 na esquerda voltado para direita, P2 oposto)
+        let p1 = new Boxeador({ x: 200, cor: '#2980b9', lado: 'direita', nome: 'BOXEADOR AZUL' });
+        let p2 = new Boxeador({ x: 540, cor: '#c0392b', lado: 'esquerda', nome: 'BOXEADOR VERMELHO' });
 
-        // Ouvintes do teclado
+        // Eventos e Input Único
         window.addEventListener('keydown', (e) => {
             teclas[e.code] = true;
-            
-            // Eventos de clique único (Ataque e Pulo)
-            if (e.code === 'Space' && jogoAtivo) {
-                if(p1.atacar()) checarAcerto(p1, p2);
-            }
-            if (e.code === 'Enter' && jogoAtivo) {
-                if(p2.atacar()) checarAcerto(p2, p1);
-            }
-            if (e.code === 'KeyW' && p1.estaNoChao && jogoAtivo) {
-                p1.velocidadeY = -14;
-            }
-            if (e.code === 'ArrowUp' && p2.estaNoChao && jogoAtivo) {
-                p2.velocidadeY = -14;
-            }
+
+            if (!partidaAtiva) return;
+
+            // Socos do Jogador 1 (Q e E)
+            if (e.code === 'KeyQ') { if(p1.atacar('jab')) checarImpactoSoco(p1, p2); }
+            if (e.code === 'KeyE') { if(p1.atacar('direto')) checarImpactoSoco(p1, p2); }
+
+            // Socos do Jogador 2 (Numpad 1 e 2 ou teclado superior)
+            if (e.code === 'Digit1' || e.code === 'Numpad1') { if(p2.atacar('jab')) checarImpactoSoco(p2, p1); }
+            if (e.code === 'Digit2' || e.code === 'Numpad2') { if(p2.atacar('direto')) checarImpactoSoco(p2, p1); }
         });
 
         window.addEventListener('keyup', (e) => {
             teclas[e.code] = false;
         });
 
-        // Processar movimentação contínua
-        function processarEntradas() {
-            if (!jogoAtivo) return;
+        function processarMovimentos() {
+            if (!partidaAtiva) return;
 
-            // Movimento Jogador 1
-            p1.velocidadeX = 0;
-            if (teclas['KeyA']) { p1.velocidadeX = -6; p1.lado = 'esquerda'; }
-            if (teclas['KeyD']) { p1.velocidadeX = 6; p1.lado = 'direita'; }
+            // --- CONTROLES JOGADOR 1 ---
+            p1.estaDefendendo = teclas['KeyW']; // Ativa guarda ao segurar W
+            
+            if (!p1.estaDefendendo && p1.tempoAtaque === 0) {
+                if (teclas['KeyA']) { p1.x -= 4.5; p1.lado = 'esquerda'; }
+                if (teclas['KeyD']) { p1.x += 4.5; p1.lado = 'direita'; }
+            }
 
-            // Movimento Jogador 2
-            p2.velocidadeX = 0;
-            if (teclas['ArrowLeft']) { p2.velocidadeX = -6; p2.lado = 'esquerda'; }
-            if (teclas['ArrowRight']) { p2.velocidadeX = 6; p2.lado = 'direita'; }
+            // --- CONTROLES JOGADOR 2 ---
+            p2.estaDefendendo = teclas['ArrowUp']; // Ativa guarda ao segurar Seta Cima
+            
+            if (!p2.estaDefendendo && p2.tempoAtaque === 0) {
+                if (teclas['ArrowLeft']) { p2.x -= 4.5; p2.lado = 'esquerda'; }
+                if (teclas['ArrowRight']) { p2.x += 4.5; p2.lado = 'direita'; }
+            }
+
+            // Garante que os lutadores sempre virem um de frente para o outro automaticamente
+            if (p1.x < p2.x) {
+                p1.lado = 'direita';
+                p2.lado = 'esquerda';
+            } else {
+                p1.lado = 'esquerda';
+                p2.lado = 'direita';
+            }
         }
+
+        // --- DETECÇÃO DE IMPACTO DE LUTA ---
+        function checarImpactoSoco(atacante, defensor) {
+            // Calcula até onde o soco chega fisicamente no cenário
+            let socoAlcanceX;
+            if (atacante.lado === 'direita') {
+                socoAlcanceX = atacante.x + atacante.width + atacante.alcanceSoco;
+            } else {
+                socoAlcanceX = atacante.x - atacante.alcanceSoco;
+            }
+
+            // Verifica se a ponta da luva colidiu com a caixa do corpo do oponente
+            let acertouOponente = socoAlcanceX >= defensor.x && socoAlcanceX <= defensor.x + defensor.width;
+
+            if (acertouOponente) {
+                // Cálculo de Dano Base
+                let dano = atacante.tipoAtaque === 'jab' ? 8 : 18;
+
+                // Modificador de Guarda/Defesa ativa
+                if (defensor.estaDefendendo) {
+                    // Bloqueio bem sucedido diminui 85% do impacto
+                    dano = Math.floor(dano * 0.15);
+                }
+
+                defensor.vida -= dano;
+                if (defensor.vida < 0) defensor.vida = 0;
+
+                atualizarBarrasGraficas();
+
+                // Fim da luta por Nocaute (K.O.)
+                if (defensor.vida <= 0) {
+                    acionarNocaute(atacante.nome);
+                }
+            }
+        }
+
+        function atualizarBarrasGraficas() {
+            document.getElementById('vida-p1').style.width = p1.vida + '%';
+            document.getElementById('stamina-p1').style.width = p1.stamina + '%';
+            document.getElementById('vida-p2').style.width = p2.vida + '%';
+            document.getElementById('stamina-p2').style.width = p2.stamina + '%';
+        }
+
+        function acionarNocaute(vencedor) {
+            partidaAtiva = false;
+            document.getElementById('texto-vencedor').innerText = `K.O.! O ${vencedor} VENCEU!`;
+            document.getElementById('tela-nocaute').style.display = 'flex';
+        }
+
+        function reiniciarCombate() {
+            p1 = new Boxeador({ x: 200, cor: '#2980b9', lado: 'direita', nome: 'BOXEADOR AZUL' });
+            p2 = new Boxeador({ x: 540, cor: '#c0392b', lado: 'esquerda', nome: 'BOXEADOR VERMELHO' });
+            
+            atualizarBarrasGraficas();
+            document.getElementById('tela-nocaute').style.display = 'none';
+            partidaAtiva = true;
+        }
+
+        // --- ENGINE E RENDER DO CENÁRIO ---
+        function loopDoJogo() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Desenhar Piso de Lona do Ringue
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(0, chaoY, canvas.width, canvas.height - chaoY);
+
+            // Cordas do Ringue (Fundo Vermelho e Azul decorativo)
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(0, chaoY - 40); ctx.lineTo(canvas.width, chaoY - 40);
+            ctx.moveTo(0, chaoY - 80); ctx.lineTo(canvas.width, chaoY - 80);
+            ctx.stroke();
+
+            // Computar e renderizar entidades
+            processarMovimentos();
+            p1.atualizar();
+            p2.atualizar();
+
+            p1.desenhar();
+            p2.desenhar();
+
+            requestAnimationFrame(loopDoJogo);
+        }
+
+        // Inicializar Ringue
+        loopDoJogo();
+    </script>
+</body>
+</html>
