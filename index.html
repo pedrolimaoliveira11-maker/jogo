@@ -3,29 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo de Guerra 2D - Linhas de Frente</title>
+    <title>Minecraft 4D - Hipercubos</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #2e3d23;
-            font-family: sans-serif;
+            background-color: #87CEEB;
+            font-family: 'Courier New', Courier, monospace;
         }
         #ui {
             position: absolute;
             top: 10px;
             left: 10px;
             color: white;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 20px;
+            border-radius: 10px;
             pointer-events: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 2px solid #555;
         }
-        #controles {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #ccc;
+        .destaque {
+            color: #00ffcc;
+            font-weight: bold;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -33,205 +32,187 @@
 <body>
 
     <div id="ui">
-        <h2>Painel de Controle (2D)</h2>
-        <p>Unidade Atual: <strong id="unidade-ativa" style="color: #00ff00;">Soldado</strong></p>
+        <h2>Minecraft 4D (Tesseract Voxels)</h2>
+        <p>Posição 3D: <span id="pos3d" class="destaque">X:0, Y:0, Z:0</span></p>
+        <p>Posição Ana/Kata (W): <span id="posW" class="destaque">0.00</span></p>
+        <p>Rotação X-W (Olhar 4D): <span id="rot4d" class="destaque">0°</span></p>
         <hr>
-        <div id="controles">
-            <strong>Mudar de Unidade Aliada:</strong><br>
-            [1] Soldado | [2] Tanque | [3] Avião<br><br>
-            <strong>Movimentação:</strong><br>
-            W / S - Andar para Frente / Trás<br>
-            A / D - Girar Direção<br>
-            Espaço - Turbo (Apenas Avião)
+        <div>
+            <strong>Controles Terrestres (3D):</strong><br>
+            W, A, S, D - Movimentação lateral<br>
+            Setas do Teclado - Olhar para os lados/cima<br><br>
+            <strong>Controles Hiperespaciais (4D):</strong><br>
+            <span style="color: #ffaa00;">Q / E - Rotacionar a visão para a 4ª Dimensão</span><br>
+            R / F - Mover-se diretamente no eixo W (Ana/Kata)
         </div>
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO DO AMBIENTE 2D ---
+        // --- CONFIGURAÇÃO DO MOTOR GRÁFICO 3D ---
         const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB); // Céu
+        scene.fog = new THREE.FogExp2(0x87CEEB, 0.03);
 
-        // Criando uma Câmera Ortográfica ideal para jogos 2D/Top-down
-        const aspecto = window.innerWidth / window.innerHeight;
-        const tamanhoVisao = 40; 
-        const camera = new THREE.OrthographicCamera(
-            -tamanhoVisao * aspecto, tamanhoVisao * aspecto, 
-            tamanhoVisao, -tamanhoVisao, 
-            0.1, 1000
-        );
-        
-        // Posiciona a câmera diretamente olhando de cima para baixo
-        camera.position.set(0, 0, 50); 
-        camera.lookAt(0, 0, 0);
-
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Iluminação simples para destacar as cores no plano
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
-        scene.add(ambientLight);
+        // Iluminação estilo Voxel
+        const light = new THREE.DirectionalLight(0xffffff, 0.9);
+        light.position.set(10, 20, 15);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0xaaaaaa, 0.4));
 
-        // --- VARIÁVEIS DE JOGO ---
-        let tipoUnidade = 'soldado'; 
+        // --- ESTRUTURA DO MUNDO 4D (X, Y, Z, W) ---
+        // Em um mundo 4D real, os blocos existem em coordenadas X, Y, Z e W.
+        const tamanhoMundo = 12;
+        const blocos4D = [];
+        const malhas3D = []; // O que de fato é renderizado na tela 3D
+
+        // Definição de cores baseadas na profundidade W da quarta dimensão
+        const cores4D = [0x556B2F, 0x8B4513, 0x4682B4, 0x9370DB, 0xFF6347];
+
+        // Gerando o terreno hiperdimensional
+        for (let x = -tamanhoMundo; x < tamanhoMundo; x++) {
+            for (let z = -tamanhoMundo; z < tamanhoMundo; z++) {
+                // O Y (altura) e o W (hiper-profundidade) criam relevos matemáticos complexos
+                let alturaBase = Math.floor(Math.sin(x * 0.3) * Math.cos(z * 0.3) * 2) + 2;
+                
+                for (let y = 0; y <= alturaBase; y++) {
+                    // Espalha os blocos em diferentes camadas do eixo W (-2 a 2)
+                    let w = Math.floor(Math.sin(x * y * 0.1) * 2);
+                    
+                    blocos4D.push({
+                        origX: x,
+                        origY: y,
+                        origZ: z,
+                        origW: w,
+                        cor: cores4D[Math.abs(w) % cores4D.length]
+                    });
+                }
+            }
+        }
+
+        // Geometria padrão de cubo do Minecraft
+        const geometriaCubo = new THREE.BoxGeometry(0.95, 0.95, 0.95);
+
+        // Criar as representações visuais iniciais no cenário
+        blocos4D.forEach((bloco, indice) => {
+            const material = new THREE.MeshStandardMaterial({ color: bloco.cor });
+            const cubo = new THREE.Mesh(geometriaCubo, material);
+            scene.add(cubo);
+            malhas3D[indice] = cubo;
+        });
+
+        // --- VARIÁVEIS DE POSIÇÃO E ROTAÇÃO 4D ---
+        let jogador = { x: 0, y: 5, z: 15, w: 0 };
+        let angulo4D = 0; // Ângulo de rotação no plano X-W
+        let rotY = 0; // Olhar 3D esquerda/direita
+        let rotX = 0; // Olhar 3D cima/baixo
+
         const teclado = {};
-        const unidadesAliadas = {};
-        const unidadesInimigas = [];
+        window.addEventListener('keydown', (e) => teclado[e.code] = true);
+        window.addEventListener('keyup', (e) => teclado[e.code] = false);
 
-        // --- CRIAÇÃO DE MODELOS 2D ---
+        // --- MATEMÁTICA DE PROJEÇÃO 4D PARA 3D ---
+        // Esta função pega os blocos 4D e os projeta/rotaciona no espaço 3D que conseguimos ver
+        function renderizarMundo4D() {
+            const cosW = Math.cos(angulo4D);
+            const sinW = Math.sin(angulo4D);
 
-        // 1. Soldado (Círculo com indicador de direção)
-        function criarSoldado2D(cor) {
-            const grupo = new THREE.Group();
-            const corpo = new THREE.Mesh(new THREE.CircleGeometry(1, 32), new THREE.MeshBasicMaterial({ color: cor }));
-            grupo.add(corpo);
-            
-            const indicador = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.2), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-            indicador.position.y = 0.8; 
-            grupo.add(indicador);
-            return grupo;
+            blocos4D.forEach((bloco, indice) => {
+                const cubo = malhas3D[indice];
+
+                // Aplicando a rotação quadridimensional no plano X e W
+                // Fórmula de rotação de matriz: X' = X*cos - W*sin  |  W' = X*sin + W*cos
+                let rotX4D = bloco.origX * cosW - bloco.origW * sinW;
+                let rotW4D = bloco.origX * sinW + bloco.origW * cosW;
+
+                // Transpõe em relação à posição do jogador
+                let posX3D = rotX4D - jogador.x;
+                let posY3D = bloco.origY - jogador.y;
+                let posZ3D = bloco.origZ - ...jogador.z;
+                let posW3D = rotW4D - jogador.w;
+
+                cubo.position.set(posX3D, posY3D, posZ3D);
+
+                // Efeito de Intersecção 4D: Se o bloco estiver muito longe no eixo W, 
+                // ele desaparece ou fica invisível para o observador 3D.
+                let distanciaW = Math.abs(posW3D);
+                if (distanciaW > 1.2) {
+                    cubo.visible = false;
+                } else {
+                    cubo.visible = true;
+                    // Altera a opacidade ou escala dependendo de quão perto o bloco está da nossa fatia 3D
+                    cubo.scale.setScalar(1 - distanciaW * 0.5);
+                }
+            });
         }
 
-        // 2. Tanque (Retângulo com canhão)
-        function criarTanque2D(cor) {
-            const grupo = new THREE.Group();
-            const base = new THREE.Mesh(new THREE.BoxGeometry(3, 4), new THREE.MeshBasicMaterial({ color: cor }));
-            grupo.add(base);
-
-            const canhao = new THREE.Mesh(new THREE.BoxGeometry(0.6, 3), new THREE.MeshBasicMaterial({ color: 0x111111 }));
-            canhao.position.y = 2;
-            grupo.add(canhao);
-            return grupo;
-        }
-
-        // 3. Avião (Formato de Cruz/Asas)
-        function criarAviao2D(cor) {
-            const grupo = new THREE.Group();
-            const corpo = new THREE.Mesh(new THREE.BoxGeometry(0.8, 5), new THREE.MeshBasicMaterial({ color: cor }));
-            grupo.add(corpo);
-
-            const asas = new THREE.Mesh(new THREE.BoxGeometry(5, 0.8), new THREE.MeshBasicMaterial({ color: cor }));
-            asas.position.y = 0.5;
-            grupo.add(asas);
-            return grupo;
-        }
-
-        // --- POSICIONAMENTO DAS LINHAS DE FRENTE (ESQUERDA VS DIREITA) ---
-
-        // LADO ESQUERDO: Seus Aliados (Verdes e Azul)
-        unidadesAliadas.soldado = criarSoldado2D(0x2e8b57);
-        unidadesAliadas.tanque = criarTanque2D(0x556b2f);
-        unidadesAliadas.aviao = criarAviao2D(0x4682b4);
-
-        unidadesAliadas.soldado.position.set(-25, 10, 0);
-        unidadesAliadas.tanque.position.set(-25, -10, 0);
-        unidadesAliadas.aviao.position.set(-35, 0, 0);
-
-        // Virar todos para a direita inicialmente (eixo X positivo)
-        unidadesAliadas.soldado.rotation.z = -Math.PI / 2;
-        unidadesAliadas.tanque.rotation.z = -Math.PI / 2;
-        unidadesAliadas.aviao.rotation.z = -Math.PI / 2;
-
-        scene.add(unidadesAliadas.soldado);
-        scene.add(unidadesAliadas.tanque);
-        scene.add(unidadesAliadas.aviao);
-
-        // LADO DIREITO: Inimigos (Vermelhos)
-        const configsInimigos = [
-            { tipo: 'soldado', pos: [25, 15] },
-            { tipo: 'soldado', pos: [25, 5] },
-            { tipo: 'tanque', pos: [25, -10] },
-            { tipo: 'aviao', pos: [35, 0] }
-        ];
-
-        configsInimigos.forEach(cfg => {
-            let inimigo;
-            if (cfg.tipo === 'soldado') inimigo = criarSoldado2D(0x8b0000);
-            if (cfg.tipo === 'tanque') inimigo = criarTanque2D(0x5c0000);
-            if (cfg.tipo === 'aviao') inimigo = criarAviao2D(0x800000);
-            
-            inimigo.position.set(cfg.pos[0], cfg.pos[1], 0);
-            
-            // Virar inimigos para a esquerda (olhando para os aliados)
-            inimigo.rotation.z = Math.PI / 2;
-            
-            scene.add(inimigo);
-            unidadesInimigas.push(inimigo);
-        });
-
-        // --- ENTRADAS DE TECLADO ---
-        window.addEventListener('keydown', (e) => {
-            teclado[e.key.toLowerCase()] = true;
-            
-            if (e.key === '1') { tipoUnidade = 'soldado'; atualizarUI('Soldado'); }
-            if (e.key === '2') { tipoUnidade = 'tanque'; atualizarUI('Tanque'); }
-            if (e.key === '3') { tipoUnidade = 'aviao'; atualizarUI('Avião'); }
-        });
-        window.addEventListener('keyup', (e) => { teclado[e.key.toLowerCase()] = false; });
-
-        function atualizarUI(nome) {
-            document.getElementById('unidade-ativa').innerText = nome;
-        }
-
-        // --- SISTEMA DE MOVIMENTAÇÃO 2D ---
+        // --- LOOP DE ATUALIZAÇÃO E CONTROLES ---
         const clock = new THREE.Clock();
 
-        function atualizarMovimento(delta) {
-            const atual = unidadesAliadas[tipoUnidade];
+        function update() {
+            const delta = clock.getDelta();
+            const velocidade = 8 * delta;
+            const velRot = 2 * delta;
 
-            // Velocidades customizadas por tipo
-            let velocidade = 12 * delta;
-            let velRotacao = 4 * delta;
+            // Controles de Câmera 3D Tradicionais (Setas)
+            if (teclado['ArrowLeft']) rotY += velRot;
+            if (teclado['ArrowRight']) rotY -= velRot;
+            if (teclado['ArrowUp']) rotX = Math.max(-Math.PI/3, Math.min(Math.PI/3, rotX + velRot));
+            if (teclado['ArrowDown']) rotX = Math.max(-Math.PI/3, Math.min(Math.PI/3, rotX - velRot));
 
-            if (tipoUnidade === 'tanque') {
-                velocidade = 7 * delta;
-                velRotacao = 2 * delta;
-            } else if (tipoUnidade === 'aviao') {
-                // O avião move-se constantemente para frente em 2D
-                velocidade = (teclado[' '] ? 22 : 14) * delta; 
-                velRotacao = 3 * delta;
-                atual.translateY(velocidade);
-            }
+            camera.rotation.set(0, 0, 0);
+            camera.rotation.y = rotY;
+            camera.rotation.x = rotX;
 
-            // Controles de rotação (A e D rotacionam no eixo Z no ambiente 2D)
-            if (teclado['a']) atual.rotation.z += velRotacao;
-            if (teclado['d']) atual.rotation.z -= velRotacao;
+            // Movimentação 3D (W, A, S, D) baseada para onde a câmera aponta
+            const direcao = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            const lado = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+            direcao.y = 0; direcao.normalize();
+            lado.y = 0; lado.normalize();
 
-            // Movimento de avanço e recuo (Para Soldado e Tanque)
-            if (tipoUnidade !== 'aviao') {
-                if (teclado['w']) atual.translateY(velocidade);
-                if (teclado['s']) atual.translateY(-velocidade);
-            }
+            if (teclado['KeyW']) { jogador.x += direcao.x * velocidade; jogador.z += direcao.z * velocidade; }
+            if (teclado['KeyS']) { jogador.x -= direcao.x * velocidade; jogador.z -= direcao.z * velocidade; }
+            if (teclado['KeyA']) { jogador.x -= lado.x * velocidade; jogador.z -= lado.z * velocidade; }
+            if (teclado['KeyD']) { jogador.x += lado.x * velocidade; jogador.z += lado.z * velocidade; }
 
-            // Câmera 2D segue suavemente a posição da unidade ativa no plano X e Y
-            camera.position.x = atual.position.x;
-            camera.position.y = atual.position.y;
+            // CONTROLES DA QUARTA DIMENSÃO (4D)
+            // Rotação hiperespacial (Muda a perspectiva de transição do mundo)
+            if (teclado['KeyQ']) angulo4D += velRot * 0.5;
+            if (teclado['KeyE']) angulo4D -= velRot * 0.5;
+
+            // Deslocamento direto no eixo W (Mudar de hiper-plano)
+            if (teclado['KeyR']) jogador.w += velocidade;
+            if (teclado['KeyF']) jogador.w -= velocidade;
+
+            // Atualiza a câmera física do Three.js na origem (o mundo roda ao redor dela)
+            camera.position.set(0, 1.8, 0); 
+
+            // Processa a projeção quadridimensional
+            renderizarMundo4D();
+
+            // Atualiza Interface de Usuário (UI)
+            document.getElementById('pos3d').innerText = `X:${jogador.x.toFixed(1)}, Y:${jogador.y.toFixed(1)}, Z:${jogador.z.toFixed(1)}`;
+            document.getElementById('posW').innerText = jogador.w.toFixed(2);
+            document.getElementById('rot4d').innerText = `${Math.round(angulo4D * (180 / Math.PI)) % 360}°`;
         }
 
-        // --- LOOP PRINCIPAL ---
         function animate() {
             requestAnimationFrame(animate);
-            const delta = clock.getDelta();
-
-            atualizarMovimento(delta);
-
-            // Pequena movimentação patrulha de simulação para o avião inimigo
-            const aviaoInimigo = unidadesInimigas[3];
-            aviaoInimigo.position.y = Math.sin(clock.getElapsedTime()) * 5;
-
+            update();
             renderer.render(scene, camera);
         }
 
-        // Redimensionamento de tela para manter a proporção ortográfica correta
         window.addEventListener('resize', () => {
-            const novoAspecto = window.innerWidth / window.innerHeight;
-            camera.left = -tamanhoVisao * novoAspecto;
-            camera.right = tamanhoVisao * novoAspecto;
-            camera.top = tamanhoVisao;
-            camera.bottom = -tamanhoVisao;
+            camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
+        // Iniciar o motor
         animate();
     </script>
 </body>
