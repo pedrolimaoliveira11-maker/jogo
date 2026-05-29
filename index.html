@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Boxing Arena - 2 Jogadores</title>
+    <title>Jogo de Boxe - 2 Jogadores</title>
     <style>
         * {
             margin: 0;
@@ -14,39 +14,35 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #0b0c10;
-            font-family: 'Impact', 'Arial Black', sans-serif;
+            background-color: #111;
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
         }
         canvas {
+            background: #222;
             display: block;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
         }
         #instrucoes {
             position: absolute;
-            top: 15px;
-            color: #fff;
+            top: 10px;
+            color: white;
             text-align: center;
             font-size: 14px;
-            font-family: Arial, sans-serif;
             pointer-events: none;
-            background: rgba(0, 0, 0, 0.75);
-            padding: 12px 25px;
-            border-radius: 8px;
-            border: 2px solid #333;
-            line-height: 1.5;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 10;
         }
-        .destaque { color: #f1c40f; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="instrucoes">
-        <span class="destaque">CLIQUE NA TELA PARA TELA CHEIA</span><br>
-        <strong>Jogador 1 (Vermelho):</strong> A / D (Mover) | W (Soco) | S (Defesa)<br>
-        <strong>Jogador 2 (Azul):</strong> Setas Esq / Dir (Mover) | Seta Cima (Soco) | Seta Baixo (Defesa)
+        <strong>Clique na tela para ativar Tela Cheia</strong><br>
+        P1: A/D (Mover), W (Soco) | P2: Setas Esq/Dir (Mover), Seta Cima (Soco)
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -55,73 +51,108 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
+        // Ajusta o tamanho do canvas para o tamanho da tela
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            // Reajusta as posições caso a tela mude de tamanho no meio do jogo
+            if(player1 && player2) {
+                player1.y = canvas.height * chaoioridade - player1.height;
+                player2.y = canvas.height * chaoioridade - player2.height;
+            }
         }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Ativador de Tela Cheia
+        // Entrar em tela cheia ao clicar
         window.addEventListener('click', () => {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`Erro ao injetar tela cheia: ${err.message}`);
+                    console.log(`Erro ao ativar tela cheia: ${err.message}`);
                 });
             }
         });
 
-        const proporcaoChao = 0.75;
-        let efeitosImpacto = [];
-
-        // Estrutura dos Lutadores
-        const p1 = {
-            x: 200, y: 0, width: 70, height: 140,
-            corCorpo: '#e74c3c', corShorts: '#ffffff', corLuva: '#c0392b',
-            nome: 'CHALLENGER', lado: 1, vida: 100,
-            isAtacando: false, isDefendendo: false, tempoAtaque: 0,
-            velocidade: 7, pontos: 0
+        // Configurações do Jogo
+        const chaoioridade = 0.8; // Altura do chão proporcional
+        
+        const player1 = {
+            x: 200,
+            y: 0,
+            width: 60,
+            height: 120,
+            color: '#e74c3c',
+            nome: 'Jogador 1',
+            lado: 1, // 1 = Direita, -1 = Esquerda
+            vida: 100,
+            isAtacando: false,
+            tempoAtaque: 0,
+            velocidade: 8,
+            pontos: 0
         };
 
-        const p2 = {
-            x: 0, y: 0, width: 70, height: 140,
-            corCorpo: '#3498db', corShorts: '#2c3e50', corLuva: '#2980b9',
-            nome: 'CHAMPION', lado: -1, vida: 100,
-            isAtacando: false, isDefendendo: false, tempoAtaque: 0,
-            velocidade: 7, pontos: 0
+        const player2 = {
+            x: 600,
+            y: 0,
+            width: 60,
+            height: 120,
+            color: '#3498db',
+            nome: 'Jogador 2',
+            lado: -1,
+            vida: 100,
+            isAtacando: false,
+            tempoAtaque: 0,
+            velocidade: 8,
+            pontos: 0
         };
 
+        // Resetar posições após um nocaute
         function resetPosicoes() {
-            p1.x = canvas.width * 0.25;
-            p2.x = canvas.width * 0.75 - p2.width;
-            p1.y = canvas.height * proporcaoChao - p1.height;
-            p2.y = canvas.height * proporcaoChao - p2.height;
-            p1.vida = 100;
-            p2.vida = 100;
-            p1.isAtacando = false; p1.isDefendendo = false;
-            p2.isAtacando = false; p2.isDefendendo = false;
+            player1.x = canvas.width * 0.25;
+            player2.x = canvas.width * 0.75 - player2.width;
+            player1.y = canvas.height * chaoioridade - player1.height;
+            player2.y = canvas.height * chaoioridade - player2.height;
+            player1.vida = 100;
+            player2.vida = 100;
         }
 
+        // Controle de teclas pressionadas
         const teclas = {};
         window.addEventListener('keydown', (e) => teclas[e.code] = true);
         window.addEventListener('keyup', (e) => teclas[e.code] = false);
 
+        // Lógica de atualização
         function atualizar() {
-            // --- Logica P1 ---
-            p1.isDefendendo = teclas['KeyS'] && !p1.isAtacando;
-            
-            if (!p1.isDefendendo) {
-                if (teclas['KeyA'] && p1.x > 80) p1.x -= p1.velocidade;
-                if (teclas['KeyD'] && p1.x < p2.x - p1.width/2) p1.x += p1.velocidade;
-                if (teclas['KeyW'] && !p1.isAtacando) {
-                    p1.isAtacando = true;
-                    p1.tempoAtaque = 8;
-                    processarGolpe(p1, p2);
+            // --- Controles do Jogador 1 (A, D, W) ---
+            if (teclas['KeyA'] && player1.x > 0) {
+                // Impede ultrapassar o P2 se ele estiver na esquerda
+                if (!(player1.x - player1.velocidade < player2.x + player2.width && player1.x > player2.x && player1.y + player1.height > player2.y)) {
+                    player1.x -= player1.velocidade;
                 }
             }
+            if (teclas['KeyD'] && player1.x < canvas.width - player1.width) {
+                // Impede ultrapassar o P2 se ele estiver na direita
+                if (!(player1.x + player1.width + player1.velocidade > player2.x && player1.x < player2.x && player1.y + player1.height > player2.y)) {
+                    player1.x += player1.velocidade;
+                }
+            }
+            if (teclas['KeyW'] && !player1.isAtacando) {
+                player1.isAtacando = true;
+                player1.tempoAtaque = 10; // Duração do soco em frames
+                verificarColisaoAtaque(player1, player2);
+            }
 
-            // --- Logica P2 ---
-            p2.isDefendendo = teclas['ArrowDown'] && !p2.isAtacando;
-
-            if (!p2.isDefendendo) {
-                if (teclas['ArrowLeft'] && p2.x > p1.x + p1.width/2)
+            // --- Controles do Jogador 2 (Setas) ---
+            if (teclas['ArrowLeft'] && player2.x > 0) {
+                // Impede ultrapassar o P1 se ele estiver na esquerda
+                if (!(player2.x - player2.velocidade < player1.x + player1.width && player2.x > player1.x && player2.y + player2.height > player1.y)) {
+                    player2.x -= player2.velocidade;
+                }
+            }
+            if (teclas['ArrowRight'] && player2.x < canvas.width - player2.width) {
+                // Impede ultrapassar o P1 se ele estiver na direita
+                if (!(player2.x + player2.width + player2.velocidade > player1.x && player2.x < player1.x && player2.y + player2.height > player1.y)) {
+                    player2.x += player2.velocidade;
+                }
+            }
+            if (teclas['ArrowUp'] && !player2.isAt
