@@ -3,72 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campeonato de Boxe - 2 Jogadores</title>
+    <title>Clássico Ringue de Boxe - 2 Jogadores</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #1a1a1a;
+            background-color: #111;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            font-family: 'Arial Black', Gadget, sans-serif;
+            font-family: 'Impact', 'Arial Black', sans-serif;
             overflow: hidden;
         }
-        #arena-container {
+        #jogo-container {
             position: relative;
             width: 800px;
             height: 450px;
         }
         canvas {
-            background: radial-gradient(circle, #444 0%, #111 100%);
-            border: 6px solid #d35400;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            background: linear-gradient(to bottom, #2c3e50, #111116);
+            border: 6px solid #c0392b;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.9);
         }
         .hud {
             position: absolute;
             top: 15px;
-            left: 20px;
-            right: 20px;
+            left: 25px;
+            right: 25px;
             display: flex;
             justify-content: space-between;
             pointer-events: none;
             user-select: none;
         }
-        .painel-boxeador {
-            width: 320px;
+        .status-boxeador {
+            width: 280px;
         }
-        .nome {
+        .tag-nome {
             color: #fff;
-            font-size: 14px;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-            text-shadow: 2px 2px 4px #000;
+            font-size: 16px;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            text-shadow: 2px 2px 0px #000;
         }
-        .barra-container {
-            height: 16px;
+        .moldura-barra {
+            height: 18px;
             background-color: #333;
             border: 2px solid #fff;
             border-radius: 4px;
             overflow: hidden;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
-        .vida {
+        .barra-vida {
             height: 100%;
-            background-color: #c0392b;
+            background-color: #e74c3c;
             width: 100%;
             transition: width 0.1s ease;
         }
-        .stamina {
+        .barra-stamina {
             height: 100%;
-            background-color: #27ae60;
+            background-color: #2ecc71;
             width: 100%;
         }
-        #p2-painel {
+        #p2-status {
             text-align: right;
         }
-        #p2-painel .vida, #p2-painel .stamina {
+        #p2-status .barra-vida, #p2-status .barra-stamina {
             float: right;
         }
         #tela-nocaute {
@@ -78,308 +79,124 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
+            background-color: rgba(0, 0, 0, 0.85);
             color: #f1c40f;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 40px;
+            font-size: 45px;
+            letter-spacing: 2px;
             z-index: 10;
+            text-shadow: 3px 3px 0px #000;
         }
         #btn-revanche {
-            margin-top: 25px;
-            padding: 12px 30px;
+            margin-top: 20px;
+            padding: 10px 35px;
             font-family: inherit;
-            font-size: 20px;
+            font-size: 22px;
             cursor: pointer;
-            background-color: #d35400;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            box-shadow: 0 4px 0 #a04000;
+            background-color: #f39c12;
+            color: black;
+            border: 3px solid #fff;
+            border-radius: 6px;
+            box-shadow: 0 5px 0 #b7790f;
         }
         #btn-revanche:active {
-            transform: translateY(4px);
+            transform: translateY(5px);
             box-shadow: none;
         }
     </style>
 </head>
 <body>
 
-    <div id="arena-container">
+    <div id="jogo-container">
         <div class="hud">
-            <div id="p1-painel" class="painel-boxeador">
-                <div class="nome">Boxeador Azul (A/D | W=Guarda | Q=Jab | E=Direto)</div>
-                <div class="barra-container"><div id="vida-p1" class="vida"></div></div>
-                <div class="barra-container"><div id="stamina-p1" class="stamina"></div></div>
+            <div id="p1-status" class="status-boxeador">
+                <div class="tag-nome">BOXEADOR AZUL (A/D | W=Defesa | Q=Jab | E=Direto)</div>
+                <div class="moldura-barra"><div id="vida-p1" class="barra-vida"></div></div>
+                <div class="moldura-barra"><div id="stamina-p1" class="barra-stamina"></div></div>
             </div>
-            <div id="p2-painel" class="painel-boxeador">
-                <div class="nome">Boxeador Vermelho (Setas L/R | Seta Up=Guarda | 1=Jab | 2=Direto)</div>
-                <div class="barra-container"><div id="vida-p2" class="vida"></div></div>
-                <div class="barra-container"><div id="stamina-p2" class="stamina"></div></div>
+            <div id="p2-status" class="status-boxeador">
+                <div class="tag-nome">BOXEADOR VERMELHO (Setas L/R | Seta Up=Defesa | 1=Jab | 2=Direto)</div>
+                <div class="moldura-barra"><div id="vida-p2" class="barra-vida"></div></div>
+                <div class="moldura-barra"><div id="stamina-p2" class="barra-stamina"></div></div>
             </div>
         </div>
 
         <div id="tela-nocaute">
-            <span id="texto-vencedor">K.O.! JOGADOR X VENCEU!</span>
-            <button id="btn-revanche" onclick="reiniciarCombate()">REVANCHE</button>
+            <span id="texto-vencedor">K.O. - JOGADOR X VENCEU!</span>
+            <button id="btn-revanche" onclick="reiniciarPartida()">PROXIMO ROUND</button>
         </div>
 
-        <canvas id="ringueCanvas" width="800" height="450"></canvas>
+        <canvas id="ringue" width="800" height="450"></canvas>
     </div>
 
     <script>
-        const canvas = document.getElementById('ringueCanvas');
+        const canvas = document.getElementById('ringue');
         const ctx = canvas.getContext('2d');
 
-        // Configurações Técnicas
-        const chaoY = canvas.height - 60;
-        let partidaAtiva = true;
-        const teclas = {};
+        const pisoY = canvas.height - 70;
+        let jogoAtivo = true;
+        const inputTeclas = {};
 
-        class Boxeador {
-            constructor({ x, cor, lado, nome }) {
+        // Classe que renderiza e processa os dois boxeadores homens de forma visual detalhada
+        class BoxeadorHomem {
+            constructor({ x, corGalao, corLuva, lado, nome }) {
                 this.x = x;
-                this.y = chaoY - 140; // Altura fixa no ringue
-                this.width = 60;
-                this.height = 140;
-                this.cor = cor;
-                this.lado = lado; // 'direita' ou 'esquerda'
+                this.y = pisoY - 160; 
+                this.width = 70;
+                this.height = 160;
+                this.corGalao = corGalao; // Cor dos calções
+                this.corLuva = corLuva;
+                this.lado = lado;
                 this.nome = nome;
 
-                // Atributos de Luta
+                // Atributos vitais
                 this.vida = 100;
                 this.stamina = 100;
-                
-                // Estados de Ação
+
+                // Controle de animações e golpes
                 this.estaDefendendo = false;
-                this.tipoAtaque = null; // 'jab' ou 'direto'
+                this.tipoAtaque = null; 
                 this.tempoAtaque = 0;
-                this.alcanceSoco = 0;
+                this.extensaoBraço = 0;
+                this.emRecuo = false; // Estado de dor ao sofrer golpes
             }
 
             desenhar() {
-                // 1. Desenhar o corpo do Boxeador
-                ctx.fillStyle = this.cor;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.save();
 
-                // Shorts de Boxe
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(this.x, this.y + 80, this.width, 25);
+                // Efeito visual de oscilação leve (simulando respiração/ginga de luta)
+                let balancoY = Math.sin(Date.now() * 0.008) * 3;
+                if (this.tipoAtaque !== null) balancoY = 0;
 
-                // Cabeça/Olhar
-                ctx.fillStyle = '#f3c192';
-                ctx.fillRect(this.x + (this.lado === 'direita' ? 15 : 5), this.y - 30, 40, 30);
+                let posX = this.x;
+                let posY = this.y + balancoY;
+
+                // 1. DESENHO DO CORPO DO HOMEM (Anatomia Pixel Art Basica)
+                // Pernas/Botas
+                ctx.fillStyle = '#111';
+                ctx.fillRect(posX + 10, posY + 120, 15, 40);
+                ctx.fillRect(posX + 45, posY + 120, 15, 40);
+                ctx.fillStyle = '#fff'; // Detalhe das meias
+                ctx.fillRect(posX + 10, posY + 120, 15, 6);
+                ctx.fillRect(posX + 45, posY + 120, 15, 6);
+
+                // Calção de Boxe
+                ctx.fillStyle = this.corGalao;
+                ctx.fillRect(posX + 5, posY + 85, 60, 35);
+                ctx.fillStyle = '#fff'; // Cinto do calção
+                ctx.fillRect(posX + 5, posY + 85, 60, 8);
+
+                // Tronco Nu (Pele do boxeador)
+                ctx.fillStyle = '#e5a65d'; 
+                ctx.fillRect(posX + 10, posY + 25, 50, 60);
                 
-                // Olhos focados no oponente
-                ctx.fillStyle = '#000';
-                let olhoX = this.lado === 'direita' ? this.x + 40 : this.x + 10;
-                ctx.fillRect(olhoX, this.y - 20, 8, 6);
+                // Músculos peitorais sombreados
+                ctx.fillStyle = '#cc8e4b';
+                ctx.fillRect(posX + 15, posY + 45, 18, 10);
+                ctx.fillRect(posX + 37, posY + 45, 18, 10);
 
-                // 2. Renderização das Luvas (Ataque ou Defesa)
-                ctx.fillStyle = this.cor;
-                if (this.estaDefendendo) {
-                    // Posição de Guarda Escudo (Mãos cobrindo o rosto)
-                    let guardaX = this.lado === 'direita' ? this.x + 35 : this.x - 5;
-                    ctx.fillStyle = '#f1c40f'; // Luvas brilham em posição de guarda
-                    ctx.fillRect(guardaX, this.y - 15, 30, 40);
-                } 
-                else if (this.tempoAtaque > 0 && this.tipoAtaque) {
-                    // Desenha o braço esticado desferindo o soco
-                    ctx.fillStyle = '#e67e22';
-                    let socoX = this.lado === 'direita' ? this.x + this.width : this.x - this.alcanceSoco;
-                    ctx.fillRect(socoX, this.y + 15, this.alcanceSoco, 20);
-
-                    // Luva na ponta do soco
-                    ctx.fillStyle = '#000';
-                    let luvaX = this.lado === 'direita' ? socoX + this.alcanceSoco - 15 : socoX;
-                    ctx.fillRect(luvaX, this.y + 10, 20, 30);
-                } 
-                else {
-                    // Posição de repouso básica de boxe
-                    let luvaBaseX = this.lado === 'direita' ? this.x + 40 : this.x - 10;
-                    ctx.fillRect(luvaBaseX, this.y + 25, 30, 30);
-                }
-            }
-
-            atualizar() {
-                // Recuperação natural de stamina
-                if (this.stamina < 100 && this.tipoAtaque === null) {
-                    this.stamina += 0.4;
-                }
-
-                // Resfriamento do tempo do soco desferido
-                if (this.tempoAtaque > 0) {
-                    this.tempoAtaque--;
-                    if (this.tempoAtaque <= 0) {
-                        this.tipoAtaque = null;
-                    }
-                }
-
-                // Limitar movimento dentro das cordas do ringue
-                if (this.x < 30) this.x = 30;
-                if (this.x + this.width > canvas.width - 30) this.x = canvas.width - this.width - 30;
-            }
-
-            atacar(tipo) {
-                if (this.tempoAtaque > 0 || this.estaDefendendo) return false;
-
-                // Custo de stamina baseado na potência do golpe
-                let custoStamina = tipo === 'jab' ? 15 : 30;
-                if (this.stamina < custoStamina) return false; // Cansado demais
-
-                this.tipoAtaque = tipo;
-                this.stamina -= custoStamina;
-
-                if (tipo === 'jab') {
-                    this.tempoAtaque = 8; // Rápido
-                    this.alcanceSoco = 55;
-                } else {
-                    this.tempoAtaque = 15; // Lento e longo
-                    this.alcanceSoco = 95;
-                }
-                return true;
-            }
-        }
-
-        // Criando lutadores (P1 na esquerda voltado para direita, P2 oposto)
-        let p1 = new Boxeador({ x: 200, cor: '#2980b9', lado: 'direita', nome: 'BOXEADOR AZUL' });
-        let p2 = new Boxeador({ x: 540, cor: '#c0392b', lado: 'esquerda', nome: 'BOXEADOR VERMELHO' });
-
-        // Eventos e Input Único
-        window.addEventListener('keydown', (e) => {
-            teclas[e.code] = true;
-
-            if (!partidaAtiva) return;
-
-            // Socos do Jogador 1 (Q e E)
-            if (e.code === 'KeyQ') { if(p1.atacar('jab')) checarImpactoSoco(p1, p2); }
-            if (e.code === 'KeyE') { if(p1.atacar('direto')) checarImpactoSoco(p1, p2); }
-
-            // Socos do Jogador 2 (Numpad 1 e 2 ou teclado superior)
-            if (e.code === 'Digit1' || e.code === 'Numpad1') { if(p2.atacar('jab')) checarImpactoSoco(p2, p1); }
-            if (e.code === 'Digit2' || e.code === 'Numpad2') { if(p2.atacar('direto')) checarImpactoSoco(p2, p1); }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            teclas[e.code] = false;
-        });
-
-        function processarMovimentos() {
-            if (!partidaAtiva) return;
-
-            // --- CONTROLES JOGADOR 1 ---
-            p1.estaDefendendo = teclas['KeyW']; // Ativa guarda ao segurar W
-            
-            if (!p1.estaDefendendo && p1.tempoAtaque === 0) {
-                if (teclas['KeyA']) { p1.x -= 4.5; p1.lado = 'esquerda'; }
-                if (teclas['KeyD']) { p1.x += 4.5; p1.lado = 'direita'; }
-            }
-
-            // --- CONTROLES JOGADOR 2 ---
-            p2.estaDefendendo = teclas['ArrowUp']; // Ativa guarda ao segurar Seta Cima
-            
-            if (!p2.estaDefendendo && p2.tempoAtaque === 0) {
-                if (teclas['ArrowLeft']) { p2.x -= 4.5; p2.lado = 'esquerda'; }
-                if (teclas['ArrowRight']) { p2.x += 4.5; p2.lado = 'direita'; }
-            }
-
-            // Garante que os lutadores sempre virem um de frente para o outro automaticamente
-            if (p1.x < p2.x) {
-                p1.lado = 'direita';
-                p2.lado = 'esquerda';
-            } else {
-                p1.lado = 'esquerda';
-                p2.lado = 'direita';
-            }
-        }
-
-        // --- DETECÇÃO DE IMPACTO DE LUTA ---
-        function checarImpactoSoco(atacante, defensor) {
-            // Calcula até onde o soco chega fisicamente no cenário
-            let socoAlcanceX;
-            if (atacante.lado === 'direita') {
-                socoAlcanceX = atacante.x + atacante.width + atacante.alcanceSoco;
-            } else {
-                socoAlcanceX = atacante.x - atacante.alcanceSoco;
-            }
-
-            // Verifica se a ponta da luva colidiu com a caixa do corpo do oponente
-            let acertouOponente = socoAlcanceX >= defensor.x && socoAlcanceX <= defensor.x + defensor.width;
-
-            if (acertouOponente) {
-                // Cálculo de Dano Base
-                let dano = atacante.tipoAtaque === 'jab' ? 8 : 18;
-
-                // Modificador de Guarda/Defesa ativa
-                if (defensor.estaDefendendo) {
-                    // Bloqueio bem sucedido diminui 85% do impacto
-                    dano = Math.floor(dano * 0.15);
-                }
-
-                defensor.vida -= dano;
-                if (defensor.vida < 0) defensor.vida = 0;
-
-                atualizarBarrasGraficas();
-
-                // Fim da luta por Nocaute (K.O.)
-                if (defensor.vida <= 0) {
-                    acionarNocaute(atacante.nome);
-                }
-            }
-        }
-
-        function atualizarBarrasGraficas() {
-            document.getElementById('vida-p1').style.width = p1.vida + '%';
-            document.getElementById('stamina-p1').style.width = p1.stamina + '%';
-            document.getElementById('vida-p2').style.width = p2.vida + '%';
-            document.getElementById('stamina-p2').style.width = p2.stamina + '%';
-        }
-
-        function acionarNocaute(vencedor) {
-            partidaAtiva = false;
-            document.getElementById('texto-vencedor').innerText = `K.O.! O ${vencedor} VENCEU!`;
-            document.getElementById('tela-nocaute').style.display = 'flex';
-        }
-
-        function reiniciarCombate() {
-            p1 = new Boxeador({ x: 200, cor: '#2980b9', lado: 'direita', nome: 'BOXEADOR AZUL' });
-            p2 = new Boxeador({ x: 540, cor: '#c0392b', lado: 'esquerda', nome: 'BOXEADOR VERMELHO' });
-            
-            atualizarBarrasGraficas();
-            document.getElementById('tela-nocaute').style.display = 'none';
-            partidaAtiva = true;
-        }
-
-        // --- ENGINE E RENDER DO CENÁRIO ---
-        function loopDoJogo() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Desenhar Piso de Lona do Ringue
-            ctx.fillStyle = '#2c3e50';
-            ctx.fillRect(0, chaoY, canvas.width, canvas.height - chaoY);
-
-            // Cordas do Ringue (Fundo Vermelho e Azul decorativo)
-            ctx.strokeStyle = '#e74c3c';
-            ctx.lineWidth = 6;
-            ctx.beginPath();
-            ctx.moveTo(0, chaoY - 40); ctx.lineTo(canvas.width, chaoY - 40);
-            ctx.moveTo(0, chaoY - 80); ctx.lineTo(canvas.width, chaoY - 80);
-            ctx.stroke();
-
-            // Computar e renderizar entidades
-            processarMovimentos();
-            p1.atualizar();
-            p2.atualizar();
-
-            p1.desenhar();
-            p2.desenhar();
-
-            requestAnimationFrame(loopDoJogo);
-        }
-
-        // Inicializar Ringue
-        loopDoJogo();
-    </script>
-</body>
-</html>
+                // Cabeça e Cabelo Masculino
+                ctx.fillStyle = '#e5a65d';
+                ctx.fillRect(posX +
