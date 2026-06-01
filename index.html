@@ -14,15 +14,15 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    // Carregar imagens (se existirem)
+    // Carregar imagens (opcionais)
     const ringImg = new Image();
-    ringImg.src = "ring.png"; // opcional
+    ringImg.src = "ring.png"; // ringue UFC
 
     const fighter1Img = new Image();
-    fighter1Img.src = "fighter1.png"; // opcional
+    fighter1Img.src = "fighter1.png"; // lutador 1
 
     const fighter2Img = new Image();
-    fighter2Img.src = "fighter2.png"; // opcional
+    fighter2Img.src = "fighter2.png"; // lutador 2
 
     // Lutadores
     let player1 = { x: 300, y: 500, w: 120, h: 180, vida: 100 };
