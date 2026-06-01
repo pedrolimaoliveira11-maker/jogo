@@ -19,14 +19,14 @@
     ringImg.src = "ring.png"; // imagem do ringue UFC
 
     const fighter1Img = new Image();
-    fighter1Img.src = "fighter1.png"; // imagem lutador 1
+    fighter1Img.src = "fighter1.png"; // lutador 1
 
     const fighter2Img = new Image();
-    fighter2Img.src = "fighter2.png"; // imagem lutador 2
+    fighter2Img.src = "fighter2.png"; // lutador 2
 
     // Lutadores
-    let player1 = { x: 300, y: 500, w: 100, h: 150, vida: 100 };
-    let player2 = { x: 900, y: 500, w: 100, h: 150, vida: 100 };
+    let player1 = { x: 300, y: 500, w: 120, h: 180, vida: 100 };
+    let player2 = { x: 900, y: 500, w: 120, h: 180, vida: 100 };
 
     // Teclas pressionadas
     let keys = {};
@@ -52,122 +52,13 @@
 
       // Ataque Player 1 (Espaço)
       if (keys[" "]) {
-        let golpe1 = { x: player1.x + player1.w, y: player1.y + 40, w: 30, h: 20 };
+        let golpe1 = { x: player1.x + player1.w, y: player1.y + 60, w: 40, h: 20 };
         if (colide(golpe1, player2)) player2.vida -= 1;
       }
 
       // Ataque Player 2 (tecla f)
       if (keys["f"]) {
-        let golpe2 = { x: player2.x - 30, y: player2.y + 40, w: 30, h: 20 };
-        if (colide(golpe2, player1)) player1.vida -= 1;
-      }
-
-      // Condição de vitória
-      if (player1.vida <= 0) winner = "Player 2 venceu!";
-      if (player2.vida <= 0) winner = "Player 1 venceu!";
-    }
-
-    function colide(a, b) {
-      return a.x < b.x + b.w &&
-             a.x + a.w > b.x &&
-             a.y < b.y + b.h &&
-             a.y + a.h > b.y;
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Ringue
-      ctx.drawImage(ringImg, 100, 100, 1080, 520);
-
-      // Lutadores
-      ctx.drawImage(fighter1Img, player1.x, player1.y, player1.w, player1.h);
-      ctx.drawImage(fighter2Img, player2.x, player2.y, player2.w, player2.h);
-
-      // Barras de vida
-      ctx.fillStyle = "green";
-      ctx.fillRect(50, 50, player1.vida * 3, 30);
-      ctx.fillRect(800, 50, player2.vida * 3, 30);
-
-      // Mensagem de vitória
-      if (winner) {
-        ctx.fillStyle = "yellow";
-        ctx.font = "60px Arial Black";
-        ctx.fillText(winner, 400, 300);
-      }
-    }
-
-    function gameLoop() {
-      update();
-      draw();
-      requestAnimationFrame(gameLoop);
-    }
-
-    gameLoop();
-  </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Jogo de Luta UFC</title>
-  <style>
-    body { margin: 0; background: #000; }
-    canvas { display: block; margin: auto; background: #222; }
-  </style>
-</head>
-<body>
-  <canvas id="gameCanvas" width="1280" height="720"></canvas>
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-
-    // Carregar imagens
-    const ringImg = new Image();
-    ringImg.src = "ring.png"; // imagem do ringue UFC
-
-    const fighter1Img = new Image();
-    fighter1Img.src = "fighter1.png"; // imagem lutador 1
-
-    const fighter2Img = new Image();
-    fighter2Img.src = "fighter2.png"; // imagem lutador 2
-
-    // Lutadores
-    let player1 = { x: 300, y: 500, w: 100, h: 150, vida: 100 };
-    let player2 = { x: 900, y: 500, w: 100, h: 150, vida: 100 };
-
-    // Teclas pressionadas
-    let keys = {};
-    document.addEventListener("keydown", e => keys[e.key] = true);
-    document.addEventListener("keyup", e => keys[e.key] = false);
-
-    let winner = null;
-
-    function update() {
-      if (winner) return;
-
-      // Movimento Player 1 (setas)
-      if (keys["ArrowLeft"]) player1.x -= 5;
-      if (keys["ArrowRight"]) player1.x += 5;
-      if (keys["ArrowUp"]) player1.y -= 5;
-      if (keys["ArrowDown"]) player1.y += 5;
-
-      // Movimento Player 2 (WASD)
-      if (keys["a"]) player2.x -= 5;
-      if (keys["d"]) player2.x += 5;
-      if (keys["w"]) player2.y -= 5;
-      if (keys["s"]) player2.y += 5;
-
-      // Ataque Player 1 (Espaço)
-      if (keys[" "]) {
-        let golpe1 = { x: player1.x + player1.w, y: player1.y + 40, w: 30, h: 20 };
-        if (colide(golpe1, player2)) player2.vida -= 1;
-      }
-
-      // Ataque Player 2 (tecla f)
-      if (keys["f"]) {
-        let golpe2 = { x: player2.x - 30, y: player2.y + 40, w: 30, h: 20 };
+        let golpe2 = { x: player2.x - 40, y: player2.y + 60, w: 40, h: 20 };
         if (colide(golpe2, player1)) player1.vida -= 1;
       }
 
