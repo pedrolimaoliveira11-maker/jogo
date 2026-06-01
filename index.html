@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Mini Minecraft 2D Evoluído</title>
+  <title>Mini Minecraft 2D Completo</title>
   <style>
     body {
       background-color: #87CEEB;
@@ -55,11 +55,31 @@
     .selected {
       border: 3px solid yellow;
     }
+    #healthBar {
+      width: 200px;
+      height: 20px;
+      border: 2px solid #000;
+      margin: 10px auto;
+      background-color: #ccc;
+      position: relative;
+    }
+    #health {
+      width: 100%;
+      height: 100%;
+      background-color: green;
+    }
+    #hud {
+      margin: 10px;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
-  <h1>Mini Minecraft 2D Evoluído</h1>
+  <h1>Mini Minecraft 2D Completo</h1>
   <p>Setas para mover, espaço para pular, clique para colocar blocos, E para quebrar blocos!</p>
+  
+  <div id="healthBar"><div id="health"></div></div>
+  <div id="hud">Pontuação: <span id="score">0</span> | Nível: <span id="level">1</span></div>
   
   <div id="inventory">
     <div class="item grass selected" data-type="grass"></div>
@@ -71,10 +91,20 @@
     <div id="player"></div>
   </div>
 
+  <audio id="hitSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+  <audio id="breakSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_break.ogg"></audio>
+  <audio id="bgMusic" src="https://actions.google.com/sounds/v1/ambiences/forest_ambience.ogg" loop></audio>
+
   <script>
     const game = document.getElementById("game");
     const player = document.getElementById("player");
     const inventoryItems = document.querySelectorAll(".item");
+    const healthBar = document.getElementById("health");
+    const scoreDisplay = document.getElementById("score");
+    const levelDisplay = document.getElementById("level");
+    const hitSound = document.getElementById("hitSound");
+    const breakSound = document.getElementById("breakSound");
+    const bgMusic = document.getElementById("bgMusic");
 
     let playerX = 100;
     let playerY = 430;
@@ -84,6 +114,11 @@
     let moveLeft = false;
     let moveRight = false;
     let selectedBlock = "grass";
+    let health = 100;
+    let score = 0;
+    let level = 1;
+
+    bgMusic.play();
 
     // Inventário
     inventoryItems.forEach(item => {
@@ -169,11 +204,55 @@
           playerRect.bottom > blockRect.top &&
           playerRect.top < blockRect.bottom
         ) {
-          // drop simples
-          alert("Você quebrou um bloco de " + block.classList[1] + "!");
+          breakSound.play();
+          score += 10;
+          scoreDisplay.textContent = score;
+          if (score % 50 === 0) {
+            level++;
+            levelDisplay.textContent = level;
+          }
           block.remove();
         }
       });
+    }
+
+    function damagePlayer(amount) {
+      health -= amount;
+      if (health < 0) health = 0;
+      healthBar.style.width = health * 2 + "px";
+      hitSound.play();
+      if (health === 0) {
+        alert("Game Over! Respawnando...");
+        respawn();
+      }
+    }
+
+    function checkEnemyCollision() {
+      const enemies = document.querySelectorAll(".enemy");
+      const playerRect = player.getBoundingClientRect();
+
+      enemies.forEach(enemy => {
+        const enemyRect = enemy.getBoundingClientRect();
+        if (
+          playerRect.right > enemyRect.left &&
+          playerRect.left < enemyRect.right &&
+          playerRect.bottom > enemyRect.top &&
+          playerRect.top < enemyRect.bottom
+        ) {
+          damagePlayer(10);
+        }
+      });
+    }
+
+    function respawn() {
+      health = 100;
+      healthBar.style.width = "200px";
+      playerX = 100;
+      playerY = 430;
+      score = 0;
+      level = 1;
+      scoreDisplay.textContent = score;
+      levelDisplay.textContent = level;
     }
 
     function gameLoop() {
@@ -190,6 +269,17 @@
       }
 
       checkCollision();
+      checkEnemyCollision();
       updatePlayer();
       moveEnemies();
-      requestAnimationFrame(game
+      requestAnimationFrame(gameLoop);
+    }
+    gameLoop();
+
+    // Criar blocos com clique
+    game.addEventListener("click", (e) => {
+      const block = document.createElement("div");
+      block.classList.add("block", selectedBlock);
+
+      const rect = game.getBoundingClientRect();
+      block.style.left = Math.floor((e.clientX - rect.left
