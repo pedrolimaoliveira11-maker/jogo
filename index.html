@@ -2,10 +2,10 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Jogo de Luta em HTML</title>
+  <title>Jogo de Luta UFC</title>
   <style>
-    body { margin: 0; background: #fff; }
-    canvas { display: block; margin: auto; background: #eee; }
+    body { margin: 0; background: #000; }
+    canvas { display: block; margin: auto; background: #222; }
   </style>
 </head>
 <body>
@@ -15,12 +15,11 @@
     const ctx = canvas.getContext("2d");
 
     // Lutadores
-    let player1 = { x: 200, y: 500, w: 80, h: 120, vida: 100 };
-    let player2 = { x: 1000, y: 500, w: 80, h: 120, vida: 100 };
+    let player1 = { x: 300, y: 500, w: 80, h: 120, vida: 100, color: "red" };
+    let player2 = { x: 900, y: 500, w: 80, h: 120, vida: 100, color: "blue" };
 
     // Teclas pressionadas
     let keys = {};
-
     document.addEventListener("keydown", e => keys[e.key] = true);
     document.addEventListener("keyup", e => keys[e.key] = false);
 
@@ -65,14 +64,27 @@
              a.y + a.h > b.y;
     }
 
+    function drawRing() {
+      // Ringue
+      ctx.fillStyle = "#444";
+      ctx.fillRect(100, 100, 1080, 520);
+
+      // Logo UFC no centro
+      ctx.fillStyle = "white";
+      ctx.font = "80px Arial Black";
+      ctx.fillText("UFC", canvas.width/2 - 100, canvas.height/2);
+    }
+
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      drawRing();
+
       // Lutadores
-      ctx.fillStyle = "red";
+      ctx.fillStyle = player1.color;
       ctx.fillRect(player1.x, player1.y, player1.w, player1.h);
 
-      ctx.fillStyle = "blue";
+      ctx.fillStyle = player2.color;
       ctx.fillRect(player2.x, player2.y, player2.w, player2.h);
 
       // Barras de vida
@@ -82,8 +94,8 @@
 
       // Mensagem de vitória
       if (winner) {
-        ctx.fillStyle = "black";
-        ctx.font = "50px Arial";
+        ctx.fillStyle = "yellow";
+        ctx.font = "60px Arial Black";
         ctx.fillText(winner, 400, 300);
       }
     }
