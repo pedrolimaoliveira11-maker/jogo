@@ -14,15 +14,15 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    // Carregar imagens
+    // Carregar imagens (se existirem)
     const ringImg = new Image();
-    ringImg.src = "ring.png"; // imagem do ringue UFC
+    ringImg.src = "ring.png"; // opcional
 
     const fighter1Img = new Image();
-    fighter1Img.src = "fighter1.png"; // lutador 1
+    fighter1Img.src = "fighter1.png"; // opcional
 
     const fighter2Img = new Image();
-    fighter2Img.src = "fighter2.png"; // lutador 2
+    fighter2Img.src = "fighter2.png"; // opcional
 
     // Lutadores
     let player1 = { x: 300, y: 500, w: 120, h: 180, vida: 100 };
@@ -77,12 +77,32 @@
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Ringue
-      ctx.drawImage(ringImg, 100, 100, 1080, 520);
+      // Ringue (imagem ou fallback)
+      if (ringImg.complete && ringImg.naturalWidth > 0) {
+        ctx.drawImage(ringImg, 100, 100, 1080, 520);
+      } else {
+        ctx.fillStyle = "#444";
+        ctx.fillRect(100, 100, 1080, 520);
+        ctx.fillStyle = "white";
+        ctx.font = "80px Arial Black";
+        ctx.fillText("UFC", canvas.width/2 - 100, canvas.height/2);
+      }
 
-      // Lutadores
-      ctx.drawImage(fighter1Img, player1.x, player1.y, player1.w, player1.h);
-      ctx.drawImage(fighter2Img, player2.x, player2.y, player2.w, player2.h);
+      // Lutador 1
+      if (fighter1Img.complete && fighter1Img.naturalWidth > 0) {
+        ctx.drawImage(fighter1Img, player1.x, player1.y, player1.w, player1.h);
+      } else {
+        ctx.fillStyle = "red";
+        ctx.fillRect(player1.x, player1.y, player1.w, player1.h);
+      }
+
+      // Lutador 2
+      if (fighter2Img.complete && fighter2Img.naturalWidth > 0) {
+        ctx.drawImage(fighter2Img, player2.x, player2.y, player2.w, player2.h);
+      } else {
+        ctx.fillStyle = "blue";
+        ctx.fillRect(player2.x, player2.y, player2.w, player2.h);
+      }
 
       // Barras de vida
       ctx.fillStyle = "green";
