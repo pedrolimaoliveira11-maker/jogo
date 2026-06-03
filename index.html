@@ -23,15 +23,17 @@
       width: 40px;
       height: 40px;
       border: 1px solid #000;
+      background-size: cover;
     }
-    .stone { background-color: #555; }
-    .grass { background-color: #228B22; }
-    .wood { background-color: #8B4513; }
+    .stone { background-image: url("sprites/stone.png"); }
+    .grass { background-image: url("sprites/grass.png"); }
+    .wood { background-image: url("sprites/wood.png"); }
     #player {
       position: absolute;
       width: 30px;
       height: 30px;
-      background-color: red;
+      background-image: url("sprites/player.png");
+      background-size: cover;
       bottom: 40px;
       left: 100px;
     }
@@ -39,7 +41,8 @@
       position: absolute;
       width: 30px;
       height: 30px;
-      background-color: purple;
+      background-image: url("sprites/enemy.png");
+      background-size: cover;
     }
     #inventory {
       margin: 10px;
@@ -51,10 +54,12 @@
       border: 2px solid #000;
       margin: 5px;
       cursor: pointer;
+      background-size: cover;
     }
-    .selected {
-      border: 3px solid yellow;
-    }
+    .item[data-type="grass"] { background-image: url("sprites/grass.png"); }
+    .item[data-type="stone"] { background-image: url("sprites/stone.png"); }
+    .item[data-type="wood"] { background-image: url("sprites/wood.png"); }
+    .selected { border: 3px solid yellow; }
     #healthBar {
       width: 200px;
       height: 20px;
@@ -72,11 +77,18 @@
       margin: 10px;
       font-size: 18px;
     }
+    #crafting {
+      margin: 10px;
+      padding: 10px;
+      border: 2px solid #000;
+      display: none;
+      background-color: #eee;
+    }
   </style>
 </head>
 <body>
   <h1>Mini Minecraft 2D Completo</h1>
-  <p>Setas para mover, espaço para pular, clique para colocar blocos, E para quebrar blocos!</p>
+  <p>Setas para mover, espaço para pular, clique para colocar blocos, E para quebrar blocos, C para abrir crafting!</p>
   
   <div id="healthBar"><div id="health"></div></div>
   <div id="hud">Pontuação: <span id="score">0</span> | Nível: <span id="level">1</span></div>
@@ -85,6 +97,12 @@
     <div class="item grass selected" data-type="grass"></div>
     <div class="item stone" data-type="stone"></div>
     <div class="item wood" data-type="wood"></div>
+  </div>
+  
+  <div id="crafting">
+    <h3>Crafting</h3>
+    <p>2 madeiras → 1 tábua</p>
+    <p>2 pedras → 1 tijolo</p>
   </div>
   
   <div id="game">
@@ -105,6 +123,7 @@
     const hitSound = document.getElementById("hitSound");
     const breakSound = document.getElementById("breakSound");
     const bgMusic = document.getElementById("bgMusic");
+    const craftingMenu = document.getElementById("crafting");
 
     let playerX = 100;
     let playerY = 430;
@@ -137,9 +156,8 @@
         velocityY = -20;
         isJumping = true;
       }
-      if (e.key === "e" || e.key === "E") {
-        breakBlock();
-      }
+      if (e.key === "e" || e.key === "E") breakBlock();
+      if (e.key === "c" || e.key === "C") craftingMenu.style.display = craftingMenu.style.display === "none" ? "block" : "none";
     });
     document.addEventListener("keyup", (e) => {
       if (e.key === "ArrowRight") moveRight = false;
@@ -158,35 +176,26 @@
       blocks.forEach(block => {
         const blockRect = block.getBoundingClientRect();
 
-        // colisão vertical
-        if (
-          playerRect.bottom >= blockRect.top &&
-          playerRect.top < blockRect.top &&
-          playerRect.right > blockRect.left &&
-          playerRect.left < blockRect.right
-        ) {
+        if (playerRect.bottom >= blockRect.top &&
+            playerRect.top < blockRect.top &&
+            playerRect.right > blockRect.left &&
+            playerRect.left < blockRect.right) {
           playerY = block.offsetTop - player.offsetHeight;
           velocityY = 0;
           isJumping = false;
         }
 
-        // colisão lateral esquerda
-        if (
-          playerRect.left <= blockRect.right &&
-          playerRect.right > blockRect.right &&
-          playerRect.bottom > blockRect.top &&
-          playerRect.top < blockRect.bottom
-        ) {
+        if (playerRect.left <= blockRect.right &&
+            playerRect.right > blockRect.right &&
+            playerRect.bottom > blockRect.top &&
+            playerRect.top < blockRect.bottom) {
           playerX = block.offsetLeft + block.offsetWidth;
         }
 
-        // colisão lateral direita
-        if (
-          playerRect.right >= blockRect.left &&
-          playerRect.left < blockRect.left &&
-          playerRect.bottom > blockRect.top &&
-          playerRect.top < blockRect.bottom
-        ) {
+        if (playerRect.right >= blockRect.left &&
+            playerRect.left < blockRect.left &&
+            playerRect.bottom > blockRect.top &&
+            playerRect.top < blockRect.bottom) {
           playerX = block.offsetLeft - player.offsetWidth;
         }
       });
@@ -198,12 +207,10 @@
 
       blocks.forEach(block => {
         const blockRect = block.getBoundingClientRect();
-        if (
-          playerRect.right > blockRect.left &&
-          playerRect.left < blockRect.right &&
-          playerRect.bottom > blockRect.top &&
-          playerRect.top < blockRect.bottom
-        ) {
+        if (playerRect.right > blockRect.left &&
+            playerRect.left < blockRect.right &&
+            playerRect.bottom > blockRect.top &&
+            playerRect.top < blockRect.bottom) {
           breakSound.play();
           score += 10;
           scoreDisplay.textContent = score;
@@ -233,53 +240,4 @@
 
       enemies.forEach(enemy => {
         const enemyRect = enemy.getBoundingClientRect();
-        if (
-          playerRect.right > enemyRect.left &&
-          playerRect.left < enemyRect.right &&
-          playerRect.bottom > enemyRect.top &&
-          playerRect.top < enemyRect.bottom
-        ) {
-          damagePlayer(10);
-        }
-      });
-    }
-
-    function respawn() {
-      health = 100;
-      healthBar.style.width = "200px";
-      playerX = 100;
-      playerY = 430;
-      score = 0;
-      level = 1;
-      scoreDisplay.textContent = score;
-      levelDisplay.textContent = level;
-    }
-
-    function gameLoop() {
-      if (moveRight) playerX += 5;
-      if (moveLeft) playerX -= 5;
-
-      velocityY += gravity;
-      playerY += velocityY;
-
-      if (playerY >= 430) {
-        playerY = 430;
-        velocityY = 0;
-        isJumping = false;
-      }
-
-      checkCollision();
-      checkEnemyCollision();
-      updatePlayer();
-      moveEnemies();
-      requestAnimationFrame(gameLoop);
-    }
-    gameLoop();
-
-    // Criar blocos com clique
-    game.addEventListener("click", (e) => {
-      const block = document.createElement("div");
-      block.classList.add("block", selectedBlock);
-
-      const rect = game.getBoundingClientRect();
-      block.style.left = Math.floor((e.clientX - rect.left
+        if (playerRect.right >
