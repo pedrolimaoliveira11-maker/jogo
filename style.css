@@ -1,1 +1,40 @@
-
+.grass {
+  background-image: url("sprites/grass.png");
+  background-size: cover;
+}
+.stone {
+  background-image: url("sprites/stone.png");
+  background-size: cover;
+}
+.wood {
+  background-image: url("sprites/wood.png");
+  background-size: cover;
+}
+#player {
+  background-image: url("sprites/player.png");
+  background-size: cover;
+}
+.enemy {
+  background-image: url("sprites/enemy.png");
+  background-size: cover;
+}
+.grass {
+  background-image: url("sprites/grass.png");
+  background-size: cover;
+}
+.stone {
+  background-image: url("sprites/stone.png");
+  background-size: cover;
+}
+.wood {
+  background-image: url("sprites/wood.png");
+  background-size: cover;
+}
+#player {
+  background-image: url("sprites/player.png");
+  background-size: cover;
+}
+.enemy {
+  background-image: url("sprites/enemy.png");
+  background-size: cover;
+}
