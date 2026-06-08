@@ -2,242 +2,110 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Mini Minecraft 2D Completo</title>
+  <title>Maniclefit</title>
   <style>
     body {
-      background-color: #87CEEB;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-    #game {
-      position: relative;
-      width: 800px;
-      height: 500px;
-      margin: 20px auto;
-      background-color: #a3d9a5;
-      border: 2px solid #333;
+      margin: 0;
+      background: #f0f0f0;
       overflow: hidden;
     }
-    .block {
-      position: absolute;
-      width: 40px;
-      height: 40px;
-      border: 1px solid #000;
-      background-size: cover;
-    }
-    .stone { background-image: url("sprites/stone.png"); }
-    .grass { background-image: url("sprites/grass.png"); }
-    .wood { background-image: url("sprites/wood.png"); }
-    #player {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      background-image: url("sprites/player.png");
-      background-size: cover;
-      bottom: 40px;
-      left: 100px;
-    }
-    .enemy {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      background-image: url("sprites/enemy.png");
-      background-size: cover;
-    }
-    #inventory {
-      margin: 10px;
-    }
-    .item {
-      display: inline-block;
-      width: 40px;
-      height: 40px;
+    canvas {
+      display: block;
+      margin: auto;
+      background: #fff;
       border: 2px solid #000;
-      margin: 5px;
-      cursor: pointer;
-      background-size: cover;
-    }
-    .item[data-type="grass"] { background-image: url("sprites/grass.png"); }
-    .item[data-type="stone"] { background-image: url("sprites/stone.png"); }
-    .item[data-type="wood"] { background-image: url("sprites/wood.png"); }
-    .selected { border: 3px solid yellow; }
-    #healthBar {
-      width: 200px;
-      height: 20px;
-      border: 2px solid #000;
-      margin: 10px auto;
-      background-color: #ccc;
-      position: relative;
-    }
-    #health {
-      width: 100%;
-      height: 100%;
-      background-color: green;
-    }
-    #hud {
-      margin: 10px;
-      font-size: 18px;
-    }
-    #crafting {
-      margin: 10px;
-      padding: 10px;
-      border: 2px solid #000;
-      display: none;
-      background-color: #eee;
     }
   </style>
 </head>
 <body>
-  <h1>Mini Minecraft 2D Completo</h1>
-  <p>Setas para mover, espaço para pular, clique para colocar blocos, E para quebrar blocos, C para abrir crafting!</p>
-  
-  <div id="healthBar"><div id="health"></div></div>
-  <div id="hud">Pontuação: <span id="score">0</span> | Nível: <span id="level">1</span></div>
-  
-  <div id="inventory">
-    <div class="item grass selected" data-type="grass"></div>
-    <div class="item stone" data-type="stone"></div>
-    <div class="item wood" data-type="wood"></div>
-  </div>
-  
-  <div id="crafting">
-    <h3>Crafting</h3>
-    <p>2 madeiras → 1 tábua</p>
-    <p>2 pedras → 1 tijolo</p>
-  </div>
-  
-  <div id="game">
-    <div id="player"></div>
-  </div>
-
-  <audio id="hitSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
-  <audio id="breakSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_break.ogg"></audio>
-  <audio id="bgMusic" src="https://actions.google.com/sounds/v1/ambiences/forest_ambience.ogg" loop></audio>
-
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
   <script>
-    const game = document.getElementById("game");
-    const player = document.getElementById("player");
-    const inventoryItems = document.querySelectorAll(".item");
-    const healthBar = document.getElementById("health");
-    const scoreDisplay = document.getElementById("score");
-    const levelDisplay = document.getElementById("level");
-    const hitSound = document.getElementById("hitSound");
-    const breakSound = document.getElementById("breakSound");
-    const bgMusic = document.getElementById("bgMusic");
-    const craftingMenu = document.getElementById("crafting");
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-    let playerX = 100;
-    let playerY = 430;
-    let velocityY = 0;
-    let gravity = 2;
-    let isJumping = false;
-    let moveLeft = false;
-    let moveRight = false;
-    let selectedBlock = "grass";
-    let health = 100;
+    const player = {
+      x: canvas.width / 2 - 25,
+      y: canvas.height - 60,
+      width: 50,
+      height: 50,
+      color: "green",
+      speed: 7
+    };
+
+    let enemies = [];
     let score = 0;
-    let level = 1;
+    let gameOver = false;
 
-    bgMusic.play();
-
-    // Inventário
-    inventoryItems.forEach(item => {
-      item.addEventListener("click", () => {
-        inventoryItems.forEach(i => i.classList.remove("selected"));
-        item.classList.add("selected");
-        selectedBlock = item.dataset.type;
-      });
-    });
-
-    // Movimento
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight") moveRight = true;
-      if (e.key === "ArrowLeft") moveLeft = true;
-      if (e.key === " " && !isJumping) {
-        velocityY = -20;
-        isJumping = true;
-      }
-      if (e.key === "e" || e.key === "E") breakBlock();
-      if (e.key === "c" || e.key === "C") craftingMenu.style.display = craftingMenu.style.display === "none" ? "block" : "none";
-    });
-    document.addEventListener("keyup", (e) => {
-      if (e.key === "ArrowRight") moveRight = false;
-      if (e.key === "ArrowLeft") moveLeft = false;
-    });
-
-    function updatePlayer() {
-      player.style.left = playerX + "px";
-      player.style.top = playerY + "px";
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
     }
 
-    function checkCollision() {
-      const blocks = document.querySelectorAll(".block");
-      const playerRect = player.getBoundingClientRect();
-
-      blocks.forEach(block => {
-        const blockRect = block.getBoundingClientRect();
-
-        if (playerRect.bottom >= blockRect.top &&
-            playerRect.top < blockRect.top &&
-            playerRect.right > blockRect.left &&
-            playerRect.left < blockRect.right) {
-          playerY = block.offsetTop - player.offsetHeight;
-          velocityY = 0;
-          isJumping = false;
-        }
-
-        if (playerRect.left <= blockRect.right &&
-            playerRect.right > blockRect.right &&
-            playerRect.bottom > blockRect.top &&
-            playerRect.top < blockRect.bottom) {
-          playerX = block.offsetLeft + block.offsetWidth;
-        }
-
-        if (playerRect.right >= blockRect.left &&
-            playerRect.left < blockRect.left &&
-            playerRect.bottom > blockRect.top &&
-            playerRect.top < blockRect.bottom) {
-          playerX = block.offsetLeft - player.offsetWidth;
-        }
-      });
-    }
-
-    function breakBlock() {
-      const blocks = document.querySelectorAll(".block");
-      const playerRect = player.getBoundingClientRect();
-
-      blocks.forEach(block => {
-        const blockRect = block.getBoundingClientRect();
-        if (playerRect.right > blockRect.left &&
-            playerRect.left < blockRect.right &&
-            playerRect.bottom > blockRect.top &&
-            playerRect.top < blockRect.bottom) {
-          breakSound.play();
-          score += 10;
-          scoreDisplay.textContent = score;
-          if (score % 50 === 0) {
-            level++;
-            levelDisplay.textContent = level;
-          }
-          block.remove();
-        }
-      });
-    }
-
-    function damagePlayer(amount) {
-      health -= amount;
-      if (health < 0) health = 0;
-      healthBar.style.width = health * 2 + "px";
-      hitSound.play();
-      if (health === 0) {
-        alert("Game Over! Respawnando...");
-        respawn();
-      }
-    }
-
-    function checkEnemyCollision() {
-      const enemies = document.querySelectorAll(".enemy");
-      const playerRect = player.getBoundingClientRect();
-
+    function drawEnemies() {
+      ctx.fillStyle = "red";
       enemies.forEach(enemy => {
-        const enemyRect = enemy.getBoundingClientRect();
-        if (playerRect.right >
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+      });
+    }
+
+    function updateEnemies() {
+      enemies.forEach((enemy, index) => {
+        enemy.y += enemy.speed;
+        if (enemy.y > canvas.height) {
+          enemies.splice(index, 1);
+          score++;
+        }
+        if (
+          enemy.x < player.x + player.width &&
+          enemy.x + enemy.width > player.x &&
+          enemy.y < player.y + player.height &&
+          enemy.y + enemy.height > player.y
+        ) {
+          gameOver = true;
+        }
+      });
+    }
+
+    function spawnEnemy() {
+      const size = 50;
+      const x = Math.random() * (canvas.width - size);
+      enemies.push({ x: x, y: 0, width: size, height: size, speed: 5 });
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "black";
+      ctx.font = "20px Arial";
+      ctx.fillText("Score: " + score, 10, 20);
+    }
+
+    function gameLoop() {
+      if (gameOver) {
+        ctx.fillStyle = "black";
+        ctx.font = "40px Arial";
+        ctx.fillText("Game Over!", canvas.width / 2 - 100, canvas.height / 2);
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPlayer();
+      drawEnemies();
+      updateEnemies();
+      drawScore();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowLeft" && player.x > 0) {
+        player.x -= player.speed;
+      }
+      if (e.key === "ArrowRight" && player.x + player.width < canvas.width) {
+        player.x += player.speed;
+      }
+    });
+
+    setInterval(spawnEnemy, 1000);
+    gameLoop();
+  </script>
+</body>
+</html>
