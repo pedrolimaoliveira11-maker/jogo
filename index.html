@@ -1,111 +1,222 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Maniclefit</title>
-  <style>
-    body {
-      margin: 0;
-      background: #f0f0f0;
-      overflow: hidden;
-    }
-    canvas {
-      display: block;
-      margin: auto;
-      background: #fff;
-      border: 2px solid #000;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Jogo de Foguete</title>
+    <style>
+        body {
+            margin: 0;
+            background: black;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            margin: auto;
+            background: #111;
+        }
+    </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-    const player = {
-      x: canvas.width / 2 - 25,
-      y: canvas.height - 60,
-      width: 50,
-      height: 50,
-      color: "green",
-      speed: 7
-    };
+        // Foguete
+        const rocket = { x: 280, y: 320, width: 40, height: 60, speed: 7 };
 
-    let enemies = [];
-    let score = 0;
-    let gameOver = false;
+        // Obstáculos
+        let obstacles = [];
+        let obstacleSpeed = 4;
+        let spawnTimer = 0;
 
-    function drawPlayer() {
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.width, player.height);
-    }
+        // Pontuação
+        let score = 0;
+        let gameOver = false;
 
-    function drawEnemies() {
-      ctx.fillStyle = "red";
-      enemies.forEach(enemy => {
-        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-      });
-    }
+        // Teclas
+        const keys = {};
+        document.addEventListener("keydown", e => keys[e.key] = true);
+        document.addEventListener("keyup", e => keys[e.key] = false);
 
-    function updateEnemies() {
-      enemies.forEach((enemy, index) => {
-        enemy.y += enemy.speed;
-        if (enemy.y > canvas.height) {
-          enemies.splice(index, 1);
-          score++;
+        function drawRocket() {
+            ctx.fillStyle = "white";
+            ctx.fillRect(rocket.x, rocket.y, rocket.width, rocket.height);
         }
-        if (
-          enemy.x < player.x + player.width &&
-          enemy.x + enemy.width > player.x &&
-          enemy.y < player.y + player.height &&
-          enemy.y + enemy.height > player.y
-        ) {
-          gameOver = true;
+
+        function drawObstacles() {
+            ctx.fillStyle = "red";
+            obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
         }
-      });
-    }
 
-    function spawnEnemy() {
-      const size = 50;
-      const x = Math.random() * (canvas.width - size);
-      enemies.push({ x: x, y: 0, width: size, height: size, speed: 5 });
-    }
+        function update() {
+            if (gameOver) return;
 
-    function drawScore() {
-      ctx.fillStyle = "black";
-      ctx.font = "20px Arial";
-      ctx.fillText("Score: " + score, 10, 20);
-    }
+            // Movimento foguete
+            if (keys["ArrowLeft"] && rocket.x > 0) rocket.x -= rocket.speed;
+            if (keys["ArrowRight"] && rocket.x + rocket.width < canvas.width) rocket.x += rocket.speed;
+            if (keys["ArrowUp"] && rocket.y > 0) rocket.y -= rocket.speed;
+            if (keys["ArrowDown"] && rocket.y + rocket.height < canvas.height) rocket.y += rocket.speed;
 
-    function gameLoop() {
-      if (gameOver) {
-        ctx.fillStyle = "black";
-        ctx.font = "40px Arial";
-        ctx.fillText("Game Over!", canvas.width / 2 - 100, canvas.height / 2);
-        return;
-      }
+            // Criar obstáculos
+            spawnTimer++;
+            if (spawnTimer > 30) {
+                spawnTimer = 0;
+                obstacles.push({ x: Math.random() * (canvas.width - 40), y: -40, width: 40, height: 40 });
+            }
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawPlayer();
-      drawEnemies();
-      updateEnemies();
-      drawScore();
+            // Mover obstáculos
+            obstacles.forEach((o, i) => {
+                o.y += obstacleSpeed;
+                // Colisão
+                if (o.x < rocket.x + rocket.width &&
+                    o.x + o.width > rocket.x &&
+                    o.y < rocket.y + rocket.height &&
+                    o.y + o.height > rocket.y) {
+                    gameOver = true;
+                }
+                // Saiu da tela
+                if (o.y > canvas.height) {
+                    obstacles.splice(i, 1);
+                    score++;
+                }
+            });
+        }
 
-      requestAnimationFrame(gameLoop);
-    }
+        function drawScore() {
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            ctx.fillText("Pontuação: " + score, 10, 20);
+        }
 
-    document.addEventListener("keydown", e => {
-      if (e.key === "ArrowLeft" && player.x > 0) {
-        player.x -= player.speed;
-      }
-      if (e.key === "ArrowRight" && player.x + player.width < canvas.width) {
-        player.x += player.speed;
-      }
-    });
+        function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawRocket();
+            drawObstacles();
+            drawScore();
+            update();
 
-    setInterval(spawnEnemy, 1000);
-    gameLoop();
-  </script>
+            if (gameOver) {
+                ctx.fillStyle = "yellow";
+                ctx.font = "40px Arial";
+                ctx.fillText("GAME OVER", canvas.width/2 - 100, canvas.height/2);
+            } else {
+                requestAnimationFrame(loop);
+            }
+        }
+
+        loop();
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Jogo de Foguete</title>
+    <style>
+        body {
+            margin: 0;
+            background: black;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            margin: auto;
+            background: #111;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Foguete
+        const rocket = { x: 280, y: 320, width: 40, height: 60, speed: 7 };
+
+        // Obstáculos
+        let obstacles = [];
+        let obstacleSpeed = 4;
+        let spawnTimer = 0;
+
+        // Pontuação
+        let score = 0;
+        let gameOver = false;
+
+        // Teclas
+        const keys = {};
+        document.addEventListener("keydown", e => keys[e.key] = true);
+        document.addEventListener("keyup", e => keys[e.key] = false);
+
+        function drawRocket() {
+            ctx.fillStyle = "white";
+            ctx.fillRect(rocket.x, rocket.y, rocket.width, rocket.height);
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = "red";
+            obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
+        }
+
+        function update() {
+            if (gameOver) return;
+
+            // Movimento foguete
+            if (keys["ArrowLeft"] && rocket.x > 0) rocket.x -= rocket.speed;
+            if (keys["ArrowRight"] && rocket.x + rocket.width < canvas.width) rocket.x += rocket.speed;
+            if (keys["ArrowUp"] && rocket.y > 0) rocket.y -= rocket.speed;
+            if (keys["ArrowDown"] && rocket.y + rocket.height < canvas.height) rocket.y += rocket.speed;
+
+            // Criar obstáculos
+            spawnTimer++;
+            if (spawnTimer > 30) {
+                spawnTimer = 0;
+                obstacles.push({ x: Math.random() * (canvas.width - 40), y: -40, width: 40, height: 40 });
+            }
+
+            // Mover obstáculos
+            obstacles.forEach((o, i) => {
+                o.y += obstacleSpeed;
+                // Colisão
+                if (o.x < rocket.x + rocket.width &&
+                    o.x + o.width > rocket.x &&
+                    o.y < rocket.y + rocket.height &&
+                    o.y + o.height > rocket.y) {
+                    gameOver = true;
+                }
+                // Saiu da tela
+                if (o.y > canvas.height) {
+                    obstacles.splice(i, 1);
+                    score++;
+                }
+            });
+        }
+
+        function drawScore() {
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            ctx.fillText("Pontuação: " + score, 10, 20);
+        }
+
+        function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawRocket();
+            drawObstacles();
+            drawScore();
+            update();
+
+            if (gameOver) {
+                ctx.fillStyle = "yellow";
+                ctx.font = "40px Arial";
+                ctx.fillText("GAME OVER", canvas.width/2 - 100, canvas.height/2);
+            } else {
+                requestAnimationFrame(loop);
+            }
+        }
+
+        loop();
+    </script>
 </body>
 </html>
