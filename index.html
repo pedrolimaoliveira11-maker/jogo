@@ -22,12 +22,19 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        // Foguete
-        const rocket = { x: 280, y: 320, width: 40, height: 60, speed: 7 };
+        // Carregar imagens
+        const rocketImg = new Image();
+        rocketImg.src = "b2_spirit.png"; // coloque aqui a imagem do B-2 Spirit
 
-        // Obstáculos
-        let obstacles = [];
-        let obstacleSpeed = 4;
+        const enemyImg = new Image();
+        enemyImg.src = "russian_fighter.png"; // coloque aqui a imagem da nave russa
+
+        // Foguete
+        const rocket = { x: 280, y: 320, width: 60, height: 60, speed: 7 };
+
+        // Inimigos
+        let enemies = [];
+        let enemySpeed = 4;
         let spawnTimer = 0;
 
         // Pontuação
@@ -40,13 +47,11 @@
         document.addEventListener("keyup", e => keys[e.key] = false);
 
         function drawRocket() {
-            ctx.fillStyle = "white";
-            ctx.fillRect(rocket.x, rocket.y, rocket.width, rocket.height);
+            ctx.drawImage(rocketImg, rocket.x, rocket.y, rocket.width, rocket.height);
         }
 
-        function drawObstacles() {
-            ctx.fillStyle = "red";
-            obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
+        function drawEnemies() {
+            enemies.forEach(e => ctx.drawImage(enemyImg, e.x, e.y, e.width, e.height));
         }
 
         function update() {
@@ -58,26 +63,26 @@
             if (keys["ArrowUp"] && rocket.y > 0) rocket.y -= rocket.speed;
             if (keys["ArrowDown"] && rocket.y + rocket.height < canvas.height) rocket.y += rocket.speed;
 
-            // Criar obstáculos
+            // Criar inimigos
             spawnTimer++;
-            if (spawnTimer > 30) {
+            if (spawnTimer > 40) {
                 spawnTimer = 0;
-                obstacles.push({ x: Math.random() * (canvas.width - 40), y: -40, width: 40, height: 40 });
+                enemies.push({ x: Math.random() * (canvas.width - 60), y: -60, width: 60, height: 60 });
             }
 
-            // Mover obstáculos
-            obstacles.forEach((o, i) => {
-                o.y += obstacleSpeed;
+            // Mover inimigos
+            enemies.forEach((e, i) => {
+                e.y += enemySpeed;
                 // Colisão
-                if (o.x < rocket.x + rocket.width &&
-                    o.x + o.width > rocket.x &&
-                    o.y < rocket.y + rocket.height &&
-                    o.y + o.height > rocket.y) {
+                if (e.x < rocket.x + rocket.width &&
+                    e.x + e.width > rocket.x &&
+                    e.y < rocket.y + rocket.height &&
+                    e.y + e.height > rocket.y) {
                     gameOver = true;
                 }
                 // Saiu da tela
-                if (o.y > canvas.height) {
-                    obstacles.splice(i, 1);
+                if (e.y > canvas.height) {
+                    enemies.splice(i, 1);
                     score++;
                 }
             });
@@ -92,118 +97,7 @@
         function loop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawRocket();
-            drawObstacles();
-            drawScore();
-            update();
-
-            if (gameOver) {
-                ctx.fillStyle = "yellow";
-                ctx.font = "40px Arial";
-                ctx.fillText("GAME OVER", canvas.width/2 - 100, canvas.height/2);
-            } else {
-                requestAnimationFrame(loop);
-            }
-        }
-
-        loop();
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Jogo de Foguete</title>
-    <style>
-        body {
-            margin: 0;
-            background: black;
-            overflow: hidden;
-        }
-        canvas {
-            display: block;
-            margin: auto;
-            background: #111;
-        }
-    </style>
-</head>
-<body>
-    <canvas id="gameCanvas" width="600" height="400"></canvas>
-    <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-
-        // Foguete
-        const rocket = { x: 280, y: 320, width: 40, height: 60, speed: 7 };
-
-        // Obstáculos
-        let obstacles = [];
-        let obstacleSpeed = 4;
-        let spawnTimer = 0;
-
-        // Pontuação
-        let score = 0;
-        let gameOver = false;
-
-        // Teclas
-        const keys = {};
-        document.addEventListener("keydown", e => keys[e.key] = true);
-        document.addEventListener("keyup", e => keys[e.key] = false);
-
-        function drawRocket() {
-            ctx.fillStyle = "white";
-            ctx.fillRect(rocket.x, rocket.y, rocket.width, rocket.height);
-        }
-
-        function drawObstacles() {
-            ctx.fillStyle = "red";
-            obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
-        }
-
-        function update() {
-            if (gameOver) return;
-
-            // Movimento foguete
-            if (keys["ArrowLeft"] && rocket.x > 0) rocket.x -= rocket.speed;
-            if (keys["ArrowRight"] && rocket.x + rocket.width < canvas.width) rocket.x += rocket.speed;
-            if (keys["ArrowUp"] && rocket.y > 0) rocket.y -= rocket.speed;
-            if (keys["ArrowDown"] && rocket.y + rocket.height < canvas.height) rocket.y += rocket.speed;
-
-            // Criar obstáculos
-            spawnTimer++;
-            if (spawnTimer > 30) {
-                spawnTimer = 0;
-                obstacles.push({ x: Math.random() * (canvas.width - 40), y: -40, width: 40, height: 40 });
-            }
-
-            // Mover obstáculos
-            obstacles.forEach((o, i) => {
-                o.y += obstacleSpeed;
-                // Colisão
-                if (o.x < rocket.x + rocket.width &&
-                    o.x + o.width > rocket.x &&
-                    o.y < rocket.y + rocket.height &&
-                    o.y + o.height > rocket.y) {
-                    gameOver = true;
-                }
-                // Saiu da tela
-                if (o.y > canvas.height) {
-                    obstacles.splice(i, 1);
-                    score++;
-                }
-            });
-        }
-
-        function drawScore() {
-            ctx.fillStyle = "white";
-            ctx.font = "20px Arial";
-            ctx.fillText("Pontuação: " + score, 10, 20);
-        }
-
-        function loop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawRocket();
-            drawObstacles();
+            drawEnemies();
             drawScore();
             update();
 
