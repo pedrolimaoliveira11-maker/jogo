@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Manecraft - Minecraft em HTML5</title>
+    <title>Mini Manecraft v2 - Terreno Melhorado</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap');
         
@@ -20,15 +20,25 @@
         h1 {
             color: #4ade80;
             text-shadow: 3px 3px #000;
-            font-size: 2.5rem;
+            font-size: 2.3rem;
             margin-bottom: 5px;
             letter-spacing: 2px;
         }
         
         .subtitle {
             color: #94a3b8;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+        }
+        
+        .version {
+            background: #166534;
+            color: #86efac;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            display: inline-block;
+            margin-bottom: 15px;
         }
         
         #game-container {
@@ -151,7 +161,7 @@
         }
         
         .instructions {
-            max-width: 700px;
+            max-width: 720px;
             margin: 15px auto;
             background: #1e2937;
             padding: 15px;
@@ -166,11 +176,17 @@
             font-size: 0.7rem;
             color: #64748b;
         }
+        
+        .highlight {
+            color: #4ade80;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <h1>MINI MANECRAFT</h1>
-    <p class="subtitle">Uma recriação simples do Minecraft em HTML5 + JavaScript • Modo Criativo 2D</p>
+    <div class="version">v2 - Terreno Melhorado</div>
+    <p class="subtitle">Geração de terreno com múltiplas oitavas • Mais natural e bonito</p>
     
     <div id="game-container">
         <canvas id="game" width="800" height="592"></canvas>
@@ -187,23 +203,23 @@
         • <strong>Mouse Esquerdo</strong> → Quebrar bloco<br>
         • <strong>Mouse Direito</strong> → Colocar bloco selecionado<br>
         • <strong>Teclas 1-5</strong> → Selecionar tipo de bloco<br>
-        • <strong>G</strong> → Gerar novo mundo<br>
+        • <strong>G</strong> → Gerar novo mundo com terreno diferente<br>
         • Clique nos blocos da hotbar para selecionar
     </div>
     
     <div class="controls">
-        <button onclick="generateWorld(); draw();">🌍 Gerar Novo Mundo</button>
+        <button onclick="generateWorld(); draw();">🌍 Gerar Novo Terreno</button>
         <button onclick="clearWorld(); draw();">🧹 Limpar Tudo</button>
         <button onclick="saveWorld()">💾 Salvar Mundo</button>
         <button onclick="loadWorld()">📂 Carregar Mundo</button>
     </div>
     
     <div class="footer">
-        Feito com ❤️ em HTML5 Canvas • Versão simples para diversão • Abra este arquivo no navegador
+        Feito com ❤️ • Algoritmo de terreno com múltiplas oitavas (mais natural)
     </div>
 
     <script>
-        // Configurações do jogo
+        // ==================== CONFIGURAÇÕES ====================
         const COLS = 50;
         const ROWS = 37;
         const BLOCK_SIZE = 16;
@@ -216,14 +232,13 @@
         let mouseX = 0;
         let mouseY = 0;
         
-        // Cores dos blocos (estilo Minecraft)
         const BLOCK_COLORS = {
-            0: null,           // Ar
-            1: '#8B4513',      // Terra (Dirt)
-            2: '#228B22',      // Grama (Grass)
-            3: '#696969',      // Pedra (Stone)
-            4: '#D2691E',      // Madeira (Wood)
-            5: '#32CD32'       // Folhas (Leaves)
+            0: null,
+            1: '#8B4513',   // Terra
+            2: '#228B22',   // Grama
+            3: '#696969',   // Pedra
+            4: '#D2691E',   // Madeira
+            5: '#32CD32'    // Folhas
         };
         
         const BLOCK_NAMES = {
@@ -234,83 +249,100 @@
             5: 'FOLHAS'
         };
         
-        // Inicializa o mundo vazio
+        // ==================== FUNÇÕES DO MUNDO ====================
+        
         function initWorld() {
             world = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
         }
         
-        // Gera um mundo procedural simples com colinas e árvores
+        // ==================== ALGORITMO DE TERRENO MELHORADO ====================
+        // Usa múltiplas oitavas (camadas de ruído) para criar terreno mais natural
         function generateWorld() {
             initWorld();
             
-            const baseHeight = ROWS - 12;
+            const baseHeight = ROWS - 14;
             
             for (let x = 0; x < COLS; x++) {
-                // Variação de altura com seno + ruído aleatório
-                const variation = Math.floor(Math.sin(x * 0.18) * 5) + Math.floor(Math.random() * 4) - 2;
-                let height = baseHeight + variation;
+                let height = baseHeight;
                 
-                // Limites
-                if (height < 6) height = 6;
-                if (height > ROWS - 4) height = ROWS - 4;
+                // === MÚLTIPLAS OITAVAS (o segredo de terrenos bonitos) ===
                 
-                // Preenche o chão
+                // Oitava 1 - Montanhas grandes e vales amplos (baixa frequência)
+                height += Math.sin(x * 0.032) * 9.5;
+                
+                // Oitava 2 - Colinas médias
+                height += Math.sin(x * 0.075) * 5.5;
+                
+                // Oitava 3 - Detalhes e ondulações pequenas
+                height += Math.sin(x * 0.22) * 2.8;
+                
+                // Oitava 4 - Ruído fino (detalhes bem pequenos)
+                height += Math.sin(x * 0.48) * 1.4;
+                
+                // Ruído aleatório extra para quebrar a perfeição matemática
+                height += (Math.random() - 0.5) * 2.5;
+                
+                // Arredonda para inteiro
+                height = Math.floor(height);
+                
+                // Limites de segurança
+                if (height < 5) height = 5;
+                if (height > ROWS - 3) height = ROWS - 3;
+                
+                // Preenche os blocos por camada
                 for (let y = height; y < ROWS; y++) {
                     if (y === height) {
-                        world[y][x] = 2; // Grama no topo
-                    } else if (y < height + 4) {
-                        world[y][x] = 1; // Terra
+                        world[y][x] = 2;                    // Grama no topo
+                    } else if (y < height + 5) {
+                        world[y][x] = 1;                    // Terra
                     } else {
-                        world[y][x] = 3; // Pedra embaixo
+                        world[y][x] = 3;                    // Pedra embaixo
                     }
                 }
                 
-                // Adiciona árvores aleatoriamente (10% de chance)
-                if (Math.random() < 0.10 && height > 5) {
-                    // Tronco de madeira
+                // ==================== ÁRVORES ====================
+                if (Math.random() < 0.13 && height > 6) {
                     const trunkHeight = 3 + Math.floor(Math.random() * 2);
+                    
+                    // Tronco
                     for (let t = 1; t <= trunkHeight; t++) {
                         if (height - t >= 0) {
                             world[height - t][x] = 4; // Madeira
                         }
                     }
                     
-                    // Folhas no topo
+                    // Folhas
                     const leafY = height - trunkHeight - 1;
                     if (leafY >= 0) {
-                        // Camada de folhas
                         for (let lx = x - 2; lx <= x + 2; lx++) {
                             if (lx >= 0 && lx < COLS) {
                                 if (leafY >= 0) world[leafY][lx] = 5;
                                 if (leafY - 1 >= 0 && Math.abs(lx - x) <= 1) world[leafY - 1][lx] = 5;
                             }
                         }
-                        // Topo da árvore
                         if (leafY - 2 >= 0) world[leafY - 2][x] = 5;
                     }
                 }
             }
         }
         
-        // Limpa o mundo (tudo vira ar)
         function clearWorld() {
             initWorld();
         }
         
-        // Salva o mundo no navegador (localStorage)
+        // ==================== SALVAR / CARREGAR ====================
         function saveWorld() {
             try {
-                localStorage.setItem('miniManecraftWorld', JSON.stringify(world));
+                localStorage.setItem('miniManecraftV2World', JSON.stringify(world));
                 showMessage('✅ Mundo salvo com sucesso!', '#4ade80');
             } catch (e) {
                 showMessage('❌ Erro ao salvar!', '#ef4444');
             }
         }
         
-        // Carrega o mundo salvo
         function loadWorld() {
             try {
-                const saved = localStorage.getItem('miniManecraftWorld');
+                const saved = localStorage.getItem('miniManecraftV2World');
                 if (saved) {
                     world = JSON.parse(saved);
                     draw();
@@ -323,7 +355,6 @@
             }
         }
         
-        // Mostra mensagem temporária
         function showMessage(text, color) {
             const msg = document.createElement('div');
             msg.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); 
@@ -339,23 +370,18 @@
             }, 2200);
         }
         
-        // Retorna a cor do bloco
+        // ==================== DESENHO ====================
         function getBlockColor(type) {
             return BLOCK_COLORS[type] || '#000000';
         }
         
-        // Desenha todo o jogo
         function draw() {
-            // Céu
-            ctx.fillStyle = '#5dade2';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Gradiente de céu mais bonito
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.6);
+            // Céu com gradiente
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.65);
             gradient.addColorStop(0, '#5dade2');
             gradient.addColorStop(1, '#87CEEB');
             ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height * 0.65);
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Desenha os blocos
             for (let y = 0; y < ROWS; y++) {
@@ -365,16 +391,14 @@
                         const px = x * BLOCK_SIZE;
                         const py = y * BLOCK_SIZE;
                         
-                        // Cor base
                         ctx.fillStyle = getBlockColor(block);
                         ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
                         
-                        // Borda para dar sensação de bloco (estilo Minecraft)
+                        // Bordas e iluminação (estilo Minecraft)
                         ctx.strokeStyle = 'rgba(0,0,0,0.35)';
                         ctx.lineWidth = 1;
                         ctx.strokeRect(px + 0.5, py + 0.5, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
                         
-                        // Destaque superior esquerdo (iluminação)
                         if (block === 2 || block === 1) {
                             ctx.strokeStyle = 'rgba(255,255,255,0.25)';
                             ctx.beginPath();
@@ -384,7 +408,6 @@
                             ctx.stroke();
                         }
                         
-                        // Sombra inferior direita
                         ctx.strokeStyle = 'rgba(0,0,0,0.4)';
                         ctx.beginPath();
                         ctx.moveTo(px + 1, py + BLOCK_SIZE - 1);
@@ -395,7 +418,7 @@
                 }
             }
             
-            // Destaque da célula sob o mouse
+            // Destaque do mouse
             const gridX = Math.floor(mouseX / BLOCK_SIZE);
             const gridY = Math.floor(mouseY / BLOCK_SIZE);
             
@@ -411,38 +434,33 @@
                 ctx.lineWidth = 1;
             }
             
-            // Pequeno indicador do jogador (Steve simplificado)
+            // Steve simplificado
             const playerX = Math.floor(COLS / 2) * BLOCK_SIZE + BLOCK_SIZE / 2;
             const playerY = 4 * BLOCK_SIZE;
             
-            // Cabeça
             ctx.fillStyle = '#f5cba7';
             ctx.fillRect(playerX - 6, playerY - 14, 12, 12);
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 1;
             ctx.strokeRect(playerX - 6, playerY - 14, 12, 12);
             
-            // Olhos
             ctx.fillStyle = '#000';
             ctx.fillRect(playerX - 3, playerY - 11, 2, 2);
             ctx.fillRect(playerX + 1, playerY - 11, 2, 2);
             
-            // Corpo
             ctx.fillStyle = '#3498db';
             ctx.fillRect(playerX - 5, playerY - 2, 10, 14);
             
-            // Braços
             ctx.fillStyle = '#f5cba7';
             ctx.fillRect(playerX - 8, playerY, 4, 10);
             ctx.fillRect(playerX + 4, playerY, 4, 10);
         }
         
-        // Atualiza o nome do bloco selecionado
+        // ==================== HOTBAR E CONTROLES ====================
         function updateSelectedBlock() {
             const nameEl = document.getElementById('selected-name');
             nameEl.textContent = BLOCK_NAMES[currentBlock] || 'DESCONHECIDO';
             
-            // Atualiza destaque na hotbar
             document.querySelectorAll('.hotbar-slot').forEach((slot, index) => {
                 if (index + 1 === currentBlock) {
                     slot.classList.add('selected');
@@ -452,7 +470,6 @@
             });
         }
         
-        // Cria a hotbar interativa
         function createHotbar() {
             const hotbar = document.getElementById('hotbar');
             hotbar.innerHTML = '';
@@ -482,16 +499,13 @@
                     updateSelectedBlock();
                 };
                 
-                // Tooltip
                 slot.title = `${block.name} (tecla ${index + 1})`;
-                
                 hotbar.appendChild(slot);
             });
         }
         
-        // Eventos do mouse
+        // ==================== EVENTOS ====================
         function setupMouseEvents() {
-            // Movimento do mouse (para destaque)
             canvas.addEventListener('mousemove', (e) => {
                 const rect = canvas.getBoundingClientRect();
                 mouseX = e.clientX - rect.left;
@@ -499,7 +513,6 @@
                 draw();
             });
             
-            // Clique esquerdo = quebrar bloco
             canvas.addEventListener('mousedown', (e) => {
                 const rect = canvas.getBoundingClientRect();
                 const clickX = e.clientX - rect.left;
@@ -511,24 +524,18 @@
                 if (gridX < 0 || gridX >= COLS || gridY < 0 || gridY >= ROWS) return;
                 
                 if (e.button === 0) {
-                    // Botão esquerdo - QUEBRAR
                     if (world[gridY][gridX] > 0) {
                         world[gridY][gridX] = 0;
                         draw();
                     }
                 } else if (e.button === 2) {
-                    // Botão direito - COLOCAR
                     world[gridY][gridX] = currentBlock;
                     draw();
                 }
             });
             
-            // Impede o menu de contexto do botão direito
-            canvas.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-            });
+            canvas.addEventListener('contextmenu', (e) => e.preventDefault());
             
-            // Clique duplo para colocar rápido (bônus)
             canvas.addEventListener('dblclick', (e) => {
                 if (e.button === 0) {
                     const rect = canvas.getBoundingClientRect();
@@ -545,24 +552,20 @@
             });
         }
         
-        // Eventos do teclado
         function setupKeyboardEvents() {
             document.addEventListener('keydown', (e) => {
-                // Selecionar blocos com teclas 1-5
                 if (e.key >= '1' && e.key <= '5') {
                     currentBlock = parseInt(e.key);
                     updateSelectedBlock();
                     e.preventDefault();
                 }
                 
-                // Gerar novo mundo com G
                 if (e.key.toLowerCase() === 'g') {
                     generateWorld();
                     draw();
                     e.preventDefault();
                 }
                 
-                // Salvar com S
                 if (e.key.toLowerCase() === 's' && e.ctrlKey) {
                     e.preventDefault();
                     saveWorld();
@@ -570,7 +573,7 @@
             });
         }
         
-        // Inicialização principal do jogo
+        // ==================== INICIALIZAÇÃO ====================
         function initGame() {
             initWorld();
             generateWorld();
@@ -579,14 +582,13 @@
             setupMouseEvents();
             setupKeyboardEvents();
             
-            // Desenha pela primeira vez
             draw();
             
             // Mensagem de boas-vindas
             setTimeout(() => {
                 const welcome = document.createElement('div');
-                welcome.style.cssText = 'position:fixed; top:15px; left:50%; transform:translateX(-50%); background:#1e2937; color:#4ade80; padding:8px 16px; border-radius:6px; font-size:0.75rem; border:2px solid #475569;';
-                welcome.textContent = '🎮 Bem-vindo ao Mini Manecraft! Comece construindo!';
+                welcome.style.cssText = 'position:fixed; top:15px; left:50%; transform:translateX(-50%); background:#166534; color:#86efac; padding:8px 16px; border-radius:6px; font-size:0.75rem; border:2px solid #4ade80;';
+                welcome.innerHTML = '🌍 Terreno gerado com <strong>múltiplas oitavas</strong>!';
                 document.body.appendChild(welcome);
                 
                 setTimeout(() => {
@@ -594,27 +596,26 @@
                     welcome.style.opacity = '0';
                     setTimeout(() => welcome.remove(), 400);
                 }, 2800);
-            }, 800);
+            }, 900);
             
-            // Salva automaticamente a cada 30 segundos (bônus)
+            // Auto-save a cada 30 segundos
             setInterval(() => {
                 try {
-                    localStorage.setItem('miniManecraftWorld', JSON.stringify(world));
+                    localStorage.setItem('miniManecraftV2World', JSON.stringify(world));
                 } catch (e) {}
             }, 30000);
             
-            console.log('%c[Mini Manecraft] Jogo iniciado com sucesso!', 'color:#4ade80');
+            console.log('%c[Mini Manecraft v2] Jogo iniciado com terreno melhorado!', 'color:#4ade80');
         }
         
-        // Inicia o jogo quando a página carregar
         window.onload = initGame;
         
-        // Easter egg: pressione "?" para mensagem secreta
+        // Easter egg
         document.addEventListener('keypress', function(e) {
             if (e.key === '?') {
                 const msg = document.createElement('div');
                 msg.style.cssText = 'position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#581c87; color:#e0e7ff; padding:12px 24px; border-radius:8px; font-size:0.8rem;';
-                msg.innerHTML = '🌟 Dica: Você pode construir árvores, casas, castelos... use a imaginação!';
+                msg.innerHTML = '🌟 Dica: Pressione <strong>G</strong> várias vezes para ver terrenos diferentes!';
                 document.body.appendChild(msg);
                 setTimeout(() => msg.remove(), 3500);
             }
