@@ -1,116 +1,624 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Jogo de Foguete - B2 Spirit</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Manecraft - Minecraft em HTML5</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap');
+        
         body {
+            font-family: 'Press Start 2P', Arial, sans-serif;
+            background: linear-gradient(#1a1a2e, #16213e);
+            color: #fff;
             margin: 0;
-            background: black;
-            overflow: hidden;
+            padding: 20px;
+            text-align: center;
+            min-height: 100vh;
         }
+        
+        h1 {
+            color: #4ade80;
+            text-shadow: 3px 3px #000;
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            color: #94a3b8;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        
+        #game-container {
+            display: inline-block;
+            background: #0f172a;
+            padding: 15px;
+            border: 6px solid #334155;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
         canvas {
-            display: block;
-            margin: auto;
-            background: #111;
+            border: 4px solid #1e2937;
+            background: #87CEEB;
+            image-rendering: pixelated;
+            cursor: crosshair;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+        }
+        
+        #hotbar {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            padding: 10px;
+            background: #1e2937;
+            border: 4px solid #334155;
+            border-radius: 6px;
+        }
+        
+        .hotbar-slot {
+            width: 70px;
+            height: 70px;
+            border: 4px solid #475569;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+            box-shadow: 0 4px 0 #1e2937;
+        }
+        
+        .hotbar-slot:hover {
+            transform: translateY(-2px);
+        }
+        
+        .hotbar-slot.selected {
+            border-color: #fbbf24;
+            box-shadow: 0 0 15px #fbbf24, 0 4px 0 #1e2937;
+            transform: scale(1.05);
+        }
+        
+        .hotbar-slot .block-name {
+            font-size: 9px;
+            color: white;
+            text-shadow: 1px 1px 0 #000;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+        
+        .hotbar-slot .key {
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            font-size: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 1px 5px;
+            border-radius: 3px;
+        }
+        
+        #info {
+            margin-top: 15px;
+            background: #1e2937;
+            padding: 10px 20px;
+            border-radius: 6px;
+            display: inline-block;
+            border: 3px solid #334155;
+        }
+        
+        .info-text {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+        
+        .selected-block {
+            color: #4ade80;
+            font-weight: bold;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        button {
+            font-family: 'Press Start 2P', Arial, sans-serif;
+            background: #334155;
+            color: #fff;
+            border: 3px solid #475569;
+            padding: 10px 18px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 4px 0 #1e2937;
+        }
+        
+        button:hover {
+            background: #475569;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #1e2937;
+        }
+        
+        .instructions {
+            max-width: 700px;
+            margin: 15px auto;
+            background: #1e2937;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+        
+        .footer {
+            margin-top: 25px;
+            font-size: 0.7rem;
+            color: #64748b;
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <h1>MINI MANECRAFT</h1>
+    <p class="subtitle">Uma recriação simples do Minecraft em HTML5 + JavaScript • Modo Criativo 2D</p>
+    
+    <div id="game-container">
+        <canvas id="game" width="800" height="592"></canvas>
+        
+        <div id="hotbar"></div>
+        
+        <div id="info">
+            <span class="info-text">Bloco selecionado: <span id="selected-name" class="selected-block">TERRA</span></span>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        <strong>Controles:</strong><br>
+        • <strong>Mouse Esquerdo</strong> → Quebrar bloco<br>
+        • <strong>Mouse Direito</strong> → Colocar bloco selecionado<br>
+        • <strong>Teclas 1-5</strong> → Selecionar tipo de bloco<br>
+        • <strong>G</strong> → Gerar novo mundo<br>
+        • Clique nos blocos da hotbar para selecionar
+    </div>
+    
+    <div class="controls">
+        <button onclick="generateWorld(); draw();">🌍 Gerar Novo Mundo</button>
+        <button onclick="clearWorld(); draw();">🧹 Limpar Tudo</button>
+        <button onclick="saveWorld()">💾 Salvar Mundo</button>
+        <button onclick="loadWorld()">📂 Carregar Mundo</button>
+    </div>
+    
+    <div class="footer">
+        Feito com ❤️ em HTML5 Canvas • Versão simples para diversão • Abra este arquivo no navegador
+    </div>
+
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-
-        // Carregar imagens
-        const rocketImg = new Image();
-        rocketImg.src = "b2_spirit.png"; // imagem do B-2 Spirit
-
-        const enemyImg = new Image();
-        enemyImg.src = "russian_fighter.png"; // imagem da nave russa
-
-        // Foguete
-        const rocket = { x: 280, y: 320, width: 60, height: 60, speed: 7 };
-
-        // Inimigos
-        let enemies = [];
-        let enemySpeed = 4;
-        let spawnTimer = 0;
-
-        // Pontuação
-        let score = 0;
-        let gameOver = false;
-
-        // Teclas
-        const keys = {};
-        document.addEventListener("keydown", e => keys[e.key] = true);
-        document.addEventListener("keyup", e => keys[e.key] = false);
-
-        function drawRocket() {
-            ctx.drawImage(rocketImg, rocket.x, rocket.y, rocket.width, rocket.height);
+        // Configurações do jogo
+        const COLS = 50;
+        const ROWS = 37;
+        const BLOCK_SIZE = 16;
+        
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d', { alpha: true });
+        
+        let world = [];
+        let currentBlock = 1;
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        // Cores dos blocos (estilo Minecraft)
+        const BLOCK_COLORS = {
+            0: null,           // Ar
+            1: '#8B4513',      // Terra (Dirt)
+            2: '#228B22',      // Grama (Grass)
+            3: '#696969',      // Pedra (Stone)
+            4: '#D2691E',      // Madeira (Wood)
+            5: '#32CD32'       // Folhas (Leaves)
+        };
+        
+        const BLOCK_NAMES = {
+            1: 'TERRA',
+            2: 'GRAMA',
+            3: 'PEDRA',
+            4: 'MADEIRA',
+            5: 'FOLHAS'
+        };
+        
+        // Inicializa o mundo vazio
+        function initWorld() {
+            world = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
         }
-
-        function drawEnemies() {
-            enemies.forEach(e => ctx.drawImage(enemyImg, e.x, e.y, e.width, e.height));
-        }
-
-        function update() {
-            if (gameOver) return;
-
-            // Movimento foguete
-            if (keys["ArrowLeft"] && rocket.x > 0) rocket.x -= rocket.speed;
-            if (keys["ArrowRight"] && rocket.x + rocket.width < canvas.width) rocket.x += rocket.speed;
-            if (keys["ArrowUp"] && rocket.y > 0) rocket.y -= rocket.speed;
-            if (keys["ArrowDown"] && rocket.y + rocket.height < canvas.height) rocket.y += rocket.speed;
-
-            // Criar inimigos
-            spawnTimer++;
-            if (spawnTimer > 40) {
-                spawnTimer = 0;
-                enemies.push({ x: Math.random() * (canvas.width - 60), y: -60, width: 60, height: 60 });
-            }
-
-            // Mover inimigos
-            enemies.forEach((e, i) => {
-                e.y += enemySpeed;
-                // Colisão
-                if (e.x < rocket.x + rocket.width &&
-                    e.x + e.width > rocket.x &&
-                    e.y < rocket.y + rocket.height &&
-                    e.y + e.height > rocket.y) {
-                    gameOver = true;
+        
+        // Gera um mundo procedural simples com colinas e árvores
+        function generateWorld() {
+            initWorld();
+            
+            const baseHeight = ROWS - 12;
+            
+            for (let x = 0; x < COLS; x++) {
+                // Variação de altura com seno + ruído aleatório
+                const variation = Math.floor(Math.sin(x * 0.18) * 5) + Math.floor(Math.random() * 4) - 2;
+                let height = baseHeight + variation;
+                
+                // Limites
+                if (height < 6) height = 6;
+                if (height > ROWS - 4) height = ROWS - 4;
+                
+                // Preenche o chão
+                for (let y = height; y < ROWS; y++) {
+                    if (y === height) {
+                        world[y][x] = 2; // Grama no topo
+                    } else if (y < height + 4) {
+                        world[y][x] = 1; // Terra
+                    } else {
+                        world[y][x] = 3; // Pedra embaixo
+                    }
                 }
-                // Saiu da tela
-                if (e.y > canvas.height) {
-                    enemies.splice(i, 1);
-                    score++;
+                
+                // Adiciona árvores aleatoriamente (10% de chance)
+                if (Math.random() < 0.10 && height > 5) {
+                    // Tronco de madeira
+                    const trunkHeight = 3 + Math.floor(Math.random() * 2);
+                    for (let t = 1; t <= trunkHeight; t++) {
+                        if (height - t >= 0) {
+                            world[height - t][x] = 4; // Madeira
+                        }
+                    }
+                    
+                    // Folhas no topo
+                    const leafY = height - trunkHeight - 1;
+                    if (leafY >= 0) {
+                        // Camada de folhas
+                        for (let lx = x - 2; lx <= x + 2; lx++) {
+                            if (lx >= 0 && lx < COLS) {
+                                if (leafY >= 0) world[leafY][lx] = 5;
+                                if (leafY - 1 >= 0 && Math.abs(lx - x) <= 1) world[leafY - 1][lx] = 5;
+                            }
+                        }
+                        // Topo da árvore
+                        if (leafY - 2 >= 0) world[leafY - 2][x] = 5;
+                    }
+                }
+            }
+        }
+        
+        // Limpa o mundo (tudo vira ar)
+        function clearWorld() {
+            initWorld();
+        }
+        
+        // Salva o mundo no navegador (localStorage)
+        function saveWorld() {
+            try {
+                localStorage.setItem('miniManecraftWorld', JSON.stringify(world));
+                showMessage('✅ Mundo salvo com sucesso!', '#4ade80');
+            } catch (e) {
+                showMessage('❌ Erro ao salvar!', '#ef4444');
+            }
+        }
+        
+        // Carrega o mundo salvo
+        function loadWorld() {
+            try {
+                const saved = localStorage.getItem('miniManecraftWorld');
+                if (saved) {
+                    world = JSON.parse(saved);
+                    draw();
+                    showMessage('✅ Mundo carregado!', '#4ade80');
+                } else {
+                    showMessage('⚠️ Nenhum mundo salvo encontrado.', '#fbbf24');
+                }
+            } catch (e) {
+                showMessage('❌ Erro ao carregar!', '#ef4444');
+            }
+        }
+        
+        // Mostra mensagem temporária
+        function showMessage(text, color) {
+            const msg = document.createElement('div');
+            msg.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); 
+                                background:#1e2937; color:${color}; padding:10px 20px; border-radius:6px; 
+                                font-size:0.8rem; border:2px solid #475569; z-index:9999;`;
+            msg.textContent = text;
+            document.body.appendChild(msg);
+            
+            setTimeout(() => {
+                msg.style.transition = 'all 0.3s';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 300);
+            }, 2200);
+        }
+        
+        // Retorna a cor do bloco
+        function getBlockColor(type) {
+            return BLOCK_COLORS[type] || '#000000';
+        }
+        
+        // Desenha todo o jogo
+        function draw() {
+            // Céu
+            ctx.fillStyle = '#5dade2';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Gradiente de céu mais bonito
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.6);
+            gradient.addColorStop(0, '#5dade2');
+            gradient.addColorStop(1, '#87CEEB');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height * 0.65);
+            
+            // Desenha os blocos
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    const block = world[y][x];
+                    if (block > 0) {
+                        const px = x * BLOCK_SIZE;
+                        const py = y * BLOCK_SIZE;
+                        
+                        // Cor base
+                        ctx.fillStyle = getBlockColor(block);
+                        ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+                        
+                        // Borda para dar sensação de bloco (estilo Minecraft)
+                        ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(px + 0.5, py + 0.5, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+                        
+                        // Destaque superior esquerdo (iluminação)
+                        if (block === 2 || block === 1) {
+                            ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+                            ctx.beginPath();
+                            ctx.moveTo(px + 1, py + BLOCK_SIZE - 1);
+                            ctx.lineTo(px + 1, py + 1);
+                            ctx.lineTo(px + BLOCK_SIZE - 1, py + 1);
+                            ctx.stroke();
+                        }
+                        
+                        // Sombra inferior direita
+                        ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+                        ctx.beginPath();
+                        ctx.moveTo(px + 1, py + BLOCK_SIZE - 1);
+                        ctx.lineTo(px + BLOCK_SIZE - 1, py + BLOCK_SIZE - 1);
+                        ctx.lineTo(px + BLOCK_SIZE - 1, py + 1);
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            // Destaque da célula sob o mouse
+            const gridX = Math.floor(mouseX / BLOCK_SIZE);
+            const gridY = Math.floor(mouseY / BLOCK_SIZE);
+            
+            if (gridX >= 0 && gridX < COLS && gridY >= 0 && gridY < ROWS) {
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 2.5;
+                ctx.strokeRect(
+                    gridX * BLOCK_SIZE + 1, 
+                    gridY * BLOCK_SIZE + 1, 
+                    BLOCK_SIZE - 2, 
+                    BLOCK_SIZE - 2
+                );
+                ctx.lineWidth = 1;
+            }
+            
+            // Pequeno indicador do jogador (Steve simplificado)
+            const playerX = Math.floor(COLS / 2) * BLOCK_SIZE + BLOCK_SIZE / 2;
+            const playerY = 4 * BLOCK_SIZE;
+            
+            // Cabeça
+            ctx.fillStyle = '#f5cba7';
+            ctx.fillRect(playerX - 6, playerY - 14, 12, 12);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(playerX - 6, playerY - 14, 12, 12);
+            
+            // Olhos
+            ctx.fillStyle = '#000';
+            ctx.fillRect(playerX - 3, playerY - 11, 2, 2);
+            ctx.fillRect(playerX + 1, playerY - 11, 2, 2);
+            
+            // Corpo
+            ctx.fillStyle = '#3498db';
+            ctx.fillRect(playerX - 5, playerY - 2, 10, 14);
+            
+            // Braços
+            ctx.fillStyle = '#f5cba7';
+            ctx.fillRect(playerX - 8, playerY, 4, 10);
+            ctx.fillRect(playerX + 4, playerY, 4, 10);
+        }
+        
+        // Atualiza o nome do bloco selecionado
+        function updateSelectedBlock() {
+            const nameEl = document.getElementById('selected-name');
+            nameEl.textContent = BLOCK_NAMES[currentBlock] || 'DESCONHECIDO';
+            
+            // Atualiza destaque na hotbar
+            document.querySelectorAll('.hotbar-slot').forEach((slot, index) => {
+                if (index + 1 === currentBlock) {
+                    slot.classList.add('selected');
+                } else {
+                    slot.classList.remove('selected');
                 }
             });
         }
-
-        function drawScore() {
-            ctx.fillStyle = "white";
-            ctx.font = "20px Arial";
-            ctx.fillText("Pontuação: " + score, 10, 20);
+        
+        // Cria a hotbar interativa
+        function createHotbar() {
+            const hotbar = document.getElementById('hotbar');
+            hotbar.innerHTML = '';
+            
+            const blocks = [
+                { id: 1, name: 'TERRA', color: '#8B4513' },
+                { id: 2, name: 'GRAMA', color: '#228B22' },
+                { id: 3, name: 'PEDRA', color: '#696969' },
+                { id: 4, name: 'MADEIRA', color: '#D2691E' },
+                { id: 5, name: 'FOLHAS', color: '#32CD32' }
+            ];
+            
+            blocks.forEach((block, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'hotbar-slot';
+                slot.style.backgroundColor = block.color;
+                
+                if (index === 0) slot.classList.add('selected');
+                
+                slot.innerHTML = `
+                    <div class="block-name">${block.name}</div>
+                    <div class="key">${index + 1}</div>
+                `;
+                
+                slot.onclick = () => {
+                    currentBlock = block.id;
+                    updateSelectedBlock();
+                };
+                
+                // Tooltip
+                slot.title = `${block.name} (tecla ${index + 1})`;
+                
+                hotbar.appendChild(slot);
+            });
         }
-
-        function loop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawRocket();
-            drawEnemies();
-            drawScore();
-            update();
-
-            if (gameOver) {
-                ctx.fillStyle = "yellow";
-                ctx.font = "40px Arial";
-                ctx.fillText("GAME OVER", canvas.width/2 - 100, canvas.height/2);
-            } else {
-                requestAnimationFrame(loop);
+        
+        // Eventos do mouse
+        function setupMouseEvents() {
+            // Movimento do mouse (para destaque)
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+                mouseY = e.clientY - rect.top;
+                draw();
+            });
+            
+            // Clique esquerdo = quebrar bloco
+            canvas.addEventListener('mousedown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                
+                const gridX = Math.floor(clickX / BLOCK_SIZE);
+                const gridY = Math.floor(clickY / BLOCK_SIZE);
+                
+                if (gridX < 0 || gridX >= COLS || gridY < 0 || gridY >= ROWS) return;
+                
+                if (e.button === 0) {
+                    // Botão esquerdo - QUEBRAR
+                    if (world[gridY][gridX] > 0) {
+                        world[gridY][gridX] = 0;
+                        draw();
+                    }
+                } else if (e.button === 2) {
+                    // Botão direito - COLOCAR
+                    world[gridY][gridX] = currentBlock;
+                    draw();
+                }
+            });
+            
+            // Impede o menu de contexto do botão direito
+            canvas.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+            
+            // Clique duplo para colocar rápido (bônus)
+            canvas.addEventListener('dblclick', (e) => {
+                if (e.button === 0) {
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const clickY = e.clientY - rect.top;
+                    const gridX = Math.floor(clickX / BLOCK_SIZE);
+                    const gridY = Math.floor(clickY / BLOCK_SIZE);
+                    
+                    if (gridX >= 0 && gridX < COLS && gridY >= 0 && gridY < ROWS) {
+                        world[gridY][gridX] = currentBlock;
+                        draw();
+                    }
+                }
+            });
+        }
+        
+        // Eventos do teclado
+        function setupKeyboardEvents() {
+            document.addEventListener('keydown', (e) => {
+                // Selecionar blocos com teclas 1-5
+                if (e.key >= '1' && e.key <= '5') {
+                    currentBlock = parseInt(e.key);
+                    updateSelectedBlock();
+                    e.preventDefault();
+                }
+                
+                // Gerar novo mundo com G
+                if (e.key.toLowerCase() === 'g') {
+                    generateWorld();
+                    draw();
+                    e.preventDefault();
+                }
+                
+                // Salvar com S
+                if (e.key.toLowerCase() === 's' && e.ctrlKey) {
+                    e.preventDefault();
+                    saveWorld();
+                }
+            });
+        }
+        
+        // Inicialização principal do jogo
+        function initGame() {
+            initWorld();
+            generateWorld();
+            createHotbar();
+            updateSelectedBlock();
+            setupMouseEvents();
+            setupKeyboardEvents();
+            
+            // Desenha pela primeira vez
+            draw();
+            
+            // Mensagem de boas-vindas
+            setTimeout(() => {
+                const welcome = document.createElement('div');
+                welcome.style.cssText = 'position:fixed; top:15px; left:50%; transform:translateX(-50%); background:#1e2937; color:#4ade80; padding:8px 16px; border-radius:6px; font-size:0.75rem; border:2px solid #475569;';
+                welcome.textContent = '🎮 Bem-vindo ao Mini Manecraft! Comece construindo!';
+                document.body.appendChild(welcome);
+                
+                setTimeout(() => {
+                    welcome.style.transition = 'all 0.4s';
+                    welcome.style.opacity = '0';
+                    setTimeout(() => welcome.remove(), 400);
+                }, 2800);
+            }, 800);
+            
+            // Salva automaticamente a cada 30 segundos (bônus)
+            setInterval(() => {
+                try {
+                    localStorage.setItem('miniManecraftWorld', JSON.stringify(world));
+                } catch (e) {}
+            }, 30000);
+            
+            console.log('%c[Mini Manecraft] Jogo iniciado com sucesso!', 'color:#4ade80');
+        }
+        
+        // Inicia o jogo quando a página carregar
+        window.onload = initGame;
+        
+        // Easter egg: pressione "?" para mensagem secreta
+        document.addEventListener('keypress', function(e) {
+            if (e.key === '?') {
+                const msg = document.createElement('div');
+                msg.style.cssText = 'position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#581c87; color:#e0e7ff; padding:12px 24px; border-radius:8px; font-size:0.8rem;';
+                msg.innerHTML = '🌟 Dica: Você pode construir árvores, casas, castelos... use a imaginação!';
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 3500);
             }
-        }
-
-        loop();
+        });
     </script>
 </body>
 </html>
