@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Manecraft v2 - Terreno Melhorado</title>
+    <title>Mini Manecraft v3 - Perlin Noise</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap');
         
@@ -20,25 +20,25 @@
         h1 {
             color: #4ade80;
             text-shadow: 3px 3px #000;
-            font-size: 2.3rem;
+            font-size: 2.2rem;
             margin-bottom: 5px;
             letter-spacing: 2px;
         }
         
         .subtitle {
             color: #94a3b8;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             font-size: 0.85rem;
         }
         
         .version {
-            background: #166534;
-            color: #86efac;
-            padding: 4px 12px;
+            background: #1e40af;
+            color: #93c5fd;
+            padding: 4px 14px;
             border-radius: 20px;
             font-size: 0.7rem;
             display: inline-block;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         #game-container {
@@ -176,17 +176,12 @@
             font-size: 0.7rem;
             color: #64748b;
         }
-        
-        .highlight {
-            color: #4ade80;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
     <h1>MINI MANECRAFT</h1>
-    <div class="version">v2 - Terreno Melhorado</div>
-    <p class="subtitle">Geração de terreno com múltiplas oitavas • Mais natural e bonito</p>
+    <div class="version">v3 - Perlin Noise Real</div>
+    <p class="subtitle">Terreno gerado com Perlin Noise + múltiplas oitavas • Qualidade Minecraft</p>
     
     <div id="game-container">
         <canvas id="game" width="800" height="592"></canvas>
@@ -203,23 +198,94 @@
         • <strong>Mouse Esquerdo</strong> → Quebrar bloco<br>
         • <strong>Mouse Direito</strong> → Colocar bloco selecionado<br>
         • <strong>Teclas 1-5</strong> → Selecionar tipo de bloco<br>
-        • <strong>G</strong> → Gerar novo mundo com terreno diferente<br>
+        • <strong>G</strong> → Gerar novo mundo com Perlin Noise<br>
         • Clique nos blocos da hotbar para selecionar
     </div>
     
     <div class="controls">
-        <button onclick="generateWorld(); draw();">🌍 Gerar Novo Terreno</button>
+        <button onclick="generateWorld(); draw();">🌍 Gerar Novo Terreno (Perlin)</button>
         <button onclick="clearWorld(); draw();">🧹 Limpar Tudo</button>
         <button onclick="saveWorld()">💾 Salvar Mundo</button>
         <button onclick="loadWorld()">📂 Carregar Mundo</button>
     </div>
     
     <div class="footer">
-        Feito com ❤️ • Algoritmo de terreno com múltiplas oitavas (mais natural)
+        Feito com ❤️ • Perlin Noise implementado do zero em JavaScript
     </div>
 
     <script>
-        // ==================== CONFIGURAÇÕES ====================
+        // ==================== PERLIN NOISE (implementação completa) ====================
+        class PerlinNoise {
+            constructor(seed = Math.random() * 10000) {
+                this.seed = seed;
+                this.permutation = new Array(512);
+                this.initPermutation();
+            }
+            
+            initPermutation() {
+                const p = [];
+                for (let i = 0; i < 256; i++) p[i] = i;
+                
+                let n = this.seed;
+                for (let i = 255; i > 0; i--) {
+                    n = (n * 16807) % 2147483647;
+                    const j = Math.floor((n / 2147483647) * (i + 1));
+                    [p[i], p[j]] = [p[j], p[i]];
+                }
+                
+                for (let i = 0; i < 256; i++) {
+                    this.permutation[i] = p[i];
+                    this.permutation[i + 256] = p[i];
+                }
+            }
+            
+            fade(t) {
+                return t * t * t * (t * (t * 6 - 15) + 10);
+            }
+            
+            lerp(t, a, b) {
+                return a + t * (b - a);
+            }
+            
+            grad(hash, x) {
+                const h = hash & 15;
+                const grad = 1 + (h & 7);
+                return (h & 8 ? -grad : grad) * x;
+            }
+            
+            noise(x) {
+                const X = Math.floor(x) & 255;
+                x -= Math.floor(x);
+                
+                const u = this.fade(x);
+                
+                const a = this.permutation[X] + 0;
+                const b = this.permutation[X + 1] + 0;
+                
+                return this.lerp(u, 
+                    this.grad(this.permutation[a], x),
+                    this.grad(this.permutation[b], x - 1)
+                ) / 2 + 0.5;
+            }
+            
+            octaveNoise(x, octaves = 4, persistence = 0.5, lacunarity = 2.0) {
+                let total = 0;
+                let frequency = 1;
+                let amplitude = 1;
+                let maxValue = 0;
+                
+                for (let i = 0; i < octaves; i++) {
+                    total += this.noise(x * frequency) * amplitude;
+                    maxValue += amplitude;
+                    amplitude *= persistence;
+                    frequency *= lacunarity;
+                }
+                
+                return total / maxValue;
+            }
+        }
+        
+        // ==================== CONFIGURAÇÕES DO JOGO ====================
         const COLS = 50;
         const ROWS = 37;
         const BLOCK_SIZE = 16;
@@ -232,13 +298,15 @@
         let mouseX = 0;
         let mouseY = 0;
         
+        let perlin = new PerlinNoise(Date.now());
+        
         const BLOCK_COLORS = {
             0: null,
-            1: '#8B4513',   // Terra
-            2: '#228B22',   // Grama
-            3: '#696969',   // Pedra
-            4: '#D2691E',   // Madeira
-            5: '#32CD32'    // Folhas
+            1: '#8B4513',
+            2: '#228B22',
+            3: '#696969',
+            4: '#D2691E',
+            5: '#32CD32'
         };
         
         const BLOCK_NAMES = {
@@ -249,69 +317,37 @@
             5: 'FOLHAS'
         };
         
-        // ==================== FUNÇÕES DO MUNDO ====================
-        
         function initWorld() {
             world = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
         }
         
-        // ==================== ALGORITMO DE TERRENO MELHORADO ====================
-        // Usa múltiplas oitavas (camadas de ruído) para criar terreno mais natural
+        // ==================== GERAÇÃO COM PERLIN NOISE ====================
         function generateWorld() {
             initWorld();
+            perlin = new PerlinNoise(Date.now() + Math.random() * 100000);
             
-            const baseHeight = ROWS - 14;
+            const baseHeight = ROWS - 13;
             
             for (let x = 0; x < COLS; x++) {
-                let height = baseHeight;
-                
-                // === MÚLTIPLAS OITAVAS (o segredo de terrenos bonitos) ===
-                
-                // Oitava 1 - Montanhas grandes e vales amplos (baixa frequência)
-                height += Math.sin(x * 0.032) * 9.5;
-                
-                // Oitava 2 - Colinas médias
-                height += Math.sin(x * 0.075) * 5.5;
-                
-                // Oitava 3 - Detalhes e ondulações pequenas
-                height += Math.sin(x * 0.22) * 2.8;
-                
-                // Oitava 4 - Ruído fino (detalhes bem pequenos)
-                height += Math.sin(x * 0.48) * 1.4;
-                
-                // Ruído aleatório extra para quebrar a perfeição matemática
-                height += (Math.random() - 0.5) * 2.5;
-                
-                // Arredonda para inteiro
+                let noiseValue = perlin.octaveNoise(x * 0.035, 5, 0.55, 2.1);
+                let height = baseHeight + (noiseValue - 0.5) * 18;
+                height += (Math.random() - 0.5) * 1.5;
                 height = Math.floor(height);
                 
-                // Limites de segurança
-                if (height < 5) height = 5;
+                if (height < 4) height = 4;
                 if (height > ROWS - 3) height = ROWS - 3;
                 
-                // Preenche os blocos por camada
                 for (let y = height; y < ROWS; y++) {
-                    if (y === height) {
-                        world[y][x] = 2;                    // Grama no topo
-                    } else if (y < height + 5) {
-                        world[y][x] = 1;                    // Terra
-                    } else {
-                        world[y][x] = 3;                    // Pedra embaixo
-                    }
+                    if (y === height) world[y][x] = 2;
+                    else if (y < height + 5) world[y][x] = 1;
+                    else world[y][x] = 3;
                 }
                 
-                // ==================== ÁRVORES ====================
-                if (Math.random() < 0.13 && height > 6) {
+                if (Math.random() < 0.11 && height > 5) {
                     const trunkHeight = 3 + Math.floor(Math.random() * 2);
-                    
-                    // Tronco
                     for (let t = 1; t <= trunkHeight; t++) {
-                        if (height - t >= 0) {
-                            world[height - t][x] = 4; // Madeira
-                        }
+                        if (height - t >= 0) world[height - t][x] = 4;
                     }
-                    
-                    // Folhas
                     const leafY = height - trunkHeight - 1;
                     if (leafY >= 0) {
                         for (let lx = x - 2; lx <= x + 2; lx++) {
@@ -326,254 +362,128 @@
             }
         }
         
-        function clearWorld() {
-            initWorld();
-        }
+        function clearWorld() { initWorld(); }
         
-        // ==================== SALVAR / CARREGAR ====================
         function saveWorld() {
             try {
-                localStorage.setItem('miniManecraftV2World', JSON.stringify(world));
-                showMessage('✅ Mundo salvo com sucesso!', '#4ade80');
-            } catch (e) {
-                showMessage('❌ Erro ao salvar!', '#ef4444');
-            }
+                localStorage.setItem('miniManecraftPerlinWorld', JSON.stringify(world));
+                showMessage('✅ Mundo salvo!', '#4ade80');
+            } catch(e){}
         }
         
         function loadWorld() {
             try {
-                const saved = localStorage.getItem('miniManecraftV2World');
+                const saved = localStorage.getItem('miniManecraftPerlinWorld');
                 if (saved) {
                     world = JSON.parse(saved);
                     draw();
                     showMessage('✅ Mundo carregado!', '#4ade80');
-                } else {
-                    showMessage('⚠️ Nenhum mundo salvo encontrado.', '#fbbf24');
                 }
-            } catch (e) {
-                showMessage('❌ Erro ao carregar!', '#ef4444');
-            }
+            } catch(e){}
         }
         
         function showMessage(text, color) {
             const msg = document.createElement('div');
-            msg.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); 
-                                background:#1e2937; color:${color}; padding:10px 20px; border-radius:6px; 
-                                font-size:0.8rem; border:2px solid #475569; z-index:9999;`;
+            msg.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e2937;color:${color};padding:10px 20px;border-radius:6px;font-size:0.8rem;border:2px solid #475569;z-index:9999`;
             msg.textContent = text;
             document.body.appendChild(msg);
-            
-            setTimeout(() => {
-                msg.style.transition = 'all 0.3s';
-                msg.style.opacity = '0';
-                setTimeout(() => msg.remove(), 300);
-            }, 2200);
+            setTimeout(() => { msg.style.transition='all 0.3s'; msg.style.opacity='0'; setTimeout(()=>msg.remove(),300); }, 2200);
         }
         
-        // ==================== DESENHO ====================
-        function getBlockColor(type) {
-            return BLOCK_COLORS[type] || '#000000';
-        }
+        function getBlockColor(type) { return BLOCK_COLORS[type] || '#000'; }
         
         function draw() {
-            // Céu com gradiente
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.65);
-            gradient.addColorStop(0, '#5dade2');
-            gradient.addColorStop(1, '#87CEEB');
+            const gradient = ctx.createLinearGradient(0,0,0,canvas.height*0.65);
+            gradient.addColorStop(0,'#5dade2');
+            gradient.addColorStop(1,'#87CEEB');
             ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0,0,canvas.width,canvas.height);
             
-            // Desenha os blocos
-            for (let y = 0; y < ROWS; y++) {
-                for (let x = 0; x < COLS; x++) {
+            for (let y=0; y<ROWS; y++) {
+                for (let x=0; x<COLS; x++) {
                     const block = world[y][x];
                     if (block > 0) {
-                        const px = x * BLOCK_SIZE;
-                        const py = y * BLOCK_SIZE;
-                        
+                        const px = x*BLOCK_SIZE, py = y*BLOCK_SIZE;
                         ctx.fillStyle = getBlockColor(block);
-                        ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
-                        
-                        // Bordas e iluminação (estilo Minecraft)
-                        ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-                        ctx.lineWidth = 1;
-                        ctx.strokeRect(px + 0.5, py + 0.5, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
-                        
-                        if (block === 2 || block === 1) {
-                            ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-                            ctx.beginPath();
-                            ctx.moveTo(px + 1, py + BLOCK_SIZE - 1);
-                            ctx.lineTo(px + 1, py + 1);
-                            ctx.lineTo(px + BLOCK_SIZE - 1, py + 1);
-                            ctx.stroke();
-                        }
-                        
-                        ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-                        ctx.beginPath();
-                        ctx.moveTo(px + 1, py + BLOCK_SIZE - 1);
-                        ctx.lineTo(px + BLOCK_SIZE - 1, py + BLOCK_SIZE - 1);
-                        ctx.lineTo(px + BLOCK_SIZE - 1, py + 1);
-                        ctx.stroke();
+                        ctx.fillRect(px,py,BLOCK_SIZE,BLOCK_SIZE);
+                        ctx.strokeStyle='rgba(0,0,0,0.35)';
+                        ctx.strokeRect(px+0.5,py+0.5,BLOCK_SIZE-1,BLOCK_SIZE-1);
                     }
                 }
             }
             
-            // Destaque do mouse
-            const gridX = Math.floor(mouseX / BLOCK_SIZE);
-            const gridY = Math.floor(mouseY / BLOCK_SIZE);
-            
-            if (gridX >= 0 && gridX < COLS && gridY >= 0 && gridY < ROWS) {
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 2.5;
-                ctx.strokeRect(
-                    gridX * BLOCK_SIZE + 1, 
-                    gridY * BLOCK_SIZE + 1, 
-                    BLOCK_SIZE - 2, 
-                    BLOCK_SIZE - 2
-                );
-                ctx.lineWidth = 1;
+            const gridX = Math.floor(mouseX/BLOCK_SIZE);
+            const gridY = Math.floor(mouseY/BLOCK_SIZE);
+            if (gridX>=0 && gridX<COLS && gridY>=0 && gridY<ROWS) {
+                ctx.strokeStyle='#fbbf24';
+                ctx.lineWidth=2.5;
+                ctx.strokeRect(gridX*BLOCK_SIZE+1, gridY*BLOCK_SIZE+1, BLOCK_SIZE-2, BLOCK_SIZE-2);
+                ctx.lineWidth=1;
             }
             
-            // Steve simplificado
-            const playerX = Math.floor(COLS / 2) * BLOCK_SIZE + BLOCK_SIZE / 2;
-            const playerY = 4 * BLOCK_SIZE;
-            
-            ctx.fillStyle = '#f5cba7';
-            ctx.fillRect(playerX - 6, playerY - 14, 12, 12);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(playerX - 6, playerY - 14, 12, 12);
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(playerX - 3, playerY - 11, 2, 2);
-            ctx.fillRect(playerX + 1, playerY - 11, 2, 2);
-            
-            ctx.fillStyle = '#3498db';
-            ctx.fillRect(playerX - 5, playerY - 2, 10, 14);
-            
-            ctx.fillStyle = '#f5cba7';
-            ctx.fillRect(playerX - 8, playerY, 4, 10);
-            ctx.fillRect(playerX + 4, playerY, 4, 10);
+            // Steve
+            const px = Math.floor(COLS/2)*BLOCK_SIZE + BLOCK_SIZE/2;
+            const py = 4*BLOCK_SIZE;
+            ctx.fillStyle='#f5cba7'; ctx.fillRect(px-6,py-14,12,12);
+            ctx.strokeStyle='#000'; ctx.strokeRect(px-6,py-14,12,12);
+            ctx.fillStyle='#000'; ctx.fillRect(px-3,py-11,2,2); ctx.fillRect(px+1,py-11,2,2);
+            ctx.fillStyle='#3498db'; ctx.fillRect(px-5,py-2,10,14);
+            ctx.fillStyle='#f5cba7'; ctx.fillRect(px-8,py,4,10); ctx.fillRect(px+4,py,4,10);
         }
         
-        // ==================== HOTBAR E CONTROLES ====================
         function updateSelectedBlock() {
-            const nameEl = document.getElementById('selected-name');
-            nameEl.textContent = BLOCK_NAMES[currentBlock] || 'DESCONHECIDO';
-            
-            document.querySelectorAll('.hotbar-slot').forEach((slot, index) => {
-                if (index + 1 === currentBlock) {
-                    slot.classList.add('selected');
-                } else {
-                    slot.classList.remove('selected');
-                }
-            });
+            document.getElementById('selected-name').textContent = BLOCK_NAMES[currentBlock];
+            document.querySelectorAll('.hotbar-slot').forEach((s,i) => s.classList.toggle('selected', i+1===currentBlock));
         }
         
         function createHotbar() {
             const hotbar = document.getElementById('hotbar');
             hotbar.innerHTML = '';
-            
             const blocks = [
-                { id: 1, name: 'TERRA', color: '#8B4513' },
-                { id: 2, name: 'GRAMA', color: '#228B22' },
-                { id: 3, name: 'PEDRA', color: '#696969' },
-                { id: 4, name: 'MADEIRA', color: '#D2691E' },
-                { id: 5, name: 'FOLHAS', color: '#32CD32' }
+                {id:1,name:'TERRA',color:'#8B4513'},
+                {id:2,name:'GRAMA',color:'#228B22'},
+                {id:3,name:'PEDRA',color:'#696969'},
+                {id:4,name:'MADEIRA',color:'#D2691E'},
+                {id:5,name:'FOLHAS',color:'#32CD32'}
             ];
-            
-            blocks.forEach((block, index) => {
-                const slot = document.createElement('div');
-                slot.className = 'hotbar-slot';
-                slot.style.backgroundColor = block.color;
-                
-                if (index === 0) slot.classList.add('selected');
-                
-                slot.innerHTML = `
-                    <div class="block-name">${block.name}</div>
-                    <div class="key">${index + 1}</div>
-                `;
-                
-                slot.onclick = () => {
-                    currentBlock = block.id;
-                    updateSelectedBlock();
-                };
-                
-                slot.title = `${block.name} (tecla ${index + 1})`;
-                hotbar.appendChild(slot);
+            blocks.forEach((b,i) => {
+                const s = document.createElement('div');
+                s.className = 'hotbar-slot';
+                s.style.backgroundColor = b.color;
+                if(i===0) s.classList.add('selected');
+                s.innerHTML = `<div class="block-name">${b.name}</div><div class="key">${i+1}</div>`;
+                s.onclick = () => { currentBlock = b.id; updateSelectedBlock(); };
+                hotbar.appendChild(s);
             });
         }
         
-        // ==================== EVENTOS ====================
         function setupMouseEvents() {
-            canvas.addEventListener('mousemove', (e) => {
-                const rect = canvas.getBoundingClientRect();
-                mouseX = e.clientX - rect.left;
-                mouseY = e.clientY - rect.top;
+            canvas.addEventListener('mousemove', e => {
+                const r = canvas.getBoundingClientRect();
+                mouseX = e.clientX - r.left;
+                mouseY = e.clientY - r.top;
                 draw();
             });
             
-            canvas.addEventListener('mousedown', (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                const clickY = e.clientY - rect.top;
-                
-                const gridX = Math.floor(clickX / BLOCK_SIZE);
-                const gridY = Math.floor(clickY / BLOCK_SIZE);
-                
-                if (gridX < 0 || gridX >= COLS || gridY < 0 || gridY >= ROWS) return;
-                
-                if (e.button === 0) {
-                    if (world[gridY][gridX] > 0) {
-                        world[gridY][gridX] = 0;
-                        draw();
-                    }
-                } else if (e.button === 2) {
-                    world[gridY][gridX] = currentBlock;
-                    draw();
-                }
+            canvas.addEventListener('mousedown', e => {
+                const r = canvas.getBoundingClientRect();
+                const gx = Math.floor((e.clientX-r.left)/BLOCK_SIZE);
+                const gy = Math.floor((e.clientY-r.top)/BLOCK_SIZE);
+                if(gx<0||gx>=COLS||gy<0||gy>=ROWS) return;
+                if(e.button===0 && world[gy][gx]>0) { world[gy][gx]=0; draw(); }
+                if(e.button===2) { world[gy][gx]=currentBlock; draw(); }
             });
-            
-            canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-            
-            canvas.addEventListener('dblclick', (e) => {
-                if (e.button === 0) {
-                    const rect = canvas.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left;
-                    const clickY = e.clientY - rect.top;
-                    const gridX = Math.floor(clickX / BLOCK_SIZE);
-                    const gridY = Math.floor(clickY / BLOCK_SIZE);
-                    
-                    if (gridX >= 0 && gridX < COLS && gridY >= 0 && gridY < ROWS) {
-                        world[gridY][gridX] = currentBlock;
-                        draw();
-                    }
-                }
-            });
+            canvas.addEventListener('contextmenu', e=>e.preventDefault());
         }
         
         function setupKeyboardEvents() {
-            document.addEventListener('keydown', (e) => {
-                if (e.key >= '1' && e.key <= '5') {
-                    currentBlock = parseInt(e.key);
-                    updateSelectedBlock();
-                    e.preventDefault();
-                }
-                
-                if (e.key.toLowerCase() === 'g') {
-                    generateWorld();
-                    draw();
-                    e.preventDefault();
-                }
-                
-                if (e.key.toLowerCase() === 's' && e.ctrlKey) {
-                    e.preventDefault();
-                    saveWorld();
-                }
+            document.addEventListener('keydown', e => {
+                if(e.key>='1'&&e.key<='5'){ currentBlock=parseInt(e.key); updateSelectedBlock(); e.preventDefault(); }
+                if(e.key.toLowerCase()==='g'){ generateWorld(); draw(); e.preventDefault(); }
+                if(e.key.toLowerCase()==='s'&&e.ctrlKey){ e.preventDefault(); saveWorld(); }
             });
         }
         
-        // ==================== INICIALIZAÇÃO ====================
         function initGame() {
             initWorld();
             generateWorld();
@@ -581,43 +491,28 @@
             updateSelectedBlock();
             setupMouseEvents();
             setupKeyboardEvents();
-            
             draw();
             
-            // Mensagem de boas-vindas
             setTimeout(() => {
-                const welcome = document.createElement('div');
-                welcome.style.cssText = 'position:fixed; top:15px; left:50%; transform:translateX(-50%); background:#166534; color:#86efac; padding:8px 16px; border-radius:6px; font-size:0.75rem; border:2px solid #4ade80;';
-                welcome.innerHTML = '🌍 Terreno gerado com <strong>múltiplas oitavas</strong>!';
-                document.body.appendChild(welcome);
-                
-                setTimeout(() => {
-                    welcome.style.transition = 'all 0.4s';
-                    welcome.style.opacity = '0';
-                    setTimeout(() => welcome.remove(), 400);
-                }, 2800);
-            }, 900);
+                const w = document.createElement('div');
+                w.style.cssText = 'position:fixed;top:15px;left:50%;transform:translateX(-50%);background:#1e40af;color:#93c5fd;padding:8px 16px;border-radius:6px;font-size:0.75rem;border:2px solid #3b82f6';
+                w.innerHTML = '🌍 Terreno gerado com <strong>Perlin Noise real</strong>!';
+                document.body.appendChild(w);
+                setTimeout(()=>{w.style.transition='all .4s';w.style.opacity='0';setTimeout(()=>w.remove(),400)},2800);
+            },900);
             
-            // Auto-save a cada 30 segundos
-            setInterval(() => {
-                try {
-                    localStorage.setItem('miniManecraftV2World', JSON.stringify(world));
-                } catch (e) {}
-            }, 30000);
-            
-            console.log('%c[Mini Manecraft v2] Jogo iniciado com terreno melhorado!', 'color:#4ade80');
+            setInterval(()=>{ try{localStorage.setItem('miniManecraftPerlinWorld',JSON.stringify(world))}catch(e){} },30000);
         }
         
         window.onload = initGame;
         
-        // Easter egg
-        document.addEventListener('keypress', function(e) {
-            if (e.key === '?') {
-                const msg = document.createElement('div');
-                msg.style.cssText = 'position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#581c87; color:#e0e7ff; padding:12px 24px; border-radius:8px; font-size:0.8rem;';
-                msg.innerHTML = '🌟 Dica: Pressione <strong>G</strong> várias vezes para ver terrenos diferentes!';
-                document.body.appendChild(msg);
-                setTimeout(() => msg.remove(), 3500);
+        document.addEventListener('keypress', e => {
+            if(e.key==='?'){
+                const m = document.createElement('div');
+                m.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#581c87;color:#e0e7ff;padding:12px 24px;border-radius:8px;font-size:0.8rem';
+                m.innerHTML='🌟 Pressione <strong>G</strong> várias vezes!';
+                document.body.appendChild(m);
+                setTimeout(()=>m.remove(),3500);
             }
         });
     </script>
