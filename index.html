@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Manecraft - Mundo Completo</title>
+    <title>Mini Manecraft - Dia e Noite</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap');
         body { font-family: 'Press Start 2P', Arial, sans-serif; background: linear-gradient(#1a1a2e, #16213e); color: #fff; margin: 0; padding: 15px; text-align: center; }
         h1 { color: #4ade80; text-shadow: 3px 3px #000; font-size: 2rem; margin: 5px 0 3px; }
-        .version { background: #1e40af; color: #93c5fd; padding: 4px 14px; border-radius: 20px; font-size: 0.65rem; display: inline-block; margin-bottom: 8px; }
+        .version { background: #7c3aed; color: #ddd6fe; padding: 4px 14px; border-radius: 20px; font-size: 0.65rem; display: inline-block; margin-bottom: 8px; }
         #game-container { display: inline-block; background: #0f172a; padding: 12px; border: 6px solid #334155; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
         canvas { border: 4px solid #1e2937; background: #5dade2; image-rendering: pixelated; cursor: crosshair; }
         #hotbar { display: flex; justify-content: center; gap: 5px; margin-top: 10px; padding: 8px; background: #1e2937; border: 4px solid #334155; border-radius: 6px; }
@@ -22,7 +22,7 @@
 </head>
 <body>
     <h1>MINI MANECRAFT</h1>
-    <div class="version">MUNDO COMPLETO v7</div>
+    <div class="version">DIA E NOITE v8</div>
     
     <div id="game-container">
         <canvas id="game" width="800" height="592"></canvas>
@@ -44,7 +44,7 @@
     </div>
     
     <div class="footer">
-        Rios • Animais • Wall Jump • Construção • Perlin Noise
+        Rios • Animais • Wall Jump • Dia e Noite • Construção
     </div>
 
     <script>
@@ -66,6 +66,11 @@
         let keys = {};
         let particles = [];
         let animals = [];
+        
+        // ==================== DIA E NOITE ====================
+        let time = 0;
+        const DAY_LENGTH = 24000;
+        let isNight = false;
         
         let player = {
             x: 400, y: 200,
@@ -167,6 +172,10 @@
         
         function updateAnimals(){
             for(let animal of animals){
+                if (isNight) {
+                    animal.vx *= 0.4;
+                    continue;
+                }
                 animal.x += animal.vx;
                 const gx = Math.floor(animal.x/BLOCK_SIZE);
                 const gy = Math.floor((animal.y+animal.height)/BLOCK_SIZE);
@@ -285,21 +294,46 @@
             ctx.globalAlpha=1;
         }
         
-        function draw(){
-            ctx.fillStyle='#5dade2';ctx.fillRect(0,0,canvas.width,canvas.height);
+        // ==================== DIA E NOITE ====================
+        function updateDayNight() {
+            time = (time + 1) % DAY_LENGTH;
+            isNight = (time > 12000 && time < 22000);
+        }
+        
+        function draw() {
+            // === CÉU COM DIA E NOITE ===
+            let skyColor;
+            if (time < 3000) skyColor = '#ff7e5f';
+            else if (time < 6000) skyColor = '#5dade2';
+            else if (time < 9000) skyColor = '#f39c12';
+            else if (time < 12000) skyColor = '#e67e22';
+            else skyColor = '#1a1a2e';
             
-            for(let y=0;y<ROWS;y++){
-                for(let x=0;x<COLS;x++){
-                    const b=world[y][x];
-                    if(b>0){
-                        const px=x*BLOCK_SIZE,py=y*BLOCK_SIZE;
-                        if(b===6){
-                            ctx.fillStyle='#3b82f6';ctx.fillRect(px,py,BLOCK_SIZE,BLOCK_SIZE);
-                            ctx.fillStyle='rgba(147,197,253,0.4)';ctx.fillRect(px,py,BLOCK_SIZE,BLOCK_SIZE*0.4);
-                        }else{
-                            ctx.fillStyle=b===1?'#8B4513':b===2?'#228B22':b===3?'#696969':b===4?'#D2691E':'#32CD32';
-                            ctx.fillRect(px,py,BLOCK_SIZE,BLOCK_SIZE);
-                            ctx.strokeStyle='rgba(0,0,0,0.35)';ctx.strokeRect(px+0.5,py+0.5,BLOCK_SIZE-1,BLOCK_SIZE-1);
+            ctx.fillStyle = skyColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (isNight) {
+                ctx.fillStyle = 'rgba(10, 10, 40, 0.55)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            // Blocos
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    const b = world[y][x];
+                    if (b > 0) {
+                        const px = x * BLOCK_SIZE;
+                        const py = y * BLOCK_SIZE;
+                        if (b === 6) {
+                            ctx.fillStyle = '#3b82f6';
+                            ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+                            ctx.fillStyle = 'rgba(147, 197, 253, 0.35)';
+                            ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE * 0.4);
+                        } else {
+                            ctx.fillStyle = b === 1 ? '#8B4513' : b === 2 ? '#228B22' : b === 3 ? '#696969' : b === 4 ? '#D2691E' : '#32CD32';
+                            ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
+                            ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+                            ctx.strokeRect(px + 0.5, py + 0.5, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
                         }
                     }
                 }
@@ -307,98 +341,168 @@
             
             drawAnimals();
             
-            const px=player.x,py=player.y;
-            ctx.fillStyle='rgba(0,0,0,0.25)';ctx.fillRect(px+1,py+player.height-1,player.width-2,3);
-            ctx.fillStyle='#f5cba7';ctx.fillRect(px+2,py+2,8,8);ctx.strokeStyle='#000';ctx.strokeRect(px+2,py+2,8,8);
-            ctx.fillStyle='#000';ctx.fillRect(px+4,py+4,2,2);ctx.fillRect(px+8,py+4,2,2);
-            ctx.fillStyle='#3b82f6';ctx.fillRect(px+1,py+10,10,8);
-            ctx.fillStyle='#f5cba7';ctx.fillRect(px-1,py+10,3,6);ctx.fillRect(px+10,py+10,3,6);
-            ctx.fillStyle='#1e40af';ctx.fillRect(px+2,py+18,3,5);ctx.fillRect(px+7,py+18,3,5);
+            // Player
+            const px = player.x;
+            const py = player.y;
             
-            if(player.touchingWall!==0&&!player.onGround){
-                ctx.fillStyle='rgba(251,191,36,0.5)';
-                if(player.touchingWall===-1)ctx.fillRect(px-2,py+5,3,player.height-10);
-                else ctx.fillRect(px+player.width-1,py+5,3,player.height-10);
+            ctx.fillStyle = 'rgba(0,0,0,0.25)';
+            ctx.fillRect(px + 1, py + player.height - 1, player.width - 2, 3);
+            
+            ctx.fillStyle = '#f5cba7';
+            ctx.fillRect(px + 2, py + 2, 8, 8);
+            ctx.strokeStyle = '#000';
+            ctx.strokeRect(px + 2, py + 2, 8, 8);
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(px + 4, py + 4, 2, 2);
+            ctx.fillRect(px + 8, py + 4, 2, 2);
+            
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(px + 1, py + 10, 10, 8);
+            
+            ctx.fillStyle = '#f5cba7';
+            ctx.fillRect(px - 1, py + 10, 3, 6);
+            ctx.fillRect(px + 10, py + 10, 3, 6);
+            
+            ctx.fillStyle = '#1e40af';
+            ctx.fillRect(px + 2, py + 18, 3, 5);
+            ctx.fillRect(px + 7, py + 18, 3, 5);
+            
+            if (player.touchingWall !== 0 && !player.onGround) {
+                ctx.fillStyle = 'rgba(251, 191, 36, 0.5)';
+                if (player.touchingWall === -1) ctx.fillRect(px - 2, py + 5, 3, player.height - 10);
+                else ctx.fillRect(px + player.width - 1, py + 5, 3, player.height - 10);
             }
             
             drawParticles();
             
-            const gx=Math.floor(mouseX/BLOCK_SIZE),gy=Math.floor(mouseY/BLOCK_SIZE);
-            if(gx>=0&&gx<COLS&&gy>=0&&gy<ROWS){ctx.strokeStyle='#fbbf24';ctx.lineWidth=2;ctx.strokeRect(gx*BLOCK_SIZE+1,gy*BLOCK_SIZE+1,BLOCK_SIZE-2,BLOCK_SIZE-2);}
+            const gx = Math.floor(mouseX / BLOCK_SIZE);
+            const gy = Math.floor(mouseY / BLOCK_SIZE);
+            if (gx >= 0 && gx < COLS && gy >= 0 && gy < ROWS) {
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(gx * BLOCK_SIZE + 1, gy * BLOCK_SIZE + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+            }
+            
+            // Indicador de tempo
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(canvas.width - 80, 8, 70, 18);
+            ctx.fillStyle = '#fff';
+            ctx.font = '10px Arial';
+            ctx.fillText(isNight ? '🌙 Noite' : '☀️ Dia', canvas.width - 75, 21);
         }
         
-        function createHotbar(){
-            const hotbar=document.getElementById('hotbar');hotbar.innerHTML='';
-            const blocks=[
+        function createHotbar() {
+            const hotbar = document.getElementById('hotbar');
+            hotbar.innerHTML = '';
+            const blocks = [
                 {id:1,name:'Terra',color:'#8B4513'},{id:2,name:'Grama',color:'#228B22'},
                 {id:3,name:'Pedra',color:'#696969'},{id:4,name:'Madeira',color:'#D2691E'},
                 {id:5,name:'Folhas',color:'#32CD32'},{id:6,name:'Água',color:'#3b82f6'}
             ];
             blocks.forEach((b,i)=>{
-                const d=document.createElement('div');
-                d.className='hotbar-slot';d.style.backgroundColor=b.color;
-                if(i===0)d.classList.add('selected');
-                d.innerHTML=`<div style="color:white;font-size:6px;text-shadow:1px 1px black;text-align:center">${b.name}<br><span style="font-size:5px">${i+1}</span></div>`;
-                d.onclick=()=>{currentBlock=b.id;document.querySelectorAll('.hotbar-slot').forEach(el=>el.classList.remove('selected'));d.classList.add('selected');};
+                const d = document.createElement('div');
+                d.className='hotbar-slot';
+                d.style.backgroundColor = b.color;
+                if(i===0) d.classList.add('selected');
+                d.innerHTML = `<div style="color:white;font-size:6px;text-shadow:1px 1px black;text-align:center">${b.name}<br><span style="font-size:5px">${i+1}</span></div>`;
+                d.onclick = () => {
+                    currentBlock = b.id;
+                    document.querySelectorAll('.hotbar-slot').forEach(el=>el.classList.remove('selected'));
+                    d.classList.add('selected');
+                };
                 hotbar.appendChild(d);
             });
         }
         
-        function setupInput(){
-            document.addEventListener('keydown',e=>{
-                keys[e.key.toLowerCase()]=true;
-                if(e.key===' '||e.key==='Spacebar'){e.preventDefault();jump();}
-                if(e.key.toLowerCase()==='g'){generateWorld();draw();}
-                if(e.key>='1'&&e.key<='6'){currentBlock=parseInt(e.key);document.querySelectorAll('.hotbar-slot').forEach((d,i)=>d.classList.toggle('selected',i+1===currentBlock));}
+        function setupInput() {
+            document.addEventListener('keydown', e => {
+                keys[e.key.toLowerCase()] = true;
+                if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); jump(); }
+                if (e.key.toLowerCase() === 'g') { generateWorld(); draw(); }
+                if (e.key >= '1' && e.key <= '6') {
+                    currentBlock = parseInt(e.key);
+                    document.querySelectorAll('.hotbar-slot').forEach((d,i) => d.classList.toggle('selected', i+1 === currentBlock));
+                }
             });
-            document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+            document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
             
-            canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect();mouseX=e.clientX-r.left;mouseY=e.clientY-r.top;});
-            canvas.addEventListener('mousedown',e=>{
-                const r=canvas.getBoundingClientRect();
-                const gx=Math.floor((e.clientX-r.left)/BLOCK_SIZE),gy=Math.floor((e.clientY-r.top)/BLOCK_SIZE);
-                if(gx<0||gx>=COLS||gy<0||gy>=ROWS)return;
-                if(e.button===0&&world[gy][gx]>0)world[gy][gx]=0;
-                if(e.button===2&&world[gy][gx]===0)world[gy][gx]=currentBlock;
+            canvas.addEventListener('mousemove', e => {
+                const r = canvas.getBoundingClientRect();
+                mouseX = e.clientX - r.left;
+                mouseY = e.clientY - r.top;
+            });
+            
+            canvas.addEventListener('mousedown', e => {
+                const r = canvas.getBoundingClientRect();
+                const gx = Math.floor((e.clientX-r.left)/BLOCK_SIZE);
+                const gy = Math.floor((e.clientY-r.top)/BLOCK_SIZE);
+                if(gx<0||gx>=COLS||gy<0||gy>=ROWS) return;
+                if(e.button===0 && world[gy][gx]>0) world[gy][gx]=0;
+                if(e.button===2 && world[gy][gx]===0) world[gy][gx]=currentBlock;
                 draw();
             });
-            canvas.addEventListener('contextmenu',e=>e.preventDefault());
+            canvas.addEventListener('contextmenu', e => e.preventDefault());
         }
         
-        function gameLoop(){updatePhysics();updateAnimals();updateParticles();draw();requestAnimationFrame(gameLoop);}
+        function gameLoop() {
+            updatePhysics();
+            updateAnimals();
+            updateParticles();
+            updateDayNight();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
         
-        function saveWorld(){
-            try{
-                localStorage.setItem('miniManecraftComplete',JSON.stringify({world,player:{x:player.x,y:player.y},animals}));
+        function updateDayNight() {
+            time = (time + 1) % DAY_LENGTH;
+            isNight = (time > 12000 && time < 22000);
+        }
+        
+        function saveWorld() {
+            try {
+                localStorage.setItem('miniManecraftDayNight', JSON.stringify({
+                    world: world,
+                    player: {x:player.x, y:player.y},
+                    animals: animals,
+                    time: time
+                }));
                 alert('✅ Mundo salvo!');
-            }catch(e){alert('Erro ao salvar');}
+            } catch(e){ alert('Erro ao salvar'); }
         }
         
-        function loadWorld(){
-            try{
-                const data=JSON.parse(localStorage.getItem('miniManecraftComplete'));
+        function loadWorld() {
+            try {
+                const data = JSON.parse(localStorage.getItem('miniManecraftDayNight'));
                 if(data){
-                    world=data.world;
-                    if(data.player){player.x=data.player.x;player.y=data.player.y;}
-                    if(data.animals)animals=data.animals;
+                    world = data.world;
+                    if(data.player){ player.x = data.player.x; player.y = data.player.y; }
+                    if(data.animals) animals = data.animals;
+                    if(data.time) time = data.time;
                     draw();
                     alert('✅ Mundo carregado!');
                 }
-            }catch(e){alert('Nenhum save encontrado');}
+            } catch(e){ alert('Nenhum save encontrado'); }
         }
         
-        function initGame(){
-            initWorld();generateWorld();createHotbar();setupInput();draw();gameLoop();
-            setTimeout(()=>{
-                const m=document.createElement('div');
-                m.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1e40af;color:#93c5fd;padding:7px 14px;border-radius:5px;font-size:0.65rem;';
-                m.innerHTML='Explore o mundo com <strong>rios</strong> e <strong>animais</strong>!';
+        function initGame() {
+            initWorld();
+            generateWorld();
+            createHotbar();
+            setupInput();
+            draw();
+            gameLoop();
+            
+            setTimeout(() => {
+                const m = document.createElement('div');
+                m.style.cssText = 'position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#ddd6fe;padding:7px 14px;border-radius:5px;font-size:0.65rem;';
+                m.innerHTML = 'O tempo passa! <strong>Dia e Noite</strong> ativos!';
                 document.body.appendChild(m);
-                setTimeout(()=>m.remove(),2800);
-            },900);
+                setTimeout(() => m.remove(), 2800);
+            }, 900);
         }
         
-        window.onload=initGame;
+        window.onload = initGame;
     </script>
 </body>
 </html>
