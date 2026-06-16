@@ -3,126 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boxing Game - Quase Real</title>
+    <title>Jogo de Luta 2D</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap');
-        
-        body {
-            font-family: 'Press Start 2P', Arial, sans-serif;
-            background: #111;
-            color: #fff;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        h1 {
-            color: #ef4444;
-            text-shadow: 3px 3px #000;
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-        
-        #game-container {
-            display: inline-block;
-            background: #1f2937;
-            padding: 15px;
-            border: 8px solid #374151;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-        }
-        
-        canvas {
-            border: 6px solid #111;
-            background: #111;
-            image-rendering: pixelated;
-        }
-        
-        .controls {
-            margin-top: 15px;
-            background: #1f2937;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            color: #9ca3af;
-        }
-        
-        .health-bar {
-            width: 300px;
-            height: 25px;
-            background: #111;
-            border: 3px solid #fff;
-            margin: 0 auto 10px;
-            position: relative;
-        }
-        
-        .health-fill {
-            height: 100%;
-            background: #22c55e;
-            transition: width 0.2s;
-        }
-        
-        .player-health {
-            margin-bottom: 15px;
-        }
-        
-        .opponent-health .health-fill {
-            background: #ef4444;
-        }
-        
-        button {
-            font-family: 'Press Start 2P', Arial, sans-serif;
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-top: 15px;
-            border-radius: 5px;
-        }
-        
-        button:hover {
-            background: #dc2626;
-        }
-        
-        .winner {
-            font-size: 1.8rem;
-            color: #fbbf24;
-            margin-top: 15px;
-            text-shadow: 2px 2px #000;
-        }
+        body { font-family: 'Press Start 2P', Arial, sans-serif; background: #0f172a; color: #fff; margin: 0; padding: 20px; text-align: center; }
+        h1 { color: #22c55e; text-shadow: 3px 3px #000; font-size: 2rem; margin-bottom: 10px; }
+        #game-container { display: inline-block; background: #1e2937; padding: 15px; border: 8px solid #334155; border-radius: 10px; box-shadow: 0 0 40px rgba(0,0,0,0.9); }
+        canvas { border: 6px solid #111; background: #111; image-rendering: pixelated; }
+        .controls { margin-top: 15px; background: #1e2937; padding: 12px; border-radius: 8px; font-size: 0.7rem; color: #94a3b8; line-height: 1.6; }
+        .health-container { display: flex; justify-content: space-between; width: 800px; margin: 0 auto 10px; }
+        .health-bar { width: 380px; height: 28px; background: #111; border: 4px solid #fff; position: relative; }
+        .health-fill { height: 100%; background: #22c55e; transition: width 0.2s; }
+        .opponent-health .health-fill { background: #ef4444; }
+        button { font-family: 'Press Start 2P', Arial, sans-serif; background: #22c55e; color: white; border: none; padding: 12px 25px; font-size: 0.85rem; cursor: pointer; margin-top: 15px; border-radius: 5px; }
+        button:hover { background: #16a34a; }
+        .winner { font-size: 1.6rem; color: #fbbf24; margin-top: 15px; text-shadow: 2px 2px #000; }
     </style>
 </head>
 <body>
-    <h1>🥊 BOXING GAME</h1>
+    <h1>🥋 JOGO DE LUTA 2D</h1>
     
     <div id="game-container">
-        <!-- Health Bars -->
-        <div class="player-health">
-            <div style="margin-bottom: 5px; font-size: 0.7rem;">VOCÊ</div>
-            <div class="health-bar">
-                <div id="player-health" class="health-fill" style="width: 100%;"></div>
+        <div class="health-container">
+            <div>
+                <div style="margin-bottom: 5px; font-size: 0.7rem; text-align: left;">VOCÊ (Jogador 1)</div>
+                <div class="health-bar">
+                    <div id="player-health" class="health-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+            <div class="opponent-health">
+                <div style="margin-bottom: 5px; font-size: 0.7rem; text-align: right;">OPONENTE (CPU)</div>
+                <div class="health-bar">
+                    <div id="opponent-health" class="health-fill" style="width: 100%;"></div>
+                </div>
             </div>
         </div>
         
         <canvas id="game" width="800" height="500"></canvas>
         
-        <div class="opponent-health">
-            <div style="margin-top: 10px; margin-bottom: 5px; font-size: 0.7rem;">OPONENTE</div>
-            <div class="health-bar">
-                <div id="opponent-health" class="health-fill" style="width: 100%;"></div>
-            </div>
+        <div class="controls">
+            <strong>Controles do Jogador 1:</strong><br>
+            <strong>A / D</strong> = Mover &nbsp;&nbsp; 
+            <strong>W</strong> = Pular &nbsp;&nbsp; 
+            <strong>J</strong> = Soco &nbsp;&nbsp; 
+            <strong>K</strong> = Chute &nbsp;&nbsp; 
+            <strong>L</strong> = Especial (Hadouken)<br>
+            <strong>Espaço</strong> = Reiniciar
         </div>
-    </div>
-    
-    <div class="controls">
-        <strong>Controles:</strong><br>
-        <strong>A</strong> = Soco Esquerdo &nbsp;&nbsp; 
-        <strong>D</strong> = Soco Direito &nbsp;&nbsp; 
-        <strong>S</strong> = Bloquear &nbsp;&nbsp; 
-        <strong>W</strong> = Uppercut<br><br>
-        <strong>ESPAÇO</strong> = Reiniciar luta
     </div>
     
     <button onclick="restartGame()">🔄 REINICIAR LUTA</button>
@@ -133,281 +60,232 @@
         const canvas = document.getElementById('game');
         const ctx = canvas.getContext('2d');
         
-        let player = {
-            x: 200, y: 280,
-            width: 60, height: 120,
-            health: 100,
-            punching: false,
-            punchType: 0,
-            blocking: false,
-            punchTimer: 0
-        };
+        let player = { x: 180, y: 300, width: 50, height: 100, vx: 0, vy: 0, health: 100, onGround: true, attacking: false, attackType: '', attackTimer: 0, blocking: false };
+        let opponent = { x: 570, y: 300, width: 50, height: 100, vx: 0, vy: 0, health: 100, onGround: true, attacking: false, attackType: '', attackTimer: 0, blocking: false, aiTimer: 0 };
         
-        let opponent = {
-            x: 540, y: 280,
-            width: 60, height: 120,
-            health: 100,
-            punching: false,
-            punchType: 0,
-            blocking: false,
-            punchTimer: 0,
-            aiTimer: 0
-        };
-        
+        let projectiles = [];
+        let particles = [];
         let gameOver = false;
         let winner = '';
         let keys = {};
-        let particles = [];
         
         document.addEventListener('keydown', (e) => {
             keys[e.key.toLowerCase()] = true;
-            
             if (!gameOver) {
-                if (e.key.toLowerCase() === 'a') playerPunch(0);
-                if (e.key.toLowerCase() === 'd') playerPunch(1);
-                if (e.key.toLowerCase() === 'w') playerPunch(2);
-                if (e.key.toLowerCase() === 's') player.blocking = true;
+                if (e.key.toLowerCase() === 'j') playerAttack('punch');
+                if (e.key.toLowerCase() === 'k') playerAttack('kick');
+                if (e.key.toLowerCase() === 'l') playerSpecial();
+                if (e.key.toLowerCase() === 'w' && player.onGround) { player.vy = -12; player.onGround = false; }
             }
-            
-            if (e.key === ' ') {
-                e.preventDefault();
-                if (gameOver) restartGame();
-            }
+            if (e.key === ' ') { e.preventDefault(); if (gameOver) restartGame(); }
         });
         
-        document.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
-            if (e.key.toLowerCase() === 's') player.blocking = false;
-        });
+        document.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
         
-        function playerPunch(type) {
-            if (player.punching || player.blocking) return;
-            
-            player.punching = true;
-            player.punchType = type;
-            player.punchTimer = 15;
+        function playerAttack(type) {
+            if (player.attacking || player.blocking) return;
+            player.attacking = true;
+            player.attackType = type;
+            player.attackTimer = type === 'kick' ? 18 : 12;
             
             setTimeout(() => {
                 if (!gameOver && checkHit(player, opponent)) {
-                    let damage = type === 2 ? 15 : 8;
-                    
+                    let damage = type === 'kick' ? 12 : 8;
                     if (!opponent.blocking) {
                         opponent.health -= damage;
-                        createHitEffect(opponent.x + opponent.width/2, opponent.y + 30);
-                        
+                        createHitEffect(opponent.x + 25, opponent.y + 40);
                         if (opponent.health <= 0) endGame('Você venceu!');
-                    } else {
-                        opponent.health -= Math.floor(damage * 0.3);
                     }
                 }
-            }, 120);
+            }, 100);
         }
         
-        function opponentPunch(type) {
-            if (opponent.punching || opponent.blocking || gameOver) return;
+        function playerSpecial() {
+            if (player.attacking || projectiles.length > 2) return;
+            player.attacking = true;
+            player.attackType = 'special';
+            player.attackTimer = 20;
             
-            opponent.punching = true;
-            opponent.punchType = type;
-            opponent.punchTimer = 15;
+            projectiles.push({ x: player.x + player.width, y: player.y + 45, vx: 6, size: 18, life: 80, isPlayer: true });
+            createHitEffect(player.x + player.width + 10, player.y + 45);
+        }
+        
+        function opponentAttack(type) {
+            if (opponent.attacking || opponent.blocking) return;
+            opponent.attacking = true;
+            opponent.attackType = type;
+            opponent.attackTimer = type === 'kick' ? 18 : 12;
             
             setTimeout(() => {
                 if (!gameOver && checkHit(opponent, player)) {
-                    let damage = type === 2 ? 12 : 7;
-                    
+                    let damage = type === 'kick' ? 10 : 7;
                     if (!player.blocking) {
                         player.health -= damage;
-                        createHitEffect(player.x + player.width/2, player.y + 30);
-                        
+                        createHitEffect(player.x + 25, player.y + 40);
                         if (player.health <= 0) endGame('Oponente venceu!');
                     }
                 }
-            }, 120);
+            }, 100);
+        }
+        
+        function opponentSpecial() {
+            if (opponent.attacking || projectiles.length > 3) return;
+            opponent.attacking = true;
+            opponent.attackType = 'special';
+            opponent.attackTimer = 20;
+            projectiles.push({ x: opponent.x - 20, y: opponent.y + 45, vx: -6, size: 18, life: 80, isPlayer: false });
         }
         
         function checkHit(attacker, defender) {
-            const attackX = attacker.x + (attacker === player ? attacker.width : 0);
-            const distance = Math.abs(attackX - defender.x);
-            return distance < 80;
+            return Math.abs(attacker.x - defender.x) < 70;
         }
         
         function createHitEffect(x, y) {
-            for (let i = 0; i < 8; i++) {
-                particles.push({
-                    x: x, y: y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    life: 15 + Math.random() * 10,
-                    size: 3 + Math.random() * 3
-                });
+            for (let i = 0; i < 10; i++) {
+                particles.push({ x: x, y: y, vx: (Math.random()-0.5)*5, vy: (Math.random()-0.5)*5, life: 12 + Math.random()*8, size: 2 + Math.random()*3 });
             }
         }
         
         function updateParticles() {
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life--;
+                p.x += p.vx; p.y += p.vy; p.life--;
                 if (p.life <= 0) particles.splice(i, 1);
             }
         }
         
-        function drawParticles() {
-            ctx.fillStyle = '#fbbf24';
-            for (const p of particles) {
-                ctx.globalAlpha = p.life / 20;
-                ctx.fillRect(p.x, p.y, p.size, p.size);
+        function updateProjectiles() {
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const p = projectiles[i];
+                p.x += p.vx; p.life--;
+                
+                if (p.isPlayer && p.x > opponent.x && p.x < opponent.x + opponent.width) {
+                    if (!opponent.blocking) { opponent.health -= 15; createHitEffect(p.x, p.y); if (opponent.health <= 0) endGame('Você venceu!'); }
+                    projectiles.splice(i, 1); continue;
+                }
+                if (!p.isPlayer && p.x < player.x + player.width && p.x > player.x) {
+                    if (!player.blocking) { player.health -= 12; createHitEffect(p.x, p.y); if (player.health <= 0) endGame('Oponente venceu!'); }
+                    projectiles.splice(i, 1); continue;
+                }
+                if (p.life <= 0 || p.x < 0 || p.x > canvas.width) projectiles.splice(i, 1);
             }
-            ctx.globalAlpha = 1;
         }
         
         function updateOpponentAI() {
             if (gameOver) return;
             opponent.aiTimer++;
+            const distance = Math.abs(player.x - opponent.x);
             
-            if (opponent.aiTimer > 40) {
+            if (distance > 120) {
+                if (opponent.x > player.x) opponent.x -= 2.5;
+                else opponent.x += 2.5;
+            }
+            
+            if (opponent.aiTimer > 35) {
                 opponent.aiTimer = 0;
-                const distance = Math.abs(player.x - opponent.x);
-                
-                if (distance < 120) {
-                    if (Math.random() < 0.6) {
-                        opponentPunch(Math.floor(Math.random() * 3));
-                    } else {
-                        opponent.blocking = true;
-                        setTimeout(() => opponent.blocking = false, 600);
-                    }
-                } else {
-                    if (opponent.x > player.x + 100) opponent.x -= 3;
-                    else if (opponent.x < player.x - 100) opponent.x += 3;
+                if (distance < 80) {
+                    if (Math.random() < 0.5) opponentAttack('punch');
+                    else opponentAttack('kick');
+                } else if (distance < 200 && Math.random() < 0.3) {
+                    opponentSpecial();
                 }
             }
             
-            if (opponent.health < 40 && Math.random() < 0.02) {
+            if (opponent.health < 35 && Math.random() < 0.03) {
                 opponent.blocking = true;
-                setTimeout(() => opponent.blocking = false, 800);
+                setTimeout(() => opponent.blocking = false, 700);
             }
+        }
+        
+        function updatePhysics() {
+            if (keys['a']) player.x -= 4;
+            if (keys['d']) player.x += 4;
+            
+            player.vy += 0.6;
+            player.y += player.vy;
+            if (player.y > 300) { player.y = 300; player.vy = 0; player.onGround = true; }
+            if (player.x < 50) player.x = 50;
+            if (player.x > 350) player.x = 350;
+            
+            opponent.vy += 0.6;
+            opponent.y += opponent.vy;
+            if (opponent.y > 300) { opponent.y = 300; opponent.vy = 0; opponent.onGround = true; }
+            if (opponent.x < 450) opponent.x = 450;
+            if (opponent.x > 750) opponent.x = 750;
         }
         
         function drawBackground() {
-            ctx.fillStyle = '#1f2937';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#374151';
-            ctx.fillRect(0, 380, canvas.width, 120);
-            
-            ctx.strokeStyle = '#9ca3af';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(50, 400, 700, 60);
-            
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 8;
-            ctx.beginPath(); ctx.moveTo(50, 320); ctx.lineTo(750, 320); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(50, 350); ctx.lineTo(750, 350); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(50, 380); ctx.lineTo(750, 380); ctx.stroke();
-            
-            ctx.fillStyle = '#111827';
-            ctx.fillRect(45, 280, 15, 200);
-            ctx.fillRect(740, 280, 15, 200);
-            
-            ctx.fillStyle = '#1e3a8a';
-            ctx.fillRect(0, 0, canvas.width, 200);
-            
-            for (let i = 0; i < 15; i++) {
-                const px = 30 + i * 52;
-                ctx.fillStyle = ['#22c55e', '#3b82f6', '#eab308', '#ec4899'][i % 4];
-                ctx.fillRect(px, 50 + Math.sin(i) * 20, 20, 35);
-                ctx.fillStyle = '#111827';
-                ctx.fillRect(px + 5, 45 + Math.sin(i) * 20, 10, 10);
-            }
+            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(0, 0, canvas.width, 280);
+            ctx.fillStyle = '#334155'; ctx.fillRect(0, 350, canvas.width, 150);
+            ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2;
+            for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.moveTo(0, 380 + i*12); ctx.lineTo(canvas.width, 380 + i*12); ctx.stroke(); }
+            ctx.fillStyle = '#1e2937'; ctx.fillRect(100, 150, 8, 200); ctx.fillRect(692, 150, 8, 200);
+            ctx.fillStyle = '#fbbf24'; ctx.fillRect(85, 140, 40, 15); ctx.fillRect(677, 140, 40, 15);
         }
         
         function drawFighter(fighter, isPlayer) {
-            const x = fighter.x;
-            const y = fighter.y;
-            
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
-            ctx.fillRect(x + 5, y + fighter.height - 5, fighter.width - 10, 8);
-            
-            ctx.fillStyle = isPlayer ? '#3b82f6' : '#ef4444';
-            ctx.fillRect(x + 10, y + 40, fighter.width - 20, 60);
-            
-            ctx.fillStyle = '#f5cba7';
-            ctx.fillRect(x + 15, y + 15, 30, 30);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x + 15, y + 15, 30, 30);
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(x + 22, y + 25, 4, 4);
-            ctx.fillRect(x + 34, y + 25, 4, 4);
-            
+            const x = fighter.x; const y = fighter.y;
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(x + 5, y + fighter.height - 5, fighter.width - 10, 8);
+            ctx.fillStyle = isPlayer ? '#22c55e' : '#ef4444'; ctx.fillRect(x + 8, y + 35, fighter.width - 16, 55);
+            ctx.fillStyle = '#f5cba7'; ctx.fillRect(x + 10, y + 10, 30, 28);
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.strokeRect(x + 10, y + 10, 30, 28);
+            ctx.fillStyle = '#000'; ctx.fillRect(x + 16, y + 18, 5, 5); ctx.fillRect(x + 28, y + 18, 5, 5);
             ctx.fillStyle = '#f5cba7';
             
-            if (fighter.punching) {
-                const punchProgress = 1 - (fighter.punchTimer / 15);
-                
-                if (fighter.punchType === 0) {
-                    ctx.fillRect(x - 20 + punchProgress * 30, y + 45, 25, 12);
-                } else if (fighter.punchType === 1) {
-                    ctx.fillRect(x + fighter.width - 5 - punchProgress * 30, y + 45, 25, 12);
-                } else {
-                    ctx.fillRect(x + 5, y + 30 - punchProgress * 40, 15, 25);
-                    ctx.fillRect(x + fighter.width - 20, y + 30 - punchProgress * 40, 15, 25);
-                }
+            if (fighter.attacking) {
+                const progress = 1 - (fighter.attackTimer / (fighter.attackType === 'kick' ? 18 : 12));
+                if (fighter.attackType === 'punch') ctx.fillRect(x + fighter.width - 5 + progress * 25, y + 40, 22, 10);
+                else if (fighter.attackType === 'kick') ctx.fillRect(x + fighter.width - 5 + progress * 35, y + 70, 28, 12);
+                else if (fighter.attackType === 'special') ctx.fillRect(x + fighter.width - 5, y + 35, 25, 12);
             } else {
-                ctx.fillRect(x - 5, y + 45, 15, 35);
-                ctx.fillRect(x + fighter.width - 10, y + 45, 15, 35);
+                ctx.fillRect(x - 8, y + 38, 18, 30); ctx.fillRect(x + fighter.width - 10, y + 38, 18, 30);
             }
             
-            ctx.fillStyle = '#1e40af';
-            ctx.fillRect(x + 12, y + 95, 12, 25);
-            ctx.fillRect(x + 36, y + 95, 12, 25);
+            ctx.fillStyle = '#1e40af'; ctx.fillRect(x + 10, y + 85, 12, 20); ctx.fillRect(x + 28, y + 85, 12, 20);
             
-            ctx.fillStyle = isPlayer ? '#1e40af' : '#b91c1c';
-            if (!fighter.punching) {
-                ctx.fillRect(x - 8, y + 70, 18, 18);
-                ctx.fillRect(x + fighter.width - 10, y + 70, 18, 18);
+            if (fighter.blocking) { ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 5; ctx.strokeRect(x - 8, y + 20, fighter.width + 16, fighter.height - 15); }
+        }
+        
+        function drawProjectiles() {
+            for (const p of projectiles) {
+                ctx.fillStyle = p.isPlayer ? '#22c55e' : '#ef4444';
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                ctx.fillStyle = p.isPlayer ? '#86efac' : '#fca5a5';
+                ctx.fillRect(p.x + 3, p.y + 3, p.size - 6, p.size - 6);
             }
-            
-            if (fighter.blocking) {
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x - 5, y + 30, fighter.width + 10, fighter.height - 20);
-            }
+        }
+        
+        function drawParticles() {
+            ctx.fillStyle = '#fbbf24';
+            for (const p of particles) { ctx.globalAlpha = p.life / 18; ctx.fillRect(p.x, p.y, p.size, p.size); }
+            ctx.globalAlpha = 1;
         }
         
         function draw() {
             drawBackground();
             drawFighter(player, true);
             drawFighter(opponent, false);
+            drawProjectiles();
             drawParticles();
             
-            document.getElementById('player-health').style.width = player.health + '%';
-            document.getElementById('opponent-health').style.width = opponent.health + '%';
+            document.getElementById('player-health').style.width = Math.max(0, player.health) + '%';
+            document.getElementById('opponent-health').style.width = Math.max(0, opponent.health) + '%';
             
             if (gameOver) {
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.fillRect(0, 180, canvas.width, 140);
-                ctx.fillStyle = '#fbbf24';
-                ctx.font = 'bold 32px "Press Start 2P"';
-                ctx.fillText(winner, canvas.width/2 - 180, 260);
+                ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0, 160, canvas.width, 180);
+                ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 28px "Press Start 2P"'; ctx.fillText(winner, canvas.width/2 - 160, 250);
             }
         }
         
         function update() {
             if (gameOver) return;
             
-            if (player.punching) {
-                player.punchTimer--;
-                if (player.punchTimer <= 0) player.punching = false;
-            }
+            if (player.attacking) { player.attackTimer--; if (player.attackTimer <= 0) player.attacking = false; }
+            if (opponent.attacking) { opponent.attackTimer--; if (opponent.attackTimer <= 0) opponent.attacking = false; }
             
-            if (opponent.punching) {
-                opponent.punchTimer--;
-                if (opponent.punchTimer <= 0) opponent.punching = false;
-            }
-            
+            updatePhysics();
             updateOpponentAI();
+            updateProjectiles();
             updateParticles();
             
             if (player.health <= 0) endGame('Oponente venceu!');
@@ -415,58 +293,22 @@
         }
         
         function endGame(message) {
-            gameOver = true;
-            winner = message;
+            gameOver = true; winner = message;
             document.getElementById('winner-text').textContent = message;
             document.getElementById('winner-text').style.display = 'block';
         }
         
         function restartGame() {
-            player.health = 100; player.x = 200; player.punching = false; player.blocking = false;
-            opponent.health = 100; opponent.x = 540; opponent.punching = false; opponent.blocking = false;
-            gameOver = false; winner = ''; particles = [];
+            player.health = 100; player.x = 180; player.y = 300; player.vy = 0; player.attacking = false; player.blocking = false;
+            opponent.health = 100; opponent.x = 570; opponent.y = 300; opponent.vy = 0; opponent.attacking = false; opponent.blocking = false;
+            gameOver = false; winner = ''; projectiles = []; particles = [];
             document.getElementById('winner-text').style.display = 'none';
             document.getElementById('player-health').style.width = '100%';
             document.getElementById('opponent-health').style.width = '100%';
         }
         
-        function updateOpponentAI() {
-            if (gameOver) return;
-            opponent.aiTimer++;
-            
-            if (opponent.aiTimer > 40) {
-                opponent.aiTimer = 0;
-                const distance = Math.abs(player.x - opponent.x);
-                
-                if (distance < 120) {
-                    if (Math.random() < 0.6) {
-                        opponentPunch(Math.floor(Math.random() * 3));
-                    } else {
-                        opponent.blocking = true;
-                        setTimeout(() => opponent.blocking = false, 600);
-                    }
-                } else {
-                    if (opponent.x > player.x + 100) opponent.x -= 3;
-                    else if (opponent.x < player.x - 100) opponent.x += 3;
-                }
-            }
-            
-            if (opponent.health < 40 && Math.random() < 0.02) {
-                opponent.blocking = true;
-                setTimeout(() => opponent.blocking = false, 800);
-            }
-        }
-        
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-        
-        function startGame() {
-            gameLoop();
-        }
-        
+        function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+        function startGame() { gameLoop(); }
         window.onload = startGame;
     </script>
 </body>
@@ -475,126 +317,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boxing Game - Quase Real</title>
+    <title>Jogo de Luta 2D</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap');
-        
-        body {
-            font-family: 'Press Start 2P', Arial, sans-serif;
-            background: #111;
-            color: #fff;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        h1 {
-            color: #ef4444;
-            text-shadow: 3px 3px #000;
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-        
-        #game-container {
-            display: inline-block;
-            background: #1f2937;
-            padding: 15px;
-            border: 8px solid #374151;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-        }
-        
-        canvas {
-            border: 6px solid #111;
-            background: #111;
-            image-rendering: pixelated;
-        }
-        
-        .controls {
-            margin-top: 15px;
-            background: #1f2937;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            color: #9ca3af;
-        }
-        
-        .health-bar {
-            width: 300px;
-            height: 25px;
-            background: #111;
-            border: 3px solid #fff;
-            margin: 0 auto 10px;
-            position: relative;
-        }
-        
-        .health-fill {
-            height: 100%;
-            background: #22c55e;
-            transition: width 0.2s;
-        }
-        
-        .player-health {
-            margin-bottom: 15px;
-        }
-        
-        .opponent-health .health-fill {
-            background: #ef4444;
-        }
-        
-        button {
-            font-family: 'Press Start 2P', Arial, sans-serif;
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-top: 15px;
-            border-radius: 5px;
-        }
-        
-        button:hover {
-            background: #dc2626;
-        }
-        
-        .winner {
-            font-size: 1.8rem;
-            color: #fbbf24;
-            margin-top: 15px;
-            text-shadow: 2px 2px #000;
-        }
+        body { font-family: 'Press Start 2P', Arial, sans-serif; background: #0f172a; color: #fff; margin: 0; padding: 20px; text-align: center; }
+        h1 { color: #22c55e; text-shadow: 3px 3px #000; font-size: 2rem; margin-bottom: 10px; }
+        #game-container { display: inline-block; background: #1e2937; padding: 15px; border: 8px solid #334155; border-radius: 10px; box-shadow: 0 0 40px rgba(0,0,0,0.9); }
+        canvas { border: 6px solid #111; background: #111; image-rendering: pixelated; }
+        .controls { margin-top: 15px; background: #1e2937; padding: 12px; border-radius: 8px; font-size: 0.7rem; color: #94a3b8; line-height: 1.6; }
+        .health-container { display: flex; justify-content: space-between; width: 800px; margin: 0 auto 10px; }
+        .health-bar { width: 380px; height: 28px; background: #111; border: 4px solid #fff; position: relative; }
+        .health-fill { height: 100%; background: #22c55e; transition: width 0.2s; }
+        .opponent-health .health-fill { background: #ef4444; }
+        button { font-family: 'Press Start 2P', Arial, sans-serif; background: #22c55e; color: white; border: none; padding: 12px 25px; font-size: 0.85rem; cursor: pointer; margin-top: 15px; border-radius: 5px; }
+        button:hover { background: #16a34a; }
+        .winner { font-size: 1.6rem; color: #fbbf24; margin-top: 15px; text-shadow: 2px 2px #000; }
     </style>
 </head>
 <body>
-    <h1>🥊 BOXING GAME</h1>
+    <h1>🥋 JOGO DE LUTA 2D</h1>
     
     <div id="game-container">
-        <!-- Health Bars -->
-        <div class="player-health">
-            <div style="margin-bottom: 5px; font-size: 0.7rem;">VOCÊ</div>
-            <div class="health-bar">
-                <div id="player-health" class="health-fill" style="width: 100%;"></div>
+        <div class="health-container">
+            <div>
+                <div style="margin-bottom: 5px; font-size: 0.7rem; text-align: left;">VOCÊ (Jogador 1)</div>
+                <div class="health-bar">
+                    <div id="player-health" class="health-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+            <div class="opponent-health">
+                <div style="margin-bottom: 5px; font-size: 0.7rem; text-align: right;">OPONENTE (CPU)</div>
+                <div class="health-bar">
+                    <div id="opponent-health" class="health-fill" style="width: 100%;"></div>
+                </div>
             </div>
         </div>
         
         <canvas id="game" width="800" height="500"></canvas>
         
-        <div class="opponent-health">
-            <div style="margin-top: 10px; margin-bottom: 5px; font-size: 0.7rem;">OPONENTE</div>
-            <div class="health-bar">
-                <div id="opponent-health" class="health-fill" style="width: 100%;"></div>
-            </div>
+        <div class="controls">
+            <strong>Controles do Jogador 1:</strong><br>
+            <strong>A / D</strong> = Mover &nbsp;&nbsp; 
+            <strong>W</strong> = Pular &nbsp;&nbsp; 
+            <strong>J</strong> = Soco &nbsp;&nbsp; 
+            <strong>K</strong> = Chute &nbsp;&nbsp; 
+            <strong>L</strong> = Especial (Hadouken)<br>
+            <strong>Espaço</strong> = Reiniciar
         </div>
-    </div>
-    
-    <div class="controls">
-        <strong>Controles:</strong><br>
-        <strong>A</strong> = Soco Esquerdo &nbsp;&nbsp; 
-        <strong>D</strong> = Soco Direito &nbsp;&nbsp; 
-        <strong>S</strong> = Bloquear &nbsp;&nbsp; 
-        <strong>W</strong> = Uppercut<br><br>
-        <strong>ESPAÇO</strong> = Reiniciar luta
     </div>
     
     <button onclick="restartGame()">🔄 REINICIAR LUTA</button>
@@ -605,281 +374,232 @@
         const canvas = document.getElementById('game');
         const ctx = canvas.getContext('2d');
         
-        let player = {
-            x: 200, y: 280,
-            width: 60, height: 120,
-            health: 100,
-            punching: false,
-            punchType: 0,
-            blocking: false,
-            punchTimer: 0
-        };
+        let player = { x: 180, y: 300, width: 50, height: 100, vx: 0, vy: 0, health: 100, onGround: true, attacking: false, attackType: '', attackTimer: 0, blocking: false };
+        let opponent = { x: 570, y: 300, width: 50, height: 100, vx: 0, vy: 0, health: 100, onGround: true, attacking: false, attackType: '', attackTimer: 0, blocking: false, aiTimer: 0 };
         
-        let opponent = {
-            x: 540, y: 280,
-            width: 60, height: 120,
-            health: 100,
-            punching: false,
-            punchType: 0,
-            blocking: false,
-            punchTimer: 0,
-            aiTimer: 0
-        };
-        
+        let projectiles = [];
+        let particles = [];
         let gameOver = false;
         let winner = '';
         let keys = {};
-        let particles = [];
         
         document.addEventListener('keydown', (e) => {
             keys[e.key.toLowerCase()] = true;
-            
             if (!gameOver) {
-                if (e.key.toLowerCase() === 'a') playerPunch(0);
-                if (e.key.toLowerCase() === 'd') playerPunch(1);
-                if (e.key.toLowerCase() === 'w') playerPunch(2);
-                if (e.key.toLowerCase() === 's') player.blocking = true;
+                if (e.key.toLowerCase() === 'j') playerAttack('punch');
+                if (e.key.toLowerCase() === 'k') playerAttack('kick');
+                if (e.key.toLowerCase() === 'l') playerSpecial();
+                if (e.key.toLowerCase() === 'w' && player.onGround) { player.vy = -12; player.onGround = false; }
             }
-            
-            if (e.key === ' ') {
-                e.preventDefault();
-                if (gameOver) restartGame();
-            }
+            if (e.key === ' ') { e.preventDefault(); if (gameOver) restartGame(); }
         });
         
-        document.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
-            if (e.key.toLowerCase() === 's') player.blocking = false;
-        });
+        document.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
         
-        function playerPunch(type) {
-            if (player.punching || player.blocking) return;
-            
-            player.punching = true;
-            player.punchType = type;
-            player.punchTimer = 15;
+        function playerAttack(type) {
+            if (player.attacking || player.blocking) return;
+            player.attacking = true;
+            player.attackType = type;
+            player.attackTimer = type === 'kick' ? 18 : 12;
             
             setTimeout(() => {
                 if (!gameOver && checkHit(player, opponent)) {
-                    let damage = type === 2 ? 15 : 8;
-                    
+                    let damage = type === 'kick' ? 12 : 8;
                     if (!opponent.blocking) {
                         opponent.health -= damage;
-                        createHitEffect(opponent.x + opponent.width/2, opponent.y + 30);
-                        
+                        createHitEffect(opponent.x + 25, opponent.y + 40);
                         if (opponent.health <= 0) endGame('Você venceu!');
-                    } else {
-                        opponent.health -= Math.floor(damage * 0.3);
                     }
                 }
-            }, 120);
+            }, 100);
         }
         
-        function opponentPunch(type) {
-            if (opponent.punching || opponent.blocking || gameOver) return;
+        function playerSpecial() {
+            if (player.attacking || projectiles.length > 2) return;
+            player.attacking = true;
+            player.attackType = 'special';
+            player.attackTimer = 20;
             
-            opponent.punching = true;
-            opponent.punchType = type;
-            opponent.punchTimer = 15;
+            projectiles.push({ x: player.x + player.width, y: player.y + 45, vx: 6, size: 18, life: 80, isPlayer: true });
+            createHitEffect(player.x + player.width + 10, player.y + 45);
+        }
+        
+        function opponentAttack(type) {
+            if (opponent.attacking || opponent.blocking) return;
+            opponent.attacking = true;
+            opponent.attackType = type;
+            opponent.attackTimer = type === 'kick' ? 18 : 12;
             
             setTimeout(() => {
                 if (!gameOver && checkHit(opponent, player)) {
-                    let damage = type === 2 ? 12 : 7;
-                    
+                    let damage = type === 'kick' ? 10 : 7;
                     if (!player.blocking) {
                         player.health -= damage;
-                        createHitEffect(player.x + player.width/2, player.y + 30);
-                        
+                        createHitEffect(player.x + 25, player.y + 40);
                         if (player.health <= 0) endGame('Oponente venceu!');
                     }
                 }
-            }, 120);
+            }, 100);
+        }
+        
+        function opponentSpecial() {
+            if (opponent.attacking || projectiles.length > 3) return;
+            opponent.attacking = true;
+            opponent.attackType = 'special';
+            opponent.attackTimer = 20;
+            projectiles.push({ x: opponent.x - 20, y: opponent.y + 45, vx: -6, size: 18, life: 80, isPlayer: false });
         }
         
         function checkHit(attacker, defender) {
-            const attackX = attacker.x + (attacker === player ? attacker.width : 0);
-            const distance = Math.abs(attackX - defender.x);
-            return distance < 80;
+            return Math.abs(attacker.x - defender.x) < 70;
         }
         
         function createHitEffect(x, y) {
-            for (let i = 0; i < 8; i++) {
-                particles.push({
-                    x: x, y: y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    life: 15 + Math.random() * 10,
-                    size: 3 + Math.random() * 3
-                });
+            for (let i = 0; i < 10; i++) {
+                particles.push({ x: x, y: y, vx: (Math.random()-0.5)*5, vy: (Math.random()-0.5)*5, life: 12 + Math.random()*8, size: 2 + Math.random()*3 });
             }
         }
         
         function updateParticles() {
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life--;
+                p.x += p.vx; p.y += p.vy; p.life--;
                 if (p.life <= 0) particles.splice(i, 1);
             }
         }
         
-        function drawParticles() {
-            ctx.fillStyle = '#fbbf24';
-            for (const p of particles) {
-                ctx.globalAlpha = p.life / 20;
-                ctx.fillRect(p.x, p.y, p.size, p.size);
+        function updateProjectiles() {
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const p = projectiles[i];
+                p.x += p.vx; p.life--;
+                
+                if (p.isPlayer && p.x > opponent.x && p.x < opponent.x + opponent.width) {
+                    if (!opponent.blocking) { opponent.health -= 15; createHitEffect(p.x, p.y); if (opponent.health <= 0) endGame('Você venceu!'); }
+                    projectiles.splice(i, 1); continue;
+                }
+                if (!p.isPlayer && p.x < player.x + player.width && p.x > player.x) {
+                    if (!player.blocking) { player.health -= 12; createHitEffect(p.x, p.y); if (player.health <= 0) endGame('Oponente venceu!'); }
+                    projectiles.splice(i, 1); continue;
+                }
+                if (p.life <= 0 || p.x < 0 || p.x > canvas.width) projectiles.splice(i, 1);
             }
-            ctx.globalAlpha = 1;
         }
         
         function updateOpponentAI() {
             if (gameOver) return;
             opponent.aiTimer++;
+            const distance = Math.abs(player.x - opponent.x);
             
-            if (opponent.aiTimer > 40) {
+            if (distance > 120) {
+                if (opponent.x > player.x) opponent.x -= 2.5;
+                else opponent.x += 2.5;
+            }
+            
+            if (opponent.aiTimer > 35) {
                 opponent.aiTimer = 0;
-                const distance = Math.abs(player.x - opponent.x);
-                
-                if (distance < 120) {
-                    if (Math.random() < 0.6) {
-                        opponentPunch(Math.floor(Math.random() * 3));
-                    } else {
-                        opponent.blocking = true;
-                        setTimeout(() => opponent.blocking = false, 600);
-                    }
-                } else {
-                    if (opponent.x > player.x + 100) opponent.x -= 3;
-                    else if (opponent.x < player.x - 100) opponent.x += 3;
+                if (distance < 80) {
+                    if (Math.random() < 0.5) opponentAttack('punch');
+                    else opponentAttack('kick');
+                } else if (distance < 200 && Math.random() < 0.3) {
+                    opponentSpecial();
                 }
             }
             
-            if (opponent.health < 40 && Math.random() < 0.02) {
+            if (opponent.health < 35 && Math.random() < 0.03) {
                 opponent.blocking = true;
-                setTimeout(() => opponent.blocking = false, 800);
+                setTimeout(() => opponent.blocking = false, 700);
             }
+        }
+        
+        function updatePhysics() {
+            if (keys['a']) player.x -= 4;
+            if (keys['d']) player.x += 4;
+            
+            player.vy += 0.6;
+            player.y += player.vy;
+            if (player.y > 300) { player.y = 300; player.vy = 0; player.onGround = true; }
+            if (player.x < 50) player.x = 50;
+            if (player.x > 350) player.x = 350;
+            
+            opponent.vy += 0.6;
+            opponent.y += opponent.vy;
+            if (opponent.y > 300) { opponent.y = 300; opponent.vy = 0; opponent.onGround = true; }
+            if (opponent.x < 450) opponent.x = 450;
+            if (opponent.x > 750) opponent.x = 750;
         }
         
         function drawBackground() {
-            ctx.fillStyle = '#1f2937';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#374151';
-            ctx.fillRect(0, 380, canvas.width, 120);
-            
-            ctx.strokeStyle = '#9ca3af';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(50, 400, 700, 60);
-            
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 8;
-            ctx.beginPath(); ctx.moveTo(50, 320); ctx.lineTo(750, 320); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(50, 350); ctx.lineTo(750, 350); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(50, 380); ctx.lineTo(750, 380); ctx.stroke();
-            
-            ctx.fillStyle = '#111827';
-            ctx.fillRect(45, 280, 15, 200);
-            ctx.fillRect(740, 280, 15, 200);
-            
-            ctx.fillStyle = '#1e3a8a';
-            ctx.fillRect(0, 0, canvas.width, 200);
-            
-            for (let i = 0; i < 15; i++) {
-                const px = 30 + i * 52;
-                ctx.fillStyle = ['#22c55e', '#3b82f6', '#eab308', '#ec4899'][i % 4];
-                ctx.fillRect(px, 50 + Math.sin(i) * 20, 20, 35);
-                ctx.fillStyle = '#111827';
-                ctx.fillRect(px + 5, 45 + Math.sin(i) * 20, 10, 10);
-            }
+            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(0, 0, canvas.width, 280);
+            ctx.fillStyle = '#334155'; ctx.fillRect(0, 350, canvas.width, 150);
+            ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2;
+            for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.moveTo(0, 380 + i*12); ctx.lineTo(canvas.width, 380 + i*12); ctx.stroke(); }
+            ctx.fillStyle = '#1e2937'; ctx.fillRect(100, 150, 8, 200); ctx.fillRect(692, 150, 8, 200);
+            ctx.fillStyle = '#fbbf24'; ctx.fillRect(85, 140, 40, 15); ctx.fillRect(677, 140, 40, 15);
         }
         
         function drawFighter(fighter, isPlayer) {
-            const x = fighter.x;
-            const y = fighter.y;
-            
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
-            ctx.fillRect(x + 5, y + fighter.height - 5, fighter.width - 10, 8);
-            
-            ctx.fillStyle = isPlayer ? '#3b82f6' : '#ef4444';
-            ctx.fillRect(x + 10, y + 40, fighter.width - 20, 60);
-            
-            ctx.fillStyle = '#f5cba7';
-            ctx.fillRect(x + 15, y + 15, 30, 30);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x + 15, y + 15, 30, 30);
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(x + 22, y + 25, 4, 4);
-            ctx.fillRect(x + 34, y + 25, 4, 4);
-            
+            const x = fighter.x; const y = fighter.y;
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(x + 5, y + fighter.height - 5, fighter.width - 10, 8);
+            ctx.fillStyle = isPlayer ? '#22c55e' : '#ef4444'; ctx.fillRect(x + 8, y + 35, fighter.width - 16, 55);
+            ctx.fillStyle = '#f5cba7'; ctx.fillRect(x + 10, y + 10, 30, 28);
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.strokeRect(x + 10, y + 10, 30, 28);
+            ctx.fillStyle = '#000'; ctx.fillRect(x + 16, y + 18, 5, 5); ctx.fillRect(x + 28, y + 18, 5, 5);
             ctx.fillStyle = '#f5cba7';
             
-            if (fighter.punching) {
-                const punchProgress = 1 - (fighter.punchTimer / 15);
-                
-                if (fighter.punchType === 0) {
-                    ctx.fillRect(x - 20 + punchProgress * 30, y + 45, 25, 12);
-                } else if (fighter.punchType === 1) {
-                    ctx.fillRect(x + fighter.width - 5 - punchProgress * 30, y + 45, 25, 12);
-                } else {
-                    ctx.fillRect(x + 5, y + 30 - punchProgress * 40, 15, 25);
-                    ctx.fillRect(x + fighter.width - 20, y + 30 - punchProgress * 40, 15, 25);
-                }
+            if (fighter.attacking) {
+                const progress = 1 - (fighter.attackTimer / (fighter.attackType === 'kick' ? 18 : 12));
+                if (fighter.attackType === 'punch') ctx.fillRect(x + fighter.width - 5 + progress * 25, y + 40, 22, 10);
+                else if (fighter.attackType === 'kick') ctx.fillRect(x + fighter.width - 5 + progress * 35, y + 70, 28, 12);
+                else if (fighter.attackType === 'special') ctx.fillRect(x + fighter.width - 5, y + 35, 25, 12);
             } else {
-                ctx.fillRect(x - 5, y + 45, 15, 35);
-                ctx.fillRect(x + fighter.width - 10, y + 45, 15, 35);
+                ctx.fillRect(x - 8, y + 38, 18, 30); ctx.fillRect(x + fighter.width - 10, y + 38, 18, 30);
             }
             
-            ctx.fillStyle = '#1e40af';
-            ctx.fillRect(x + 12, y + 95, 12, 25);
-            ctx.fillRect(x + 36, y + 95, 12, 25);
+            ctx.fillStyle = '#1e40af'; ctx.fillRect(x + 10, y + 85, 12, 20); ctx.fillRect(x + 28, y + 85, 12, 20);
             
-            ctx.fillStyle = isPlayer ? '#1e40af' : '#b91c1c';
-            if (!fighter.punching) {
-                ctx.fillRect(x - 8, y + 70, 18, 18);
-                ctx.fillRect(x + fighter.width - 10, y + 70, 18, 18);
+            if (fighter.blocking) { ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 5; ctx.strokeRect(x - 8, y + 20, fighter.width + 16, fighter.height - 15); }
+        }
+        
+        function drawProjectiles() {
+            for (const p of projectiles) {
+                ctx.fillStyle = p.isPlayer ? '#22c55e' : '#ef4444';
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                ctx.fillStyle = p.isPlayer ? '#86efac' : '#fca5a5';
+                ctx.fillRect(p.x + 3, p.y + 3, p.size - 6, p.size - 6);
             }
-            
-            if (fighter.blocking) {
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x - 5, y + 30, fighter.width + 10, fighter.height - 20);
-            }
+        }
+        
+        function drawParticles() {
+            ctx.fillStyle = '#fbbf24';
+            for (const p of particles) { ctx.globalAlpha = p.life / 18; ctx.fillRect(p.x, p.y, p.size, p.size); }
+            ctx.globalAlpha = 1;
         }
         
         function draw() {
             drawBackground();
             drawFighter(player, true);
             drawFighter(opponent, false);
+            drawProjectiles();
             drawParticles();
             
-            document.getElementById('player-health').style.width = player.health + '%';
-            document.getElementById('opponent-health').style.width = opponent.health + '%';
+            document.getElementById('player-health').style.width = Math.max(0, player.health) + '%';
+            document.getElementById('opponent-health').style.width = Math.max(0, opponent.health) + '%';
             
             if (gameOver) {
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.fillRect(0, 180, canvas.width, 140);
-                ctx.fillStyle = '#fbbf24';
-                ctx.font = 'bold 32px "Press Start 2P"';
-                ctx.fillText(winner, canvas.width/2 - 180, 260);
+                ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0, 160, canvas.width, 180);
+                ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 28px "Press Start 2P"'; ctx.fillText(winner, canvas.width/2 - 160, 250);
             }
         }
         
         function update() {
             if (gameOver) return;
             
-            if (player.punching) {
-                player.punchTimer--;
-                if (player.punchTimer <= 0) player.punching = false;
-            }
+            if (player.attacking) { player.attackTimer--; if (player.attackTimer <= 0) player.attacking = false; }
+            if (opponent.attacking) { opponent.attackTimer--; if (opponent.attackTimer <= 0) opponent.attacking = false; }
             
-            if (opponent.punching) {
-                opponent.punchTimer--;
-                if (opponent.punchTimer <= 0) opponent.punching = false;
-            }
-            
+            updatePhysics();
             updateOpponentAI();
+            updateProjectiles();
             updateParticles();
             
             if (player.health <= 0) endGame('Oponente venceu!');
@@ -887,58 +607,22 @@
         }
         
         function endGame(message) {
-            gameOver = true;
-            winner = message;
+            gameOver = true; winner = message;
             document.getElementById('winner-text').textContent = message;
             document.getElementById('winner-text').style.display = 'block';
         }
         
         function restartGame() {
-            player.health = 100; player.x = 200; player.punching = false; player.blocking = false;
-            opponent.health = 100; opponent.x = 540; opponent.punching = false; opponent.blocking = false;
-            gameOver = false; winner = ''; particles = [];
+            player.health = 100; player.x = 180; player.y = 300; player.vy = 0; player.attacking = false; player.blocking = false;
+            opponent.health = 100; opponent.x = 570; opponent.y = 300; opponent.vy = 0; opponent.attacking = false; opponent.blocking = false;
+            gameOver = false; winner = ''; projectiles = []; particles = [];
             document.getElementById('winner-text').style.display = 'none';
             document.getElementById('player-health').style.width = '100%';
             document.getElementById('opponent-health').style.width = '100%';
         }
         
-        function updateOpponentAI() {
-            if (gameOver) return;
-            opponent.aiTimer++;
-            
-            if (opponent.aiTimer > 40) {
-                opponent.aiTimer = 0;
-                const distance = Math.abs(player.x - opponent.x);
-                
-                if (distance < 120) {
-                    if (Math.random() < 0.6) {
-                        opponentPunch(Math.floor(Math.random() * 3));
-                    } else {
-                        opponent.blocking = true;
-                        setTimeout(() => opponent.blocking = false, 600);
-                    }
-                } else {
-                    if (opponent.x > player.x + 100) opponent.x -= 3;
-                    else if (opponent.x < player.x - 100) opponent.x += 3;
-                }
-            }
-            
-            if (opponent.health < 40 && Math.random() < 0.02) {
-                opponent.blocking = true;
-                setTimeout(() => opponent.blocking = false, 800);
-            }
-        }
-        
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-        
-        function startGame() {
-            gameLoop();
-        }
-        
+        function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+        function startGame() { gameLoop(); }
         window.onload = startGame;
     </script>
 </body>
@@ -947,126 +631,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boxing Game - Quase Real</title>
+    <title>Jogo de Luta 2D</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap');
-        
-        body {
-            font-family: 'Press Start 2P', Arial, sans-serif;
-            background: #111;
-            color: #fff;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        h1 {
-            color: #ef4444;
-            text-shadow: 3px 3px #000;
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-        
-        #game-container {
-            display: inline-block;
-            background: #1f2937;
-            padding: 15px;
-            border: 8px solid #374151;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-        }
-        
-        canvas {
-            border: 6px solid #111;
-            background: #111;
-            image-rendering: pixelated;
-        }
-        
-        .controls {
-            margin-top: 15px;
-            background: #1f2937;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            color: #9ca3af;
-        }
-        
-        .health-bar {
-            width: 300px;
-            height: 25px;
-            background: #111;
-            border: 3px solid #fff;
-            margin: 0 auto 10px;
-            position: relative;
-        }
-        
-        .health-fill {
-            height: 100%;
-            background: #22c55e;
-            transition: width 0.2s;
-        }
-        
-        .player-health {
-            margin-bottom: 15px;
-        }
-        
-        .opponent-health .health-fill {
-            background: #ef4444;
-        }
-        
-        button {
-            font-family: 'Press Start 2P', Arial, sans-serif;
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-top: 15px;
-            border-radius: 5px;
-        }
-        
-        button:hover {
-            background: #dc2626;
-        }
-        
-        .winner {
-            font-size: 1.8rem;
-            color: #fbbf24;
-            margin-top: 15px;
-            text-shadow: 2px 2px #000;
-        }
+        body { font-family: 'Press Start 2P', Arial, sans-serif; background: #0f172a; color: #fff; margin: 0; padding: 20px; text-align: center; }
+        h1 { color: #22c55e; text-shadow: 3px 3px #000; font-size: 2rem; margin-bottom: 10px; }
+        #game-container { display: inline-block; background: #1e2937; padding: 15px; border: 8px solid #334155; border-radius: 10px; box-shadow: 0 0 40px rgba(0,0,0,0.9); }
+        canvas { border: 6px solid #111; background: #111; image-rendering: pixelated; }
+        .controls { margin-top: 15px; background: #1e2937; padding: 12px; border-radius: 8px; font-size: 0.7rem; color: #94a3b8; line-height: 1.6; }
+        .health-container { display: flex; justify-content: space-between; width: 800px; margin: 0 auto 10px; }
+        .health-bar { width: 380px; height: 28px; background: #111; border: 4px solid #fff; position: relative; }
+        .health-fill { height: 100%; background: #22c55e; transition: width 0.2s; }
+        .opponent-health .health-fill { background: #ef4444; }
+        button { font-family: 'Press Start 2P', Arial, sans-serif; background: #22c55e; color: white; border: none; padding: 12px 25px; font-size: 0.85rem; cursor: pointer; margin-top: 15px; border-radius: 5px; }
+        button:hover { background: #16a34a; }
+        .winner { font-size: 1.6rem; color: #fbbf24; margin-top: 15px; text-shadow: 2px 2px #000; }
     </style>
 </head>
 <body>
-    <h1>🥊 BOXING GAME</h1>
+    <h1>🥋 JOGO DE LUTA 2D</h1>
     
     <div id="game-container">
-        <!-- Health Bars -->
-        <div class="player-health">
-            <div style="margin-bottom: 5px; font-size: 0.7rem;">VOCÊ</div>
-            <div class="health-bar">
-                <div id="player-health" class="health-fill" style="width: 100%;"></div>
+        <div class="health-container">
+            <div>
+                <div style="margin-bottom: 5px; font-size: 0.7rem; text-align: left;">VOCÊ (Jogador 1)</div>
+                <div class="health-bar">
+                    <div id="player-health" class="health-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+            <div class="opponent-health">
+                <div style="margin-bottom: 5px; font-size: 0.7rem; text-align: right;">OPONENTE (CPU)</div>
+                <div class="health-bar">
+                    <div id="opponent-health" class="health-fill" style="width: 100%;"></div>
+                </div>
             </div>
         </div>
         
         <canvas id="game" width="800" height="500"></canvas>
         
-        <div class="opponent-health">
-            <div style="margin-top: 10px; margin-bottom: 5px; font-size: 0.7rem;">OPONENTE</div>
-            <div class="health-bar">
-                <div id="opponent-health" class="health-fill" style="width: 100%;"></div>
-            </div>
+        <div class="controls">
+            <strong>Controles do Jogador 1:</strong><br>
+            <strong>A / D</strong> = Mover &nbsp;&nbsp; 
+            <strong>W</strong> = Pular &nbsp;&nbsp; 
+            <strong>J</strong> = Soco &nbsp;&nbsp; 
+            <strong>K</strong> = Chute &nbsp;&nbsp; 
+            <strong>L</strong> = Especial (Hadouken)<br>
+            <strong>Espaço</strong> = Reiniciar
         </div>
-    </div>
-    
-    <div class="controls">
-        <strong>Controles:</strong><br>
-        <strong>A</strong> = Soco Esquerdo &nbsp;&nbsp; 
-        <strong>D</strong> = Soco Direito &nbsp;&nbsp; 
-        <strong>S</strong> = Bloquear &nbsp;&nbsp; 
-        <strong>W</strong> = Uppercut<br><br>
-        <strong>ESPAÇO</strong> = Reiniciar luta
     </div>
     
     <button onclick="restartGame()">🔄 REINICIAR LUTA</button>
@@ -1077,281 +688,232 @@
         const canvas = document.getElementById('game');
         const ctx = canvas.getContext('2d');
         
-        let player = {
-            x: 200, y: 280,
-            width: 60, height: 120,
-            health: 100,
-            punching: false,
-            punchType: 0,
-            blocking: false,
-            punchTimer: 0
-        };
+        let player = { x: 180, y: 300, width: 50, height: 100, vx: 0, vy: 0, health: 100, onGround: true, attacking: false, attackType: '', attackTimer: 0, blocking: false };
+        let opponent = { x: 570, y: 300, width: 50, height: 100, vx: 0, vy: 0, health: 100, onGround: true, attacking: false, attackType: '', attackTimer: 0, blocking: false, aiTimer: 0 };
         
-        let opponent = {
-            x: 540, y: 280,
-            width: 60, height: 120,
-            health: 100,
-            punching: false,
-            punchType: 0,
-            blocking: false,
-            punchTimer: 0,
-            aiTimer: 0
-        };
-        
+        let projectiles = [];
+        let particles = [];
         let gameOver = false;
         let winner = '';
         let keys = {};
-        let particles = [];
         
         document.addEventListener('keydown', (e) => {
             keys[e.key.toLowerCase()] = true;
-            
             if (!gameOver) {
-                if (e.key.toLowerCase() === 'a') playerPunch(0);
-                if (e.key.toLowerCase() === 'd') playerPunch(1);
-                if (e.key.toLowerCase() === 'w') playerPunch(2);
-                if (e.key.toLowerCase() === 's') player.blocking = true;
+                if (e.key.toLowerCase() === 'j') playerAttack('punch');
+                if (e.key.toLowerCase() === 'k') playerAttack('kick');
+                if (e.key.toLowerCase() === 'l') playerSpecial();
+                if (e.key.toLowerCase() === 'w' && player.onGround) { player.vy = -12; player.onGround = false; }
             }
-            
-            if (e.key === ' ') {
-                e.preventDefault();
-                if (gameOver) restartGame();
-            }
+            if (e.key === ' ') { e.preventDefault(); if (gameOver) restartGame(); }
         });
         
-        document.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
-            if (e.key.toLowerCase() === 's') player.blocking = false;
-        });
+        document.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
         
-        function playerPunch(type) {
-            if (player.punching || player.blocking) return;
-            
-            player.punching = true;
-            player.punchType = type;
-            player.punchTimer = 15;
+        function playerAttack(type) {
+            if (player.attacking || player.blocking) return;
+            player.attacking = true;
+            player.attackType = type;
+            player.attackTimer = type === 'kick' ? 18 : 12;
             
             setTimeout(() => {
                 if (!gameOver && checkHit(player, opponent)) {
-                    let damage = type === 2 ? 15 : 8;
-                    
+                    let damage = type === 'kick' ? 12 : 8;
                     if (!opponent.blocking) {
                         opponent.health -= damage;
-                        createHitEffect(opponent.x + opponent.width/2, opponent.y + 30);
-                        
+                        createHitEffect(opponent.x + 25, opponent.y + 40);
                         if (opponent.health <= 0) endGame('Você venceu!');
-                    } else {
-                        opponent.health -= Math.floor(damage * 0.3);
                     }
                 }
-            }, 120);
+            }, 100);
         }
         
-        function opponentPunch(type) {
-            if (opponent.punching || opponent.blocking || gameOver) return;
+        function playerSpecial() {
+            if (player.attacking || projectiles.length > 2) return;
+            player.attacking = true;
+            player.attackType = 'special';
+            player.attackTimer = 20;
             
-            opponent.punching = true;
-            opponent.punchType = type;
-            opponent.punchTimer = 15;
+            projectiles.push({ x: player.x + player.width, y: player.y + 45, vx: 6, size: 18, life: 80, isPlayer: true });
+            createHitEffect(player.x + player.width + 10, player.y + 45);
+        }
+        
+        function opponentAttack(type) {
+            if (opponent.attacking || opponent.blocking) return;
+            opponent.attacking = true;
+            opponent.attackType = type;
+            opponent.attackTimer = type === 'kick' ? 18 : 12;
             
             setTimeout(() => {
                 if (!gameOver && checkHit(opponent, player)) {
-                    let damage = type === 2 ? 12 : 7;
-                    
+                    let damage = type === 'kick' ? 10 : 7;
                     if (!player.blocking) {
                         player.health -= damage;
-                        createHitEffect(player.x + player.width/2, player.y + 30);
-                        
+                        createHitEffect(player.x + 25, player.y + 40);
                         if (player.health <= 0) endGame('Oponente venceu!');
                     }
                 }
-            }, 120);
+            }, 100);
+        }
+        
+        function opponentSpecial() {
+            if (opponent.attacking || projectiles.length > 3) return;
+            opponent.attacking = true;
+            opponent.attackType = 'special';
+            opponent.attackTimer = 20;
+            projectiles.push({ x: opponent.x - 20, y: opponent.y + 45, vx: -6, size: 18, life: 80, isPlayer: false });
         }
         
         function checkHit(attacker, defender) {
-            const attackX = attacker.x + (attacker === player ? attacker.width : 0);
-            const distance = Math.abs(attackX - defender.x);
-            return distance < 80;
+            return Math.abs(attacker.x - defender.x) < 70;
         }
         
         function createHitEffect(x, y) {
-            for (let i = 0; i < 8; i++) {
-                particles.push({
-                    x: x, y: y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    life: 15 + Math.random() * 10,
-                    size: 3 + Math.random() * 3
-                });
+            for (let i = 0; i < 10; i++) {
+                particles.push({ x: x, y: y, vx: (Math.random()-0.5)*5, vy: (Math.random()-0.5)*5, life: 12 + Math.random()*8, size: 2 + Math.random()*3 });
             }
         }
         
         function updateParticles() {
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life--;
+                p.x += p.vx; p.y += p.vy; p.life--;
                 if (p.life <= 0) particles.splice(i, 1);
             }
         }
         
-        function drawParticles() {
-            ctx.fillStyle = '#fbbf24';
-            for (const p of particles) {
-                ctx.globalAlpha = p.life / 20;
-                ctx.fillRect(p.x, p.y, p.size, p.size);
+        function updateProjectiles() {
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const p = projectiles[i];
+                p.x += p.vx; p.life--;
+                
+                if (p.isPlayer && p.x > opponent.x && p.x < opponent.x + opponent.width) {
+                    if (!opponent.blocking) { opponent.health -= 15; createHitEffect(p.x, p.y); if (opponent.health <= 0) endGame('Você venceu!'); }
+                    projectiles.splice(i, 1); continue;
+                }
+                if (!p.isPlayer && p.x < player.x + player.width && p.x > player.x) {
+                    if (!player.blocking) { player.health -= 12; createHitEffect(p.x, p.y); if (player.health <= 0) endGame('Oponente venceu!'); }
+                    projectiles.splice(i, 1); continue;
+                }
+                if (p.life <= 0 || p.x < 0 || p.x > canvas.width) projectiles.splice(i, 1);
             }
-            ctx.globalAlpha = 1;
         }
         
         function updateOpponentAI() {
             if (gameOver) return;
             opponent.aiTimer++;
+            const distance = Math.abs(player.x - opponent.x);
             
-            if (opponent.aiTimer > 40) {
+            if (distance > 120) {
+                if (opponent.x > player.x) opponent.x -= 2.5;
+                else opponent.x += 2.5;
+            }
+            
+            if (opponent.aiTimer > 35) {
                 opponent.aiTimer = 0;
-                const distance = Math.abs(player.x - opponent.x);
-                
-                if (distance < 120) {
-                    if (Math.random() < 0.6) {
-                        opponentPunch(Math.floor(Math.random() * 3));
-                    } else {
-                        opponent.blocking = true;
-                        setTimeout(() => opponent.blocking = false, 600);
-                    }
-                } else {
-                    if (opponent.x > player.x + 100) opponent.x -= 3;
-                    else if (opponent.x < player.x - 100) opponent.x += 3;
+                if (distance < 80) {
+                    if (Math.random() < 0.5) opponentAttack('punch');
+                    else opponentAttack('kick');
+                } else if (distance < 200 && Math.random() < 0.3) {
+                    opponentSpecial();
                 }
             }
             
-            if (opponent.health < 40 && Math.random() < 0.02) {
+            if (opponent.health < 35 && Math.random() < 0.03) {
                 opponent.blocking = true;
-                setTimeout(() => opponent.blocking = false, 800);
+                setTimeout(() => opponent.blocking = false, 700);
             }
+        }
+        
+        function updatePhysics() {
+            if (keys['a']) player.x -= 4;
+            if (keys['d']) player.x += 4;
+            
+            player.vy += 0.6;
+            player.y += player.vy;
+            if (player.y > 300) { player.y = 300; player.vy = 0; player.onGround = true; }
+            if (player.x < 50) player.x = 50;
+            if (player.x > 350) player.x = 350;
+            
+            opponent.vy += 0.6;
+            opponent.y += opponent.vy;
+            if (opponent.y > 300) { opponent.y = 300; opponent.vy = 0; opponent.onGround = true; }
+            if (opponent.x < 450) opponent.x = 450;
+            if (opponent.x > 750) opponent.x = 750;
         }
         
         function drawBackground() {
-            ctx.fillStyle = '#1f2937';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#374151';
-            ctx.fillRect(0, 380, canvas.width, 120);
-            
-            ctx.strokeStyle = '#9ca3af';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(50, 400, 700, 60);
-            
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 8;
-            ctx.beginPath(); ctx.moveTo(50, 320); ctx.lineTo(750, 320); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(50, 350); ctx.lineTo(750, 350); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(50, 380); ctx.lineTo(750, 380); ctx.stroke();
-            
-            ctx.fillStyle = '#111827';
-            ctx.fillRect(45, 280, 15, 200);
-            ctx.fillRect(740, 280, 15, 200);
-            
-            ctx.fillStyle = '#1e3a8a';
-            ctx.fillRect(0, 0, canvas.width, 200);
-            
-            for (let i = 0; i < 15; i++) {
-                const px = 30 + i * 52;
-                ctx.fillStyle = ['#22c55e', '#3b82f6', '#eab308', '#ec4899'][i % 4];
-                ctx.fillRect(px, 50 + Math.sin(i) * 20, 20, 35);
-                ctx.fillStyle = '#111827';
-                ctx.fillRect(px + 5, 45 + Math.sin(i) * 20, 10, 10);
-            }
+            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(0, 0, canvas.width, 280);
+            ctx.fillStyle = '#334155'; ctx.fillRect(0, 350, canvas.width, 150);
+            ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2;
+            for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.moveTo(0, 380 + i*12); ctx.lineTo(canvas.width, 380 + i*12); ctx.stroke(); }
+            ctx.fillStyle = '#1e2937'; ctx.fillRect(100, 150, 8, 200); ctx.fillRect(692, 150, 8, 200);
+            ctx.fillStyle = '#fbbf24'; ctx.fillRect(85, 140, 40, 15); ctx.fillRect(677, 140, 40, 15);
         }
         
         function drawFighter(fighter, isPlayer) {
-            const x = fighter.x;
-            const y = fighter.y;
-            
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
-            ctx.fillRect(x + 5, y + fighter.height - 5, fighter.width - 10, 8);
-            
-            ctx.fillStyle = isPlayer ? '#3b82f6' : '#ef4444';
-            ctx.fillRect(x + 10, y + 40, fighter.width - 20, 60);
-            
-            ctx.fillStyle = '#f5cba7';
-            ctx.fillRect(x + 15, y + 15, 30, 30);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x + 15, y + 15, 30, 30);
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(x + 22, y + 25, 4, 4);
-            ctx.fillRect(x + 34, y + 25, 4, 4);
-            
+            const x = fighter.x; const y = fighter.y;
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(x + 5, y + fighter.height - 5, fighter.width - 10, 8);
+            ctx.fillStyle = isPlayer ? '#22c55e' : '#ef4444'; ctx.fillRect(x + 8, y + 35, fighter.width - 16, 55);
+            ctx.fillStyle = '#f5cba7'; ctx.fillRect(x + 10, y + 10, 30, 28);
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.strokeRect(x + 10, y + 10, 30, 28);
+            ctx.fillStyle = '#000'; ctx.fillRect(x + 16, y + 18, 5, 5); ctx.fillRect(x + 28, y + 18, 5, 5);
             ctx.fillStyle = '#f5cba7';
             
-            if (fighter.punching) {
-                const punchProgress = 1 - (fighter.punchTimer / 15);
-                
-                if (fighter.punchType === 0) {
-                    ctx.fillRect(x - 20 + punchProgress * 30, y + 45, 25, 12);
-                } else if (fighter.punchType === 1) {
-                    ctx.fillRect(x + fighter.width - 5 - punchProgress * 30, y + 45, 25, 12);
-                } else {
-                    ctx.fillRect(x + 5, y + 30 - punchProgress * 40, 15, 25);
-                    ctx.fillRect(x + fighter.width - 20, y + 30 - punchProgress * 40, 15, 25);
-                }
+            if (fighter.attacking) {
+                const progress = 1 - (fighter.attackTimer / (fighter.attackType === 'kick' ? 18 : 12));
+                if (fighter.attackType === 'punch') ctx.fillRect(x + fighter.width - 5 + progress * 25, y + 40, 22, 10);
+                else if (fighter.attackType === 'kick') ctx.fillRect(x + fighter.width - 5 + progress * 35, y + 70, 28, 12);
+                else if (fighter.attackType === 'special') ctx.fillRect(x + fighter.width - 5, y + 35, 25, 12);
             } else {
-                ctx.fillRect(x - 5, y + 45, 15, 35);
-                ctx.fillRect(x + fighter.width - 10, y + 45, 15, 35);
+                ctx.fillRect(x - 8, y + 38, 18, 30); ctx.fillRect(x + fighter.width - 10, y + 38, 18, 30);
             }
             
-            ctx.fillStyle = '#1e40af';
-            ctx.fillRect(x + 12, y + 95, 12, 25);
-            ctx.fillRect(x + 36, y + 95, 12, 25);
+            ctx.fillStyle = '#1e40af'; ctx.fillRect(x + 10, y + 85, 12, 20); ctx.fillRect(x + 28, y + 85, 12, 20);
             
-            ctx.fillStyle = isPlayer ? '#1e40af' : '#b91c1c';
-            if (!fighter.punching) {
-                ctx.fillRect(x - 8, y + 70, 18, 18);
-                ctx.fillRect(x + fighter.width - 10, y + 70, 18, 18);
+            if (fighter.blocking) { ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 5; ctx.strokeRect(x - 8, y + 20, fighter.width + 16, fighter.height - 15); }
+        }
+        
+        function drawProjectiles() {
+            for (const p of projectiles) {
+                ctx.fillStyle = p.isPlayer ? '#22c55e' : '#ef4444';
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                ctx.fillStyle = p.isPlayer ? '#86efac' : '#fca5a5';
+                ctx.fillRect(p.x + 3, p.y + 3, p.size - 6, p.size - 6);
             }
-            
-            if (fighter.blocking) {
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x - 5, y + 30, fighter.width + 10, fighter.height - 20);
-            }
+        }
+        
+        function drawParticles() {
+            ctx.fillStyle = '#fbbf24';
+            for (const p of particles) { ctx.globalAlpha = p.life / 18; ctx.fillRect(p.x, p.y, p.size, p.size); }
+            ctx.globalAlpha = 1;
         }
         
         function draw() {
             drawBackground();
             drawFighter(player, true);
             drawFighter(opponent, false);
+            drawProjectiles();
             drawParticles();
             
-            document.getElementById('player-health').style.width = player.health + '%';
-            document.getElementById('opponent-health').style.width = opponent.health + '%';
+            document.getElementById('player-health').style.width = Math.max(0, player.health) + '%';
+            document.getElementById('opponent-health').style.width = Math.max(0, opponent.health) + '%';
             
             if (gameOver) {
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.fillRect(0, 180, canvas.width, 140);
-                ctx.fillStyle = '#fbbf24';
-                ctx.font = 'bold 32px "Press Start 2P"';
-                ctx.fillText(winner, canvas.width/2 - 180, 260);
+                ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0, 160, canvas.width, 180);
+                ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 28px "Press Start 2P"'; ctx.fillText(winner, canvas.width/2 - 160, 250);
             }
         }
         
         function update() {
             if (gameOver) return;
             
-            if (player.punching) {
-                player.punchTimer--;
-                if (player.punchTimer <= 0) player.punching = false;
-            }
+            if (player.attacking) { player.attackTimer--; if (player.attackTimer <= 0) player.attacking = false; }
+            if (opponent.attacking) { opponent.attackTimer--; if (opponent.attackTimer <= 0) opponent.attacking = false; }
             
-            if (opponent.punching) {
-                opponent.punchTimer--;
-                if (opponent.punchTimer <= 0) opponent.punching = false;
-            }
-            
+            updatePhysics();
             updateOpponentAI();
+            updateProjectiles();
             updateParticles();
             
             if (player.health <= 0) endGame('Oponente venceu!');
@@ -1359,58 +921,22 @@
         }
         
         function endGame(message) {
-            gameOver = true;
-            winner = message;
+            gameOver = true; winner = message;
             document.getElementById('winner-text').textContent = message;
             document.getElementById('winner-text').style.display = 'block';
         }
         
         function restartGame() {
-            player.health = 100; player.x = 200; player.punching = false; player.blocking = false;
-            opponent.health = 100; opponent.x = 540; opponent.punching = false; opponent.blocking = false;
-            gameOver = false; winner = ''; particles = [];
+            player.health = 100; player.x = 180; player.y = 300; player.vy = 0; player.attacking = false; player.blocking = false;
+            opponent.health = 100; opponent.x = 570; opponent.y = 300; opponent.vy = 0; opponent.attacking = false; opponent.blocking = false;
+            gameOver = false; winner = ''; projectiles = []; particles = [];
             document.getElementById('winner-text').style.display = 'none';
             document.getElementById('player-health').style.width = '100%';
             document.getElementById('opponent-health').style.width = '100%';
         }
         
-        function updateOpponentAI() {
-            if (gameOver) return;
-            opponent.aiTimer++;
-            
-            if (opponent.aiTimer > 40) {
-                opponent.aiTimer = 0;
-                const distance = Math.abs(player.x - opponent.x);
-                
-                if (distance < 120) {
-                    if (Math.random() < 0.6) {
-                        opponentPunch(Math.floor(Math.random() * 3));
-                    } else {
-                        opponent.blocking = true;
-                        setTimeout(() => opponent.blocking = false, 600);
-                    }
-                } else {
-                    if (opponent.x > player.x + 100) opponent.x -= 3;
-                    else if (opponent.x < player.x - 100) opponent.x += 3;
-                }
-            }
-            
-            if (opponent.health < 40 && Math.random() < 0.02) {
-                opponent.blocking = true;
-                setTimeout(() => opponent.blocking = false, 800);
-            }
-        }
-        
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-        
-        function startGame() {
-            gameLoop();
-        }
-        
+        function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+        function startGame() { gameLoop(); }
         window.onload = startGame;
     </script>
 </body>
@@ -1419,126 +945,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boxing Game - Quase Real</title>
+    <title>Jogo de Luta 2D</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap');
-        
-        body {
-            font-family: 'Press Start 2P', Arial, sans-serif;
-            background: #111;
-            color: #fff;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        h1 {
-            color: #ef4444;
-            text-shadow: 3px 3px #000;
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-        
-        #game-container {
-            display: inline-block;
-            background: #1f2937;
-            padding: 15px;
-            border: 8px solid #374151;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-        }
-        
-        canvas {
-            border: 6px solid #111;
-            background: #111;
-            image-rendering: pixelated;
-        }
-        
-        .controls {
-            margin-top: 15px;
-            background: #1f2937;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            color: #9ca3af;
-        }
-        
-        .health-bar {
-            width: 300px;
-            height: 25px;
-            background: #111;
-            border: 3px solid #fff;
-            margin: 0 auto 10px;
-            position: relative;
-        }
-        
-        .health-fill {
-            height: 100%;
-            background: #22c55e;
-            transition: width 0.2s;
-        }
-        
-        .player-health {
-            margin-bottom: 15px;
-        }
-        
-        .opponent-health .health-fill {
-            background: #ef4444;
-        }
-        
-        button {
-            font-family: 'Press Start 2P', Arial, sans-serif;
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-top: 15px;
-            border-radius: 5px;
-        }
-        
-        button:hover {
-            background: #dc2626;
-        }
-        
-        .winner {
-            font-size: 1.8rem;
-            color: #fbbf24;
-            margin-top: 15px;
-            text-shadow: 2px 2px #000;
-        }
+        body { font-family: 'Press Start 2P', Arial, sans-serif; background: #0f172a; color: #fff; margin: 0; padding: 20px; text-align: center; }
+        h1 { color: #22c55e; text-shadow: 3px 3px #000; font-size: 2rem; margin-bottom: 10px; }
+        #game-container { display: inline-block; background: #1e2937; padding: 15px; border: 8px solid #334155; border-radius: 10px; box-shadow: 0 0 40px rgba(0,0,0,0.9); }
+        canvas { border: 6px solid #111; background: #111; image-rendering: pixelated; }
+        .controls { margin-top: 15px; background: #1e2937; padding: 12px; border-radius: 8px; font-size: 0.7rem; color: #94a3b8; line-height: 1.6; }
+        .health-container { display: flex; justify-content: space-between; width: 800px; margin: 0 auto 10px; }
+        .health-bar { width: 380px; height: 28px; background: #111; border: 4px solid #fff; position: relative; }
+        .health-fill { height: 100%; background: #22c55e; transition: width 0.2s; }
+        .opponent-health .health-fill { background: #ef4444; }
+        button { font-family: 'Press Start 2P', Arial, sans-serif; background: #22c55e; color: white; border: none; padding: 12px 25px; font-size: 0.85rem; cursor: pointer; margin-top: 15px; border-radius: 5px; }
+        button:hover { background: #16a34a; }
+        .winner { font-size: 1.6rem; color: #fbbf24; margin-top: 15px; text-shadow: 2px 2px #000; }
     </style>
 </head>
 <body>
-    <h1>🥊 BOXING GAME</h1>
+    <h1>🥋 JOGO DE LUTA 2D</h1>
     
     <div id="game-container">
-        <!-- Health Bars -->
-        <div class="player-health">
-            <div style="margin-bottom: 5px; font-size: 0.7rem;">VOCÊ</div>
-            <div class="health-bar">
-                <div id="player-health" class="health-fill" style="width: 100%;"></div>
+        <div class="health-container">
+            <div>
+                <div style="margin-bottom: 5px; font-size: 0.7rem; text-align: left;">VOCÊ (Jogador 1)</div>
+                <div class="health-bar">
+                    <div id="player-health" class="health-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+            <div class="opponent-health">
+                <div style="margin-bottom: 5px; font-size: 0.7rem; text-align: right;">OPONENTE (CPU)</div>
+                <div class="health-bar">
+                    <div id="opponent-health" class="health-fill" style="width: 100%;"></div>
+                </div>
             </div>
         </div>
         
         <canvas id="game" width="800" height="500"></canvas>
         
-        <div class="opponent-health">
-            <div style="margin-top: 10px; margin-bottom: 5px; font-size: 0.7rem;">OPONENTE</div>
-            <div class="health-bar">
-                <div id="opponent-health" class="health-fill" style="width: 100%;"></div>
-            </div>
+        <div class="controls">
+            <strong>Controles do Jogador 1:</strong><br>
+            <strong>A / D</strong> = Mover &nbsp;&nbsp; 
+            <strong>W</strong> = Pular &nbsp;&nbsp; 
+            <strong>J</strong> = Soco &nbsp;&nbsp; 
+            <strong>K</strong> = Chute &nbsp;&nbsp; 
+            <strong>L</strong> = Especial (Hadouken)<br>
+            <strong>Espaço</strong> = Reiniciar
         </div>
-    </div>
-    
-    <div class="controls">
-        <strong>Controles:</strong><br>
-        <strong>A</strong> = Soco Esquerdo &nbsp;&nbsp; 
-        <strong>D</strong> = Soco Direito &nbsp;&nbsp; 
-        <strong>S</strong> = Bloquear &nbsp;&nbsp; 
-        <strong>W</strong> = Uppercut<br><br>
-        <strong>ESPAÇO</strong> = Reiniciar luta
     </div>
     
     <button onclick="restartGame()">🔄 REINICIAR LUTA</button>
@@ -1549,281 +1002,232 @@
         const canvas = document.getElementById('game');
         const ctx = canvas.getContext('2d');
         
-        let player = {
-            x: 200, y: 280,
-            width: 60, height: 120,
-            health: 100,
-            punching: false,
-            punchType: 0,
-            blocking: false,
-            punchTimer: 0
-        };
+        let player = { x: 180, y: 300, width: 50, height: 100, vx: 0, vy: 0, health: 100, onGround: true, attacking: false, attackType: '', attackTimer: 0, blocking: false };
+        let opponent = { x: 570, y: 300, width: 50, height: 100, vx: 0, vy: 0, health: 100, onGround: true, attacking: false, attackType: '', attackTimer: 0, blocking: false, aiTimer: 0 };
         
-        let opponent = {
-            x: 540, y: 280,
-            width: 60, height: 120,
-            health: 100,
-            punching: false,
-            punchType: 0,
-            blocking: false,
-            punchTimer: 0,
-            aiTimer: 0
-        };
-        
+        let projectiles = [];
+        let particles = [];
         let gameOver = false;
         let winner = '';
         let keys = {};
-        let particles = [];
         
         document.addEventListener('keydown', (e) => {
             keys[e.key.toLowerCase()] = true;
-            
             if (!gameOver) {
-                if (e.key.toLowerCase() === 'a') playerPunch(0);
-                if (e.key.toLowerCase() === 'd') playerPunch(1);
-                if (e.key.toLowerCase() === 'w') playerPunch(2);
-                if (e.key.toLowerCase() === 's') player.blocking = true;
+                if (e.key.toLowerCase() === 'j') playerAttack('punch');
+                if (e.key.toLowerCase() === 'k') playerAttack('kick');
+                if (e.key.toLowerCase() === 'l') playerSpecial();
+                if (e.key.toLowerCase() === 'w' && player.onGround) { player.vy = -12; player.onGround = false; }
             }
-            
-            if (e.key === ' ') {
-                e.preventDefault();
-                if (gameOver) restartGame();
-            }
+            if (e.key === ' ') { e.preventDefault(); if (gameOver) restartGame(); }
         });
         
-        document.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
-            if (e.key.toLowerCase() === 's') player.blocking = false;
-        });
+        document.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
         
-        function playerPunch(type) {
-            if (player.punching || player.blocking) return;
-            
-            player.punching = true;
-            player.punchType = type;
-            player.punchTimer = 15;
+        function playerAttack(type) {
+            if (player.attacking || player.blocking) return;
+            player.attacking = true;
+            player.attackType = type;
+            player.attackTimer = type === 'kick' ? 18 : 12;
             
             setTimeout(() => {
                 if (!gameOver && checkHit(player, opponent)) {
-                    let damage = type === 2 ? 15 : 8;
-                    
+                    let damage = type === 'kick' ? 12 : 8;
                     if (!opponent.blocking) {
                         opponent.health -= damage;
-                        createHitEffect(opponent.x + opponent.width/2, opponent.y + 30);
-                        
+                        createHitEffect(opponent.x + 25, opponent.y + 40);
                         if (opponent.health <= 0) endGame('Você venceu!');
-                    } else {
-                        opponent.health -= Math.floor(damage * 0.3);
                     }
                 }
-            }, 120);
+            }, 100);
         }
         
-        function opponentPunch(type) {
-            if (opponent.punching || opponent.blocking || gameOver) return;
+        function playerSpecial() {
+            if (player.attacking || projectiles.length > 2) return;
+            player.attacking = true;
+            player.attackType = 'special';
+            player.attackTimer = 20;
             
-            opponent.punching = true;
-            opponent.punchType = type;
-            opponent.punchTimer = 15;
+            projectiles.push({ x: player.x + player.width, y: player.y + 45, vx: 6, size: 18, life: 80, isPlayer: true });
+            createHitEffect(player.x + player.width + 10, player.y + 45);
+        }
+        
+        function opponentAttack(type) {
+            if (opponent.attacking || opponent.blocking) return;
+            opponent.attacking = true;
+            opponent.attackType = type;
+            opponent.attackTimer = type === 'kick' ? 18 : 12;
             
             setTimeout(() => {
                 if (!gameOver && checkHit(opponent, player)) {
-                    let damage = type === 2 ? 12 : 7;
-                    
+                    let damage = type === 'kick' ? 10 : 7;
                     if (!player.blocking) {
                         player.health -= damage;
-                        createHitEffect(player.x + player.width/2, player.y + 30);
-                        
+                        createHitEffect(player.x + 25, player.y + 40);
                         if (player.health <= 0) endGame('Oponente venceu!');
                     }
                 }
-            }, 120);
+            }, 100);
+        }
+        
+        function opponentSpecial() {
+            if (opponent.attacking || projectiles.length > 3) return;
+            opponent.attacking = true;
+            opponent.attackType = 'special';
+            opponent.attackTimer = 20;
+            projectiles.push({ x: opponent.x - 20, y: opponent.y + 45, vx: -6, size: 18, life: 80, isPlayer: false });
         }
         
         function checkHit(attacker, defender) {
-            const attackX = attacker.x + (attacker === player ? attacker.width : 0);
-            const distance = Math.abs(attackX - defender.x);
-            return distance < 80;
+            return Math.abs(attacker.x - defender.x) < 70;
         }
         
         function createHitEffect(x, y) {
-            for (let i = 0; i < 8; i++) {
-                particles.push({
-                    x: x, y: y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    life: 15 + Math.random() * 10,
-                    size: 3 + Math.random() * 3
-                });
+            for (let i = 0; i < 10; i++) {
+                particles.push({ x: x, y: y, vx: (Math.random()-0.5)*5, vy: (Math.random()-0.5)*5, life: 12 + Math.random()*8, size: 2 + Math.random()*3 });
             }
         }
         
         function updateParticles() {
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life--;
+                p.x += p.vx; p.y += p.vy; p.life--;
                 if (p.life <= 0) particles.splice(i, 1);
             }
         }
         
-        function drawParticles() {
-            ctx.fillStyle = '#fbbf24';
-            for (const p of particles) {
-                ctx.globalAlpha = p.life / 20;
-                ctx.fillRect(p.x, p.y, p.size, p.size);
+        function updateProjectiles() {
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const p = projectiles[i];
+                p.x += p.vx; p.life--;
+                
+                if (p.isPlayer && p.x > opponent.x && p.x < opponent.x + opponent.width) {
+                    if (!opponent.blocking) { opponent.health -= 15; createHitEffect(p.x, p.y); if (opponent.health <= 0) endGame('Você venceu!'); }
+                    projectiles.splice(i, 1); continue;
+                }
+                if (!p.isPlayer && p.x < player.x + player.width && p.x > player.x) {
+                    if (!player.blocking) { player.health -= 12; createHitEffect(p.x, p.y); if (player.health <= 0) endGame('Oponente venceu!'); }
+                    projectiles.splice(i, 1); continue;
+                }
+                if (p.life <= 0 || p.x < 0 || p.x > canvas.width) projectiles.splice(i, 1);
             }
-            ctx.globalAlpha = 1;
         }
         
         function updateOpponentAI() {
             if (gameOver) return;
             opponent.aiTimer++;
+            const distance = Math.abs(player.x - opponent.x);
             
-            if (opponent.aiTimer > 40) {
+            if (distance > 120) {
+                if (opponent.x > player.x) opponent.x -= 2.5;
+                else opponent.x += 2.5;
+            }
+            
+            if (opponent.aiTimer > 35) {
                 opponent.aiTimer = 0;
-                const distance = Math.abs(player.x - opponent.x);
-                
-                if (distance < 120) {
-                    if (Math.random() < 0.6) {
-                        opponentPunch(Math.floor(Math.random() * 3));
-                    } else {
-                        opponent.blocking = true;
-                        setTimeout(() => opponent.blocking = false, 600);
-                    }
-                } else {
-                    if (opponent.x > player.x + 100) opponent.x -= 3;
-                    else if (opponent.x < player.x - 100) opponent.x += 3;
+                if (distance < 80) {
+                    if (Math.random() < 0.5) opponentAttack('punch');
+                    else opponentAttack('kick');
+                } else if (distance < 200 && Math.random() < 0.3) {
+                    opponentSpecial();
                 }
             }
             
-            if (opponent.health < 40 && Math.random() < 0.02) {
+            if (opponent.health < 35 && Math.random() < 0.03) {
                 opponent.blocking = true;
-                setTimeout(() => opponent.blocking = false, 800);
+                setTimeout(() => opponent.blocking = false, 700);
             }
+        }
+        
+        function updatePhysics() {
+            if (keys['a']) player.x -= 4;
+            if (keys['d']) player.x += 4;
+            
+            player.vy += 0.6;
+            player.y += player.vy;
+            if (player.y > 300) { player.y = 300; player.vy = 0; player.onGround = true; }
+            if (player.x < 50) player.x = 50;
+            if (player.x > 350) player.x = 350;
+            
+            opponent.vy += 0.6;
+            opponent.y += opponent.vy;
+            if (opponent.y > 300) { opponent.y = 300; opponent.vy = 0; opponent.onGround = true; }
+            if (opponent.x < 450) opponent.x = 450;
+            if (opponent.x > 750) opponent.x = 750;
         }
         
         function drawBackground() {
-            ctx.fillStyle = '#1f2937';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#374151';
-            ctx.fillRect(0, 380, canvas.width, 120);
-            
-            ctx.strokeStyle = '#9ca3af';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(50, 400, 700, 60);
-            
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 8;
-            ctx.beginPath(); ctx.moveTo(50, 320); ctx.lineTo(750, 320); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(50, 350); ctx.lineTo(750, 350); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(50, 380); ctx.lineTo(750, 380); ctx.stroke();
-            
-            ctx.fillStyle = '#111827';
-            ctx.fillRect(45, 280, 15, 200);
-            ctx.fillRect(740, 280, 15, 200);
-            
-            ctx.fillStyle = '#1e3a8a';
-            ctx.fillRect(0, 0, canvas.width, 200);
-            
-            for (let i = 0; i < 15; i++) {
-                const px = 30 + i * 52;
-                ctx.fillStyle = ['#22c55e', '#3b82f6', '#eab308', '#ec4899'][i % 4];
-                ctx.fillRect(px, 50 + Math.sin(i) * 20, 20, 35);
-                ctx.fillStyle = '#111827';
-                ctx.fillRect(px + 5, 45 + Math.sin(i) * 20, 10, 10);
-            }
+            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(0, 0, canvas.width, 280);
+            ctx.fillStyle = '#334155'; ctx.fillRect(0, 350, canvas.width, 150);
+            ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2;
+            for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.moveTo(0, 380 + i*12); ctx.lineTo(canvas.width, 380 + i*12); ctx.stroke(); }
+            ctx.fillStyle = '#1e2937'; ctx.fillRect(100, 150, 8, 200); ctx.fillRect(692, 150, 8, 200);
+            ctx.fillStyle = '#fbbf24'; ctx.fillRect(85, 140, 40, 15); ctx.fillRect(677, 140, 40, 15);
         }
         
         function drawFighter(fighter, isPlayer) {
-            const x = fighter.x;
-            const y = fighter.y;
-            
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
-            ctx.fillRect(x + 5, y + fighter.height - 5, fighter.width - 10, 8);
-            
-            ctx.fillStyle = isPlayer ? '#3b82f6' : '#ef4444';
-            ctx.fillRect(x + 10, y + 40, fighter.width - 20, 60);
-            
-            ctx.fillStyle = '#f5cba7';
-            ctx.fillRect(x + 15, y + 15, 30, 30);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x + 15, y + 15, 30, 30);
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(x + 22, y + 25, 4, 4);
-            ctx.fillRect(x + 34, y + 25, 4, 4);
-            
+            const x = fighter.x; const y = fighter.y;
+            ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(x + 5, y + fighter.height - 5, fighter.width - 10, 8);
+            ctx.fillStyle = isPlayer ? '#22c55e' : '#ef4444'; ctx.fillRect(x + 8, y + 35, fighter.width - 16, 55);
+            ctx.fillStyle = '#f5cba7'; ctx.fillRect(x + 10, y + 10, 30, 28);
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.strokeRect(x + 10, y + 10, 30, 28);
+            ctx.fillStyle = '#000'; ctx.fillRect(x + 16, y + 18, 5, 5); ctx.fillRect(x + 28, y + 18, 5, 5);
             ctx.fillStyle = '#f5cba7';
             
-            if (fighter.punching) {
-                const punchProgress = 1 - (fighter.punchTimer / 15);
-                
-                if (fighter.punchType === 0) {
-                    ctx.fillRect(x - 20 + punchProgress * 30, y + 45, 25, 12);
-                } else if (fighter.punchType === 1) {
-                    ctx.fillRect(x + fighter.width - 5 - punchProgress * 30, y + 45, 25, 12);
-                } else {
-                    ctx.fillRect(x + 5, y + 30 - punchProgress * 40, 15, 25);
-                    ctx.fillRect(x + fighter.width - 20, y + 30 - punchProgress * 40, 15, 25);
-                }
+            if (fighter.attacking) {
+                const progress = 1 - (fighter.attackTimer / (fighter.attackType === 'kick' ? 18 : 12));
+                if (fighter.attackType === 'punch') ctx.fillRect(x + fighter.width - 5 + progress * 25, y + 40, 22, 10);
+                else if (fighter.attackType === 'kick') ctx.fillRect(x + fighter.width - 5 + progress * 35, y + 70, 28, 12);
+                else if (fighter.attackType === 'special') ctx.fillRect(x + fighter.width - 5, y + 35, 25, 12);
             } else {
-                ctx.fillRect(x - 5, y + 45, 15, 35);
-                ctx.fillRect(x + fighter.width - 10, y + 45, 15, 35);
+                ctx.fillRect(x - 8, y + 38, 18, 30); ctx.fillRect(x + fighter.width - 10, y + 38, 18, 30);
             }
             
-            ctx.fillStyle = '#1e40af';
-            ctx.fillRect(x + 12, y + 95, 12, 25);
-            ctx.fillRect(x + 36, y + 95, 12, 25);
+            ctx.fillStyle = '#1e40af'; ctx.fillRect(x + 10, y + 85, 12, 20); ctx.fillRect(x + 28, y + 85, 12, 20);
             
-            ctx.fillStyle = isPlayer ? '#1e40af' : '#b91c1c';
-            if (!fighter.punching) {
-                ctx.fillRect(x - 8, y + 70, 18, 18);
-                ctx.fillRect(x + fighter.width - 10, y + 70, 18, 18);
+            if (fighter.blocking) { ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 5; ctx.strokeRect(x - 8, y + 20, fighter.width + 16, fighter.height - 15); }
+        }
+        
+        function drawProjectiles() {
+            for (const p of projectiles) {
+                ctx.fillStyle = p.isPlayer ? '#22c55e' : '#ef4444';
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                ctx.fillStyle = p.isPlayer ? '#86efac' : '#fca5a5';
+                ctx.fillRect(p.x + 3, p.y + 3, p.size - 6, p.size - 6);
             }
-            
-            if (fighter.blocking) {
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x - 5, y + 30, fighter.width + 10, fighter.height - 20);
-            }
+        }
+        
+        function drawParticles() {
+            ctx.fillStyle = '#fbbf24';
+            for (const p of particles) { ctx.globalAlpha = p.life / 18; ctx.fillRect(p.x, p.y, p.size, p.size); }
+            ctx.globalAlpha = 1;
         }
         
         function draw() {
             drawBackground();
             drawFighter(player, true);
             drawFighter(opponent, false);
+            drawProjectiles();
             drawParticles();
             
-            document.getElementById('player-health').style.width = player.health + '%';
-            document.getElementById('opponent-health').style.width = opponent.health + '%';
+            document.getElementById('player-health').style.width = Math.max(0, player.health) + '%';
+            document.getElementById('opponent-health').style.width = Math.max(0, opponent.health) + '%';
             
             if (gameOver) {
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.fillRect(0, 180, canvas.width, 140);
-                ctx.fillStyle = '#fbbf24';
-                ctx.font = 'bold 32px "Press Start 2P"';
-                ctx.fillText(winner, canvas.width/2 - 180, 260);
+                ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0, 160, canvas.width, 180);
+                ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 28px "Press Start 2P"'; ctx.fillText(winner, canvas.width/2 - 160, 250);
             }
         }
         
         function update() {
             if (gameOver) return;
             
-            if (player.punching) {
-                player.punchTimer--;
-                if (player.punchTimer <= 0) player.punching = false;
-            }
+            if (player.attacking) { player.attackTimer--; if (player.attackTimer <= 0) player.attacking = false; }
+            if (opponent.attacking) { opponent.attackTimer--; if (opponent.attackTimer <= 0) opponent.attacking = false; }
             
-            if (opponent.punching) {
-                opponent.punchTimer--;
-                if (opponent.punchTimer <= 0) opponent.punching = false;
-            }
-            
+            updatePhysics();
             updateOpponentAI();
+            updateProjectiles();
             updateParticles();
             
             if (player.health <= 0) endGame('Oponente venceu!');
@@ -1831,531 +1235,23 @@
         }
         
         function endGame(message) {
-            gameOver = true;
-            winner = message;
+            gameOver = true; winner = message;
             document.getElementById('winner-text').textContent = message;
             document.getElementById('winner-text').style.display = 'block';
         }
         
         function restartGame() {
-            player.health = 100; player.x = 200; player.punching = false; player.blocking = false;
-            opponent.health = 100; opponent.x = 540; opponent.punching = false; opponent.blocking = false;
-            gameOver = false; winner = ''; particles = [];
+            player.health = 100; player.x = 180; player.y = 300; player.vy = 0; player.attacking = false; player.blocking = false;
+            opponent.health = 100; opponent.x = 570; opponent.y = 300; opponent.vy = 0; opponent.attacking = false; opponent.blocking = false;
+            gameOver = false; winner = ''; projectiles = []; particles = [];
             document.getElementById('winner-text').style.display = 'none';
             document.getElementById('player-health').style.width = '100%';
             document.getElementById('opponent-health').style.width = '100%';
         }
         
-        function updateOpponentAI() {
-            if (gameOver) return;
-            opponent.aiTimer++;
-            
-            if (opponent.aiTimer > 40) {
-                opponent.aiTimer = 0;
-                const distance = Math.abs(player.x - opponent.x);
-                
-                if (distance < 120) {
-                    if (Math.random() < 0.6) {
-                        opponentPunch(Math.floor(Math.random() * 3));
-                    } else {
-                        opponent.blocking = true;
-                        setTimeout(() => opponent.blocking = false, 600);
-                    }
-                } else {
-                    if (opponent.x > player.x + 100) opponent.x -= 3;
-                    else if (opponent.x < player.x - 100) opponent.x += 3;
-                }
-            }
-            
-            if (opponent.health < 40 && Math.random() < 0.02) {
-                opponent.blocking = true;
-                setTimeout(() => opponent.blocking = false, 800);
-            }
-        }
-        
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-        
-        function startGame() {
-            gameLoop();
-        }
-        
+        function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+        function startGame() { gameLoop(); }
         window.onload = startGame;
     </script>
 </body>
-</html><!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boxing Game - Quase Real</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;display=swap');
-        
-        body {
-            font-family: 'Press Start 2P', Arial, sans-serif;
-            background: #111;
-            color: #fff;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        h1 {
-            color: #ef4444;
-            text-shadow: 3px 3px #000;
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-        
-        #game-container {
-            display: inline-block;
-            background: #1f2937;
-            padding: 15px;
-            border: 8px solid #374151;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-        }
-        
-        canvas {
-            border: 6px solid #111;
-            background: #111;
-            image-rendering: pixelated;
-        }
-        
-        .controls {
-            margin-top: 15px;
-            background: #1f2937;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            color: #9ca3af;
-        }
-        
-        .health-bar {
-            width: 300px;
-            height: 25px;
-            background: #111;
-            border: 3px solid #fff;
-            margin: 0 auto 10px;
-            position: relative;
-        }
-        
-        .health-fill {
-            height: 100%;
-            background: #22c55e;
-            transition: width 0.2s;
-        }
-        
-        .player-health {
-            margin-bottom: 15px;
-        }
-        
-        .opponent-health .health-fill {
-            background: #ef4444;
-        }
-        
-        button {
-            font-family: 'Press Start 2P', Arial, sans-serif;
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-top: 15px;
-            border-radius: 5px;
-        }
-        
-        button:hover {
-            background: #dc2626;
-        }
-        
-        .winner {
-            font-size: 1.8rem;
-            color: #fbbf24;
-            margin-top: 15px;
-            text-shadow: 2px 2px #000;
-        }
-    </style>
-</head>
-<body>
-    <h1>🥊 BOXING GAME</h1>
-    
-    <div id="game-container">
-        <!-- Health Bars -->
-        <div class="player-health">
-            <div style="margin-bottom: 5px; font-size: 0.7rem;">VOCÊ</div>
-            <div class="health-bar">
-                <div id="player-health" class="health-fill" style="width: 100%;"></div>
-            </div>
-        </div>
-        
-        <canvas id="game" width="800" height="500"></canvas>
-        
-        <div class="opponent-health">
-            <div style="margin-top: 10px; margin-bottom: 5px; font-size: 0.7rem;">OPONENTE</div>
-            <div class="health-bar">
-                <div id="opponent-health" class="health-fill" style="width: 100%;"></div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="controls">
-        <strong>Controles:</strong><br>
-        <strong>A</strong> = Soco Esquerdo &nbsp;&nbsp; 
-        <strong>D</strong> = Soco Direito &nbsp;&nbsp; 
-        <strong>S</strong> = Bloquear &nbsp;&nbsp; 
-        <strong>W</strong> = Uppercut<br><br>
-        <strong>ESPAÇO</strong> = Reiniciar luta
-    </div>
-    
-    <button onclick="restartGame()">🔄 REINICIAR LUTA</button>
-    
-    <div id="winner-text" class="winner" style="display: none;"></div>
-
-    <script>
-        const canvas = document.getElementById('game');
-        const ctx = canvas.getContext('2d');
-        
-        let player = {
-            x: 200, y: 280,
-            width: 60, height: 120,
-            health: 100,
-            punching: false,
-            punchType: 0,
-            blocking: false,
-            punchTimer: 0
-        };
-        
-        let opponent = {
-            x: 540, y: 280,
-            width: 60, height: 120,
-            health: 100,
-            punching: false,
-            punchType: 0,
-            blocking: false,
-            punchTimer: 0,
-            aiTimer: 0
-        };
-        
-        let gameOver = false;
-        let winner = '';
-        let keys = {};
-        let particles = [];
-        
-        document.addEventListener('keydown', (e) => {
-            keys[e.key.toLowerCase()] = true;
-            
-            if (!gameOver) {
-                if (e.key.toLowerCase() === 'a') playerPunch(0);
-                if (e.key.toLowerCase() === 'd') playerPunch(1);
-                if (e.key.toLowerCase() === 'w') playerPunch(2);
-                if (e.key.toLowerCase() === 's') player.blocking = true;
-            }
-            
-            if (e.key === ' ') {
-                e.preventDefault();
-                if (gameOver) restartGame();
-            }
-        });
-        
-        document.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
-            if (e.key.toLowerCase() === 's') player.blocking = false;
-        });
-        
-        function playerPunch(type) {
-            if (player.punching || player.blocking) return;
-            
-            player.punching = true;
-            player.punchType = type;
-            player.punchTimer = 15;
-            
-            setTimeout(() => {
-                if (!gameOver && checkHit(player, opponent)) {
-                    let damage = type === 2 ? 15 : 8;
-                    
-                    if (!opponent.blocking) {
-                        opponent.health -= damage;
-                        createHitEffect(opponent.x + opponent.width/2, opponent.y + 30);
-                        
-                        if (opponent.health <= 0) endGame('Você venceu!');
-                    } else {
-                        opponent.health -= Math.floor(damage * 0.3);
-                    }
-                }
-            }, 120);
-        }
-        
-        function opponentPunch(type) {
-            if (opponent.punching || opponent.blocking || gameOver) return;
-            
-            opponent.punching = true;
-            opponent.punchType = type;
-            opponent.punchTimer = 15;
-            
-            setTimeout(() => {
-                if (!gameOver && checkHit(opponent, player)) {
-                    let damage = type === 2 ? 12 : 7;
-                    
-                    if (!player.blocking) {
-                        player.health -= damage;
-                        createHitEffect(player.x + player.width/2, player.y + 30);
-                        
-                        if (player.health <= 0) endGame('Oponente venceu!');
-                    }
-                }
-            }, 120);
-        }
-        
-        function checkHit(attacker, defender) {
-            const attackX = attacker.x + (attacker === player ? attacker.width : 0);
-            const distance = Math.abs(attackX - defender.x);
-            return distance < 80;
-        }
-        
-        function createHitEffect(x, y) {
-            for (let i = 0; i < 8; i++) {
-                particles.push({
-                    x: x, y: y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    life: 15 + Math.random() * 10,
-                    size: 3 + Math.random() * 3
-                });
-            }
-        }
-        
-        function updateParticles() {
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life--;
-                if (p.life <= 0) particles.splice(i, 1);
-            }
-        }
-        
-        function drawParticles() {
-            ctx.fillStyle = '#fbbf24';
-            for (const p of particles) {
-                ctx.globalAlpha = p.life / 20;
-                ctx.fillRect(p.x, p.y, p.size, p.size);
-            }
-            ctx.globalAlpha = 1;
-        }
-        
-        function updateOpponentAI() {
-            if (gameOver) return;
-            opponent.aiTimer++;
-            
-            if (opponent.aiTimer > 40) {
-                opponent.aiTimer = 0;
-                const distance = Math.abs(player.x - opponent.x);
-                
-                if (distance < 120) {
-                    if (Math.random() < 0.6) {
-                        opponentPunch(Math.floor(Math.random() * 3));
-                    } else {
-                        opponent.blocking = true;
-                        setTimeout(() => opponent.blocking = false, 600);
-                    }
-                } else {
-                    if (opponent.x > player.x + 100) opponent.x -= 3;
-                    else if (opponent.x < player.x - 100) opponent.x += 3;
-                }
-            }
-            
-            if (opponent.health < 40 && Math.random() < 0.02) {
-                opponent.blocking = true;
-                setTimeout(() => opponent.blocking = false, 800);
-            }
-        }
-        
-        function drawBackground() {
-            ctx.fillStyle = '#1f2937';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#374151';
-            ctx.fillRect(0, 380, canvas.width, 120);
-            
-            ctx.strokeStyle = '#9ca3af';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(50, 400, 700, 60);
-            
-            ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 8;
-            ctx.beginPath(); ctx.moveTo(50, 320); ctx.lineTo(750, 320); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(50, 350); ctx.lineTo(750, 350); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(50, 380); ctx.lineTo(750, 380); ctx.stroke();
-            
-            ctx.fillStyle = '#111827';
-            ctx.fillRect(45, 280, 15, 200);
-            ctx.fillRect(740, 280, 15, 200);
-            
-            ctx.fillStyle = '#1e3a8a';
-            ctx.fillRect(0, 0, canvas.width, 200);
-            
-            for (let i = 0; i < 15; i++) {
-                const px = 30 + i * 52;
-                ctx.fillStyle = ['#22c55e', '#3b82f6', '#eab308', '#ec4899'][i % 4];
-                ctx.fillRect(px, 50 + Math.sin(i) * 20, 20, 35);
-                ctx.fillStyle = '#111827';
-                ctx.fillRect(px + 5, 45 + Math.sin(i) * 20, 10, 10);
-            }
-        }
-        
-        function drawFighter(fighter, isPlayer) {
-            const x = fighter.x;
-            const y = fighter.y;
-            
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
-            ctx.fillRect(x + 5, y + fighter.height - 5, fighter.width - 10, 8);
-            
-            ctx.fillStyle = isPlayer ? '#3b82f6' : '#ef4444';
-            ctx.fillRect(x + 10, y + 40, fighter.width - 20, 60);
-            
-            ctx.fillStyle = '#f5cba7';
-            ctx.fillRect(x + 15, y + 15, 30, 30);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x + 15, y + 15, 30, 30);
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(x + 22, y + 25, 4, 4);
-            ctx.fillRect(x + 34, y + 25, 4, 4);
-            
-            ctx.fillStyle = '#f5cba7';
-            
-            if (fighter.punching) {
-                const punchProgress = 1 - (fighter.punchTimer / 15);
-                
-                if (fighter.punchType === 0) {
-                    ctx.fillRect(x - 20 + punchProgress * 30, y + 45, 25, 12);
-                } else if (fighter.punchType === 1) {
-                    ctx.fillRect(x + fighter.width - 5 - punchProgress * 30, y + 45, 25, 12);
-                } else {
-                    ctx.fillRect(x + 5, y + 30 - punchProgress * 40, 15, 25);
-                    ctx.fillRect(x + fighter.width - 20, y + 30 - punchProgress * 40, 15, 25);
-                }
-            } else {
-                ctx.fillRect(x - 5, y + 45, 15, 35);
-                ctx.fillRect(x + fighter.width - 10, y + 45, 15, 35);
-            }
-            
-            ctx.fillStyle = '#1e40af';
-            ctx.fillRect(x + 12, y + 95, 12, 25);
-            ctx.fillRect(x + 36, y + 95, 12, 25);
-            
-            ctx.fillStyle = isPlayer ? '#1e40af' : '#b91c1c';
-            if (!fighter.punching) {
-                ctx.fillRect(x - 8, y + 70, 18, 18);
-                ctx.fillRect(x + fighter.width - 10, y + 70, 18, 18);
-            }
-            
-            if (fighter.blocking) {
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x - 5, y + 30, fighter.width + 10, fighter.height - 20);
-            }
-        }
-        
-        function draw() {
-            drawBackground();
-            drawFighter(player, true);
-            drawFighter(opponent, false);
-            drawParticles();
-            
-            document.getElementById('player-health').style.width = player.health + '%';
-            document.getElementById('opponent-health').style.width = opponent.health + '%';
-            
-            if (gameOver) {
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.fillRect(0, 180, canvas.width, 140);
-                ctx.fillStyle = '#fbbf24';
-                ctx.font = 'bold 32px "Press Start 2P"';
-                ctx.fillText(winner, canvas.width/2 - 180, 260);
-            }
-        }
-        
-        function update() {
-            if (gameOver) return;
-            
-            if (player.punching) {
-                player.punchTimer--;
-                if (player.punchTimer <= 0) player.punching = false;
-            }
-            
-            if (opponent.punching) {
-                opponent.punchTimer--;
-                if (opponent.punchTimer <= 0) opponent.punching = false;
-            }
-            
-            updateOpponentAI();
-            updateParticles();
-            
-            if (player.health <= 0) endGame('Oponente venceu!');
-            if (opponent.health <= 0) endGame('Você venceu!');
-        }
-        
-        function endGame(message) {
-            gameOver = true;
-            winner = message;
-            document.getElementById('winner-text').textContent = message;
-            document.getElementById('winner-text').style.display = 'block';
-        }
-        
-        function restartGame() {
-            player.health = 100; player.x = 200; player.punching = false; player.blocking = false;
-            opponent.health = 100; opponent.x = 540; opponent.punching = false; opponent.blocking = false;
-            gameOver = false; winner = ''; particles = [];
-            document.getElementById('winner-text').style.display = 'none';
-            document.getElementById('player-health').style.width = '100%';
-            document.getElementById('opponent-health').style.width = '100%';
-        }
-        
-        function updateOpponentAI() {
-            if (gameOver) return;
-            opponent.aiTimer++;
-            
-            if (opponent.aiTimer > 40) {
-                opponent.aiTimer = 0;
-                const distance = Math.abs(player.x - opponent.x);
-                
-                if (distance < 120) {
-                    if (Math.random() < 0.6) {
-                        opponentPunch(Math.floor(Math.random() * 3));
-                    } else {
-                        opponent.blocking = true;
-                        setTimeout(() => opponent.blocking = false, 600);
-                    }
-                } else {
-                    if (opponent.x > player.x + 100) opponent.x -= 3;
-                    else if (opponent.x < player.x - 100) opponent.x += 3;
-                }
-            }
-            
-            if (opponent.health < 40 && Math.random() < 0.02) {
-                opponent.blocking = true;
-                setTimeout(() => opponent.blocking = false, 800);
-            }
-        }
-        
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-        
-        function startGame() {
-            gameLoop();
-        }
-        
-        window.onload = startGame;
-    </script>
-</body>
-</html>V
+</html>VVV
