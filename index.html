@@ -1,169 +1,484 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
-<meta charset="UTF-8">
-<title>Corrida na Cidade 3D</title>
-
-<style>
-body{
-    margin:0;
-    overflow:hidden;
-}
-canvas{
-    display:block;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦖 Pula Obstáculo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(to bottom, #e0f7fa, #f5f5f5);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            color: #1b5e20;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 5px;
+            font-size: 2.5em;
+        }
+        
+        .instructions {
+            background: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.1em;
+            text-align: center;
+            max-width: 600px;
+        }
+        
+        #game {
+            border: 6px solid #2e7d32;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            background: #fff;
+            cursor: pointer;
+        }
+        
+        .footer {
+            margin-top: 15px;
+            color: #666;
+            font-size: 0.95em;
+            text-align: center;
+        }
+        
+        .controls {
+            margin-top: 10px;
+            background: #fff;
+            padding: 8px 20px;
+            border-radius: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            font-size: 0.95em;
+            color: #444;
+        }
+    </style>
 </head>
 <body>
+    <h1>🦖 Pula Obstáculo</h1>
+    
+    <div class="instructions">
+        <strong>Como jogar:</strong> Pressione <strong>ESPAÇO</strong> ou <strong>SETA PARA CIMA</strong> para pular!<br>
+        Evite os cactos e faça a maior pontuação possível!
+    </div>
+    
+    <canvas id="game" width="800" height="400"></canvas>
+    
+    <div class="controls">
+        💡 Dica: Clique na tela ou toque também funciona para pular!
+    </div>
+    
+    <div class="footer">
+        Jogo feito com ❤️ para você se divertir • Recordes são salvos no seu navegador
+    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.min.js"></script>
+    <script>
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d', { alpha: true });
 
-<script>
-// Cena
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb);
+        let player = {
+            x: 120,
+            y: 0,
+            width: 42,
+            height: 52,
+            vy: 0
+        };
+        
+        let obstacles = [];
+        let score = 0;
+        let highScore = 0;
+        let gameSpeed = 4.5;
+        let gravity = 0.65;
+        let jumpForce = -13.5;
+        let gameOver = false;
+        let frame = 0;
+        let groundOffset = 0;
+        let difficultyLevel = 0;
+        let groundY = 325;
 
-// Camera
-const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth/window.innerHeight,
-    0.1,
-    1000
-);
-
-// Renderizador
-const renderer = new THREE.WebGLRenderer({
-    antialias:true
-});
-
-renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
-);
-
-document.body.appendChild(
-    renderer.domElement
-);
-
-// Rua
-const road = new THREE.Mesh(
-    new THREE.BoxGeometry(20,1,300),
-    new THREE.MeshPhongMaterial({
-        color:0x444444
-    })
-);
-
-road.position.y = -1;
-scene.add(road);
-
-// Jogador
-const player = new THREE.Mesh(
-    new THREE.BoxGeometry(2,3,2),
-    new THREE.MeshPhongMaterial({
-        color:0xff0000
-    })
-);
-
-player.position.set(0,1,10);
-scene.add(player);
-
-// Luz
-const light = new THREE.DirectionalLight(
-    0xffffff,
-    1
-);
-
-light.position.set(10,20,10);
-scene.add(light);
-
-// Camera
-camera.position.set(0,8,20);
-camera.lookAt(player.position);
-
-// Obstáculos
-let obstacles = [];
-
-function createCar(){
-
-    const car = new THREE.Mesh(
-        new THREE.BoxGeometry(3,2,6),
-        new THREE.MeshPhongMaterial({
-            color:Math.random()*0xffffff
-        })
-    );
-
-    car.position.set(
-        (Math.floor(Math.random()*3)-1)*6,
-        0,
-        -120
-    );
-
-    scene.add(car);
-    obstacles.push(car);
-}
-
-setInterval(createCar,2000);
-
-// Pulo
-let velocityY = 0;
-let gravity = -0.03;
-
-document.addEventListener(
-    "keydown",
-    e=>{
-        if(
-            e.code==="Space" &&
-            player.position.y<=1.01
-        ){
-            velocityY = 0.6;
-        }
-    }
-);
-
-// Loop
-function animate(){
-
-    requestAnimationFrame(
-        animate
-    );
-
-    velocityY += gravity;
-    player.position.y += velocityY;
-
-    if(player.position.y < 1){
-        player.position.y = 1;
-        velocityY = 0;
-    }
-
-    obstacles.forEach(
-        obstacle=>{
-            obstacle.position.z += 0.7;
-
-            if(
-                Math.abs(
-                    obstacle.position.z -
-                    player.position.z
-                ) < 3 &&
-                Math.abs(
-                    obstacle.position.x -
-                    player.position.x
-                ) < 3 &&
-                player.position.y < 3
-            ){
-                alert("GAME OVER");
-                location.reload();
+        function loadHighScore() {
+            const saved = localStorage.getItem('pulaObstaculoHighScore');
+            if (saved) {
+                highScore = parseInt(saved);
             }
         }
-    );
+        loadHighScore();
 
-    renderer.render(
-        scene,
-        camera
-    );
-}
+        function resetGame() {
+            player.y = groundY - player.height;
+            player.vy = 0;
+            obstacles = [];
+            score = 0;
+            gameSpeed = 4.5;
+            gameOver = false;
+            frame = 0;
+            groundOffset = 0;
+            difficultyLevel = 0;
+        }
 
-animate();
+        function spawnObstacle() {
+            const height = 28 + Math.random() * 45;
+            const width = 18 + Math.random() * 14;
+            
+            obstacles.push({
+                x: canvas.width + 40,
+                y: groundY - height,
+                width: width,
+                height: height,
+                type: Math.random() > 0.6 ? 1 : 0
+            });
+        }
 
-</script>
+        function checkCollision(p, o) {
+            return !(
+                p.x + p.width < o.x ||
+                p.x > o.x + o.width ||
+                p.y + p.height < o.y ||
+                p.y > o.y + o.height
+            );
+        }
+
+        function updateGame() {
+            player.vy += gravity;
+            player.y += player.vy;
+
+            if (player.y > groundY - player.height) {
+                player.y = groundY - player.height;
+                player.vy = 0;
+            }
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].x -= gameSpeed;
+                if (obstacles[i].x + obstacles[i].width < 0) {
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            if (obstacles.length === 0 || 
+                obstacles[obstacles.length - 1].x < canvas.width - (220 + Math.random() * 180)) {
+                spawnObstacle();
+            }
+
+            for (let o of obstacles) {
+                if (checkCollision(player, o)) {
+                    gameOver = true;
+                    break;
+                }
+            }
+
+            score += 0.18;
+
+            const currentLevel = Math.floor(score / 450);
+            if (currentLevel > difficultyLevel) {
+                difficultyLevel = currentLevel;
+                gameSpeed = Math.min(4.5 + difficultyLevel * 0.65, 11.5);
+            }
+        }
+
+        function drawBackground() {
+            const gradient = ctx.createLinearGradient(0, 0, 0, groundY);
+            gradient.addColorStop(0, '#81d4fa');
+            gradient.addColorStop(1, '#e1f5fe');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, groundY);
+
+            ctx.fillStyle = '#ffeb3b';
+            ctx.beginPath();
+            ctx.arc(680, 75, 32, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'rgba(255, 235, 59, 0.3)';
+            ctx.beginPath();
+            ctx.arc(680, 75, 48, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            const cloudOffset = (frame * 0.3) % (canvas.width + 200);
+            
+            ctx.beginPath();
+            ctx.ellipse(150 - cloudOffset * 0.3, 95, 35, 18, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(175 - cloudOffset * 0.3, 88, 25, 14, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(130 - cloudOffset * 0.3, 88, 20, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.ellipse(520 - cloudOffset * 0.25 + 300, 120, 40, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(555 - cloudOffset * 0.25 + 300, 112, 28, 16, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawGround() {
+            ctx.fillStyle = '#795548';
+            ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+            
+            ctx.fillStyle = '#43a047';
+            ctx.fillRect(0, groundY, canvas.width, 12);
+            
+            groundOffset = (groundOffset + gameSpeed) % 45;
+            
+            ctx.strokeStyle = '#2e7d32';
+            ctx.lineWidth = 3;
+            
+            for (let x = -groundOffset; x < canvas.width + 50; x += 45) {
+                ctx.beginPath();
+                ctx.moveTo(x + 8, groundY + 8);
+                ctx.lineTo(x + 12, groundY - 6);
+                ctx.lineTo(x + 16, groundY + 8);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(x + 25, groundY + 8);
+                ctx.lineTo(x + 29, groundY - 4);
+                ctx.lineTo(x + 33, groundY + 8);
+                ctx.stroke();
+            }
+            
+            ctx.strokeStyle = '#5d4037';
+            ctx.lineWidth = 1.5;
+            for (let x = -groundOffset * 0.7; x < canvas.width; x += 60) {
+                ctx.beginPath();
+                ctx.moveTo(x, groundY + 18);
+                ctx.lineTo(x + 35, groundY + 18);
+                ctx.stroke();
+            }
+        }
+
+        function drawPlayer() {
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            
+            const isJumping = player.vy < -1;
+            const runPhase = Math.sin(frame * 0.28) * (isJumping ? 0 : 1);
+            
+            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+            ctx.beginPath();
+            ctx.ellipse(22, 55, 22, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#2e7d32';
+            ctx.fillRect(6, 18, 32, 28);
+            
+            ctx.fillStyle = '#43a047';
+            ctx.fillRect(10, 24, 24, 18);
+
+            ctx.fillStyle = '#2e7d32';
+            ctx.fillRect(30, 8, 22, 20);
+            
+            ctx.fillRect(48, 14, 12, 10);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(40, 12, 8, 8);
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(43, 14, 4, 4);
+
+            ctx.fillStyle = '#1b5e20';
+            ctx.beginPath();
+            ctx.moveTo(6, 28);
+            ctx.quadraticCurveTo(-8, 32, -12, 38);
+            ctx.quadraticCurveTo(-6, 42, 6, 36);
+            ctx.fill();
+
+            ctx.fillStyle = '#1b5e20';
+            
+            const backLegX = 10 + runPhase * 2.5;
+            ctx.fillRect(backLegX, 44, 8, 14);
+            ctx.fillRect(backLegX - 1, 55, 6, 5);
+            
+            const frontLegX = 24 - runPhase * 2.5;
+            ctx.fillRect(frontLegX, 44, 8, 14);
+            ctx.fillRect(frontLegX + 3, 55, 6, 5);
+
+            ctx.fillStyle = '#388e3c';
+            ctx.fillRect(32, 28, 7, 12);
+
+            ctx.restore();
+        }
+
+        function drawObstacles() {
+            for (let o of obstacles) {
+                ctx.save();
+                
+                ctx.fillStyle = 'rgba(0,0,0,0.12)';
+                ctx.fillRect(o.x + 4, groundY - 3, o.width, 8);
+                
+                ctx.fillStyle = '#2e7d32';
+                ctx.fillRect(o.x, o.y, o.width, o.height);
+                
+                ctx.fillStyle = '#388e3c';
+                ctx.fillRect(o.x + 3, o.y + 4, o.width - 6, o.height - 8);
+                
+                if (o.height > 45) {
+                    ctx.fillStyle = '#2e7d32';
+                    ctx.fillRect(o.x - 7, o.y + 12, 8, 7);
+                    ctx.fillRect(o.x - 7, o.y + 8, 3, 5);
+                    
+                    ctx.fillRect(o.x + o.width - 1, o.y + 18, 8, 7);
+                    ctx.fillRect(o.x + o.width + 4, o.y + 14, 3, 5);
+                }
+                
+                ctx.strokeStyle = '#1b5e20';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(o.x + 2, o.y + 2, o.width - 4, o.height - 4);
+                
+                ctx.fillStyle = '#1b5e20';
+                ctx.beginPath();
+                ctx.moveTo(o.x, o.y);
+                ctx.lineTo(o.x + o.width / 2, o.y - 5);
+                ctx.lineTo(o.x + o.width, o.y);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+
+        function drawHUD() {
+            ctx.fillStyle = '#1b5e20';
+            ctx.font = 'bold 26px "Segoe UI", Arial';
+            ctx.textAlign = 'left';
+            
+            ctx.fillText('Pontos: ' + Math.floor(score), 25, 45);
+            
+            ctx.fillStyle = '#f57c00';
+            ctx.font = 'bold 20px "Segoe UI", Arial';
+            ctx.fillText('🏆 Recorde: ' + highScore, 25, 72);
+            
+            ctx.fillStyle = '#555';
+            ctx.font = '16px Arial';
+            ctx.fillText('Nível: ' + (difficultyLevel + 1), 25, 95);
+        }
+
+        function drawGameOver() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(180, 100, 440, 200);
+            ctx.strokeStyle = '#d32f2f';
+            ctx.lineWidth = 5;
+            ctx.strokeRect(180, 100, 440, 200);
+            
+            ctx.fillStyle = '#c62828';
+            ctx.font = 'bold 52px "Segoe UI", Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('GAME OVER', 400, 155);
+            
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 28px "Segoe UI", Arial';
+            ctx.fillText('Sua pontuação: ' + Math.floor(score), 400, 200);
+            
+            const finalScore = Math.floor(score);
+            if (finalScore > highScore) {
+                highScore = finalScore;
+                localStorage.setItem('pulaObstaculoHighScore', highScore);
+                
+                ctx.fillStyle = '#ff6f00';
+                ctx.font = 'bold 22px "Segoe UI", Arial';
+                ctx.fillText('🎉 NOVO RECORDE! 🎉', 400, 235);
+            } else {
+                ctx.fillStyle = '#f57c00';
+                ctx.font = 'bold 20px "Segoe UI", Arial';
+                ctx.fillText('Recorde atual: ' + highScore, 400, 235);
+            }
+            
+            ctx.fillStyle = '#1b5e20';
+            ctx.font = 'bold 20px "Segoe UI", Arial';
+            ctx.fillText('Pressione ESPAÇO para jogar novamente', 400, 275);
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawBackground();
+            drawGround();
+            
+            if (!gameOver) {
+                updateGame();
+            }
+            
+            drawObstacles();
+            drawPlayer();
+            drawHUD();
+            
+            if (gameOver) {
+                drawGameOver();
+            }
+            
+            if (!gameOver) {
+                frame++;
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'ArrowUp' || e.key === 'Up') {
+                e.preventDefault();
+                
+                if (gameOver) {
+                    resetGame();
+                } else {
+                    if (player.y >= groundY - player.height - 3) {
+                        player.vy = jumpForce;
+                    }
+                }
+            }
+            
+            if ((e.key === 'r' || e.key === 'R') && gameOver) {
+                resetGame();
+            }
+        });
+
+        function handleJump() {
+            if (gameOver) {
+                resetGame();
+            } else {
+                if (player.y >= groundY - player.height - 3) {
+                    player.vy = jumpForce;
+                }
+            }
+        }
+        
+        canvas.addEventListener('mousedown', handleJump);
+        canvas.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            handleJump();
+        });
+
+        function startGame() {
+            resetGame();
+            
+            setTimeout(() => {
+                if (!gameOver && obstacles.length === 0) {
+                    spawnObstacle();
+                }
+            }, 800);
+            
+            setTimeout(() => {
+                if (!gameOver && obstacles.length < 2) {
+                    spawnObstacle();
+                }
+            }, 1600);
+            
+            gameLoop();
+        }
+
+        startGame();
+        
+        canvas.setAttribute('tabindex', '1');
+        canvas.focus();
+    </script>
 </body>
 </html>
