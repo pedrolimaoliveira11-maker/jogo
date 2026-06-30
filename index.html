@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🦖 Pula Obstáculo</title>
+    <title>🦖 Pula Obstáculo - Melhorado</title>
     <style>
         body {
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(to bottom, #e0f7fa, #f5f5f5);
+            padding: 15px;
+            background: linear-gradient(to bottom, #e8f5e9, #f1f8e9);
             font-family: 'Segoe UI', Arial, sans-serif;
             display: flex;
             flex-direction: column;
@@ -18,65 +18,57 @@
         
         h1 {
             color: #1b5e20;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 5px;
-            font-size: 2.5em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.15);
+            margin-bottom: 8px;
+            font-size: 2.6em;
         }
         
         .instructions {
             background: white;
-            padding: 12px 25px;
-            border-radius: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
+            padding: 10px 22px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 12px;
             color: #333;
-            font-size: 1.1em;
+            font-size: 1.05em;
             text-align: center;
-            max-width: 600px;
         }
         
         #game {
-            border: 6px solid #2e7d32;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            border: 7px solid #2e7d32;
+            border-radius: 18px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             background: #fff;
             cursor: pointer;
         }
         
         .footer {
-            margin-top: 15px;
-            color: #666;
-            font-size: 0.95em;
+            margin-top: 12px;
+            color: #555;
+            font-size: 0.9em;
             text-align: center;
         }
         
-        .controls {
-            margin-top: 10px;
-            background: #fff;
-            padding: 8px 20px;
-            border-radius: 20px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            font-size: 0.95em;
-            color: #444;
+        .theme-info {
+            margin-top: 8px;
+            font-size: 1.1em;
+            color: #2e7d32;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <h1>🦖 Pula Obstáculo</h1>
-    
     <div class="instructions">
-        <strong>Como jogar:</strong> Pressione <strong>ESPAÇO</strong> ou <strong>SETA PARA CIMA</strong> para pular!<br>
-        Evite os cactos e faça a maior pontuação possível!
+        Pressione <strong>ESPAÇO</strong> ou <strong>↑</strong> para pular • Clique na tela também funciona!
     </div>
     
-    <canvas id="game" width="800" height="400"></canvas>
+    <canvas id="game" width="800" height="420"></canvas>
     
-    <div class="controls">
-        💡 Dica: Clique na tela ou toque também funciona para pular!
-    </div>
+    <div class="theme-info" id="themeDisplay">Ambiente: Deserto</div>
     
     <div class="footer">
-        Jogo feito com ❤️ para você se divertir • Recordes são salvos no seu navegador
+        A cada 1000 pontos o ambiente muda completamente! • Recordes salvos automaticamente
     </div>
 
     <script>
@@ -84,30 +76,33 @@
         const ctx = canvas.getContext('2d', { alpha: true });
 
         let player = {
-            x: 120,
+            x: 130,
             y: 0,
-            width: 42,
-            height: 52,
+            width: 44,
+            height: 54,
             vy: 0
         };
         
         let obstacles = [];
+        let snowflakes = [];
         let score = 0;
         let highScore = 0;
-        let gameSpeed = 4.5;
-        let gravity = 0.65;
-        let jumpForce = -13.5;
+        let gameSpeed = 4.8;
+        let gravity = 0.68;
+        let jumpForce = -14;
         let gameOver = false;
         let frame = 0;
         let groundOffset = 0;
         let difficultyLevel = 0;
-        let groundY = 325;
+        let currentTheme = 0;
+        let groundY = 340;
+
+        const themeNames = ["Deserto", "Floresta", "Neve", "Cidade Noturna"];
+        const themeColors = ["#2e7d32", "#1b5e20", "#1565c0", "#6a1b9a"];
 
         function loadHighScore() {
-            const saved = localStorage.getItem('pulaObstaculoHighScore');
-            if (saved) {
-                highScore = parseInt(saved);
-            }
+            const saved = localStorage.getItem('pulaObstaculoMelhoradoHighScore');
+            if (saved) highScore = parseInt(saved);
         }
         loadHighScore();
 
@@ -115,25 +110,47 @@
             player.y = groundY - player.height;
             player.vy = 0;
             obstacles = [];
+            snowflakes = [];
             score = 0;
-            gameSpeed = 4.5;
+            gameSpeed = 4.8;
             gameOver = false;
             frame = 0;
             groundOffset = 0;
             difficultyLevel = 0;
+            currentTheme = 0;
+            updateThemeDisplay();
+        }
+
+        function updateThemeDisplay() {
+            const display = document.getElementById('themeDisplay');
+            if (display) {
+                display.innerHTML = `Ambiente: <span style="color:${themeColors[currentTheme]}">${themeNames[currentTheme]}</span>`;
+            }
         }
 
         function spawnObstacle() {
-            const height = 28 + Math.random() * 45;
-            const width = 18 + Math.random() * 14;
+            const height = 26 + Math.random() * 48;
+            const width = 20 + Math.random() * 12;
             
             obstacles.push({
-                x: canvas.width + 40,
+                x: canvas.width + 50,
                 y: groundY - height,
                 width: width,
-                height: height,
-                type: Math.random() > 0.6 ? 1 : 0
+                height: height
             });
+        }
+
+        function initSnowflakes() {
+            snowflakes = [];
+            for (let i = 0; i < 28; i++) {
+                snowflakes.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * groundY * 0.9,
+                    size: 1.8 + Math.random() * 2.8,
+                    speed: 0.9 + Math.random() * 1.8,
+                    sway: Math.random() * 1.2
+                });
+            }
         }
 
         function checkCollision(p, o) {
@@ -162,7 +179,7 @@
             }
 
             if (obstacles.length === 0 || 
-                obstacles[obstacles.length - 1].x < canvas.width - (220 + Math.random() * 180)) {
+                obstacles[obstacles.length - 1].x < canvas.width - (200 + Math.random() * 170)) {
                 spawnObstacle();
             }
 
@@ -173,86 +190,176 @@
                 }
             }
 
-            score += 0.18;
+            score += 0.2;
 
-            const currentLevel = Math.floor(score / 450);
+            const currentLevel = Math.floor(score / 420);
             if (currentLevel > difficultyLevel) {
                 difficultyLevel = currentLevel;
-                gameSpeed = Math.min(4.5 + difficultyLevel * 0.65, 11.5);
+                gameSpeed = Math.min(4.8 + difficultyLevel * 0.55, 12);
+            }
+
+            const newTheme = Math.floor(score / 1000) % 4;
+            if (newTheme !== currentTheme) {
+                currentTheme = newTheme;
+                obstacles = [];
+                updateThemeDisplay();
+
+                if (currentTheme === 2) {
+                    initSnowflakes();
+                } else {
+                    snowflakes = [];
+                }
+            }
+
+            if (currentTheme === 2 && snowflakes.length > 0) {
+                for (let s of snowflakes) {
+                    s.y += s.speed;
+                    s.x += Math.sin(frame * 0.03 + s.x) * s.sway * 0.3;
+                    
+                    if (s.y > groundY - 5) {
+                        s.y = -10;
+                        s.x = Math.random() * canvas.width;
+                    }
+                }
             }
         }
 
         function drawBackground() {
-            const gradient = ctx.createLinearGradient(0, 0, 0, groundY);
-            gradient.addColorStop(0, '#81d4fa');
-            gradient.addColorStop(1, '#e1f5fe');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, groundY);
+            if (currentTheme === 0) {
+                const grad = ctx.createLinearGradient(0, 0, 0, groundY);
+                grad.addColorStop(0, '#81d4fa');
+                grad.addColorStop(0.6, '#e1f5fe');
+                grad.addColorStop(1, '#b3e5fc');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, groundY);
 
-            ctx.fillStyle = '#ffeb3b';
-            ctx.beginPath();
-            ctx.arc(680, 75, 32, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.fillStyle = 'rgba(255, 235, 59, 0.3)';
-            ctx.beginPath();
-            ctx.arc(680, 75, 48, 0, Math.PI * 2);
-            ctx.fill();
+                ctx.fillStyle = '#ffeb3b';
+                ctx.beginPath();
+                ctx.arc(700, 70, 38, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(255,235,59,0.4)';
+                ctx.beginPath();
+                ctx.arc(700, 70, 55, 0, Math.PI * 2);
+                ctx.fill();
 
-            ctx.fillStyle = 'rgba(255,255,255,0.85)';
-            const cloudOffset = (frame * 0.3) % (canvas.width + 200);
-            
-            ctx.beginPath();
-            ctx.ellipse(150 - cloudOffset * 0.3, 95, 35, 18, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(175 - cloudOffset * 0.3, 88, 25, 14, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(130 - cloudOffset * 0.3, 88, 20, 12, 0, 0, Math.PI * 2);
-            ctx.fill();
+            } else if (currentTheme === 1) {
+                const grad = ctx.createLinearGradient(0, 0, 0, groundY);
+                grad.addColorStop(0, '#a5d6a7');
+                grad.addColorStop(0.5, '#c8e6c9');
+                grad.addColorStop(1, '#e8f5e9');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, groundY);
 
-            ctx.beginPath();
-            ctx.ellipse(520 - cloudOffset * 0.25 + 300, 120, 40, 20, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(555 - cloudOffset * 0.25 + 300, 112, 28, 16, 0, 0, Math.PI * 2);
-            ctx.fill();
+                ctx.fillStyle = '#388e3c';
+                for (let i = 0; i < 5; i++) {
+                    const bx = ((frame * 0.4 + i * 180) % (canvas.width + 120)) - 60;
+                    ctx.fillRect(bx + 25, 120, 18, 95);
+                    ctx.beginPath();
+                    ctx.moveTo(bx, 130);
+                    ctx.lineTo(bx + 34, 60);
+                    ctx.lineTo(bx + 68, 130);
+                    ctx.fill();
+                }
+
+            } else if (currentTheme === 2) {
+                const grad = ctx.createLinearGradient(0, 0, 0, groundY);
+                grad.addColorStop(0, '#b0bec5');
+                grad.addColorStop(0.4, '#e3f2fd');
+                grad.addColorStop(1, '#f5f5f5');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, groundY);
+
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.beginPath();
+                ctx.arc(680, 65, 28, 0, Math.PI * 2);
+                ctx.fill();
+
+            } else if (currentTheme === 3) {
+                const grad = ctx.createLinearGradient(0, 0, 0, groundY);
+                grad.addColorStop(0, '#1a237e');
+                grad.addColorStop(0.4, '#283593');
+                grad.addColorStop(1, '#3949ab');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, canvas.width, groundY);
+
+                ctx.fillStyle = '#ffffff';
+                for (let i = 0; i < 35; i++) {
+                    const sx = (i * 47 + frame * 0.1) % canvas.width;
+                    const sy = 25 + (i % 7) * 28;
+                    ctx.fillRect(sx, sy, 2, 2);
+                }
+
+                ctx.fillStyle = '#fff9c4';
+                ctx.beginPath();
+                ctx.arc(720, 55, 22, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#3949ab';
+                ctx.beginPath();
+                ctx.arc(728, 50, 18, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
         function drawGround() {
-            ctx.fillStyle = '#795548';
-            ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-            
-            ctx.fillStyle = '#43a047';
-            ctx.fillRect(0, groundY, canvas.width, 12);
-            
-            groundOffset = (groundOffset + gameSpeed) % 45;
-            
-            ctx.strokeStyle = '#2e7d32';
-            ctx.lineWidth = 3;
-            
-            for (let x = -groundOffset; x < canvas.width + 50; x += 45) {
-                ctx.beginPath();
-                ctx.moveTo(x + 8, groundY + 8);
-                ctx.lineTo(x + 12, groundY - 6);
-                ctx.lineTo(x + 16, groundY + 8);
-                ctx.stroke();
+            if (currentTheme === 0) {
+                ctx.fillStyle = '#d4a574';
+                ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+                ctx.fillStyle = '#c38a5a';
+                ctx.fillRect(0, groundY, canvas.width, 14);
                 
-                ctx.beginPath();
-                ctx.moveTo(x + 25, groundY + 8);
-                ctx.lineTo(x + 29, groundY - 4);
-                ctx.lineTo(x + 33, groundY + 8);
-                ctx.stroke();
-            }
-            
-            ctx.strokeStyle = '#5d4037';
-            ctx.lineWidth = 1.5;
-            for (let x = -groundOffset * 0.7; x < canvas.width; x += 60) {
-                ctx.beginPath();
-                ctx.moveTo(x, groundY + 18);
-                ctx.lineTo(x + 35, groundY + 18);
-                ctx.stroke();
+                groundOffset = (groundOffset + gameSpeed * 0.9) % 38;
+                ctx.strokeStyle = '#b37a4a';
+                ctx.lineWidth = 2;
+                for (let x = -groundOffset; x < canvas.width; x += 38) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + 5, groundY + 10);
+                    ctx.lineTo(x + 18, groundY + 18);
+                    ctx.stroke();
+                }
+
+            } else if (currentTheme === 1) {
+                ctx.fillStyle = '#2e7d32';
+                ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+                ctx.fillStyle = '#43a047';
+                ctx.fillRect(0, groundY, canvas.width, 16);
+                
+                groundOffset = (groundOffset + gameSpeed) % 42;
+                ctx.strokeStyle = '#1b5e20';
+                ctx.lineWidth = 3;
+                for (let x = -groundOffset; x < canvas.width + 40; x += 42) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + 8, groundY + 8);
+                    ctx.lineTo(x + 12, groundY - 8);
+                    ctx.lineTo(x + 17, groundY + 8);
+                    ctx.stroke();
+                }
+
+            } else if (currentTheme === 2) {
+                ctx.fillStyle = '#eceff1';
+                ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, groundY, canvas.width, 18);
+                
+                groundOffset = (groundOffset + gameSpeed * 0.7) % 50;
+                ctx.strokeStyle = '#b0bec5';
+                ctx.lineWidth = 1.5;
+                for (let x = -groundOffset; x < canvas.width; x += 50) {
+                    ctx.beginPath();
+                    ctx.arc(x + 15, groundY + 12, 4, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+            } else if (currentTheme === 3) {
+                ctx.fillStyle = '#424242';
+                ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+                ctx.fillStyle = '#616161';
+                ctx.fillRect(0, groundY, canvas.width, 12);
+                
+                ctx.fillStyle = '#eeeeee';
+                groundOffset = (groundOffset + gameSpeed) % 70;
+                for (let x = -groundOffset; x < canvas.width; x += 70) {
+                    ctx.fillRect(x, groundY + 18, 35, 4);
+                }
             }
         }
 
@@ -260,49 +367,60 @@
             ctx.save();
             ctx.translate(player.x, player.y);
             
-            const isJumping = player.vy < -1;
-            const runPhase = Math.sin(frame * 0.28) * (isJumping ? 0 : 1);
-            
-            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+            const isJumping = player.vy < -2;
+            const runPhase = Math.sin(frame * 0.32) * (isJumping ? 0.3 : 1);
+
+            ctx.fillStyle = 'rgba(0,0,0,0.18)';
             ctx.beginPath();
-            ctx.ellipse(22, 55, 22, 6, 0, 0, Math.PI * 2);
+            ctx.ellipse(23, 58, 24, 7, 0, 0, Math.PI * 2);
             ctx.fill();
 
             ctx.fillStyle = '#2e7d32';
-            ctx.fillRect(6, 18, 32, 28);
+            ctx.fillRect(5, 16, 34, 30);
             
-            ctx.fillStyle = '#43a047';
-            ctx.fillRect(10, 24, 24, 18);
+            ctx.fillStyle = '#4caf50';
+            ctx.fillRect(9, 22, 26, 20);
 
             ctx.fillStyle = '#2e7d32';
-            ctx.fillRect(30, 8, 22, 20);
+            ctx.fillRect(32, 6, 24, 22);
             
-            ctx.fillRect(48, 14, 12, 10);
+            ctx.fillRect(52, 12, 11, 11);
 
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(40, 12, 8, 8);
+            ctx.fillRect(42, 10, 9, 9);
             ctx.fillStyle = '#000000';
-            ctx.fillRect(43, 14, 4, 4);
+            ctx.fillRect(45, 12, 4, 4);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(45, 12, 1.5, 1.5);
+
+            ctx.fillStyle = '#1b5e20';
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                ctx.moveTo(8 + i * 8, 16);
+                ctx.lineTo(12 + i * 8, 6);
+                ctx.lineTo(16 + i * 8, 16);
+                ctx.fill();
+            }
 
             ctx.fillStyle = '#1b5e20';
             ctx.beginPath();
-            ctx.moveTo(6, 28);
-            ctx.quadraticCurveTo(-8, 32, -12, 38);
-            ctx.quadraticCurveTo(-6, 42, 6, 36);
+            ctx.moveTo(5, 30);
+            ctx.quadraticCurveTo(-10, 35, -14, 44);
+            ctx.quadraticCurveTo(-4, 48, 8, 38);
             ctx.fill();
 
             ctx.fillStyle = '#1b5e20';
             
-            const backLegX = 10 + runPhase * 2.5;
-            ctx.fillRect(backLegX, 44, 8, 14);
-            ctx.fillRect(backLegX - 1, 55, 6, 5);
+            const backLeg = 9 + runPhase * 3.5;
+            ctx.fillRect(backLeg, 44, 9, 15);
+            ctx.fillRect(backLeg - 1, 57, 7, 6);
             
-            const frontLegX = 24 - runPhase * 2.5;
-            ctx.fillRect(frontLegX, 44, 8, 14);
-            ctx.fillRect(frontLegX + 3, 55, 6, 5);
+            const frontLeg = 26 - runPhase * 3.5;
+            ctx.fillRect(frontLeg, 44, 9, 15);
+            ctx.fillRect(frontLeg + 2, 57, 7, 6);
 
             ctx.fillStyle = '#388e3c';
-            ctx.fillRect(32, 28, 7, 12);
+            ctx.fillRect(34, 26, 8, 13);
 
             ctx.restore();
         }
@@ -310,133 +428,209 @@
         function drawObstacles() {
             for (let o of obstacles) {
                 ctx.save();
-                
-                ctx.fillStyle = 'rgba(0,0,0,0.12)';
-                ctx.fillRect(o.x + 4, groundY - 3, o.width, 8);
-                
-                ctx.fillStyle = '#2e7d32';
-                ctx.fillRect(o.x, o.y, o.width, o.height);
-                
-                ctx.fillStyle = '#388e3c';
-                ctx.fillRect(o.x + 3, o.y + 4, o.width - 6, o.height - 8);
-                
-                if (o.height > 45) {
+
+                if (currentTheme === 0) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                    ctx.fillRect(o.x + 5, groundY - 4, o.width, 9);
+
                     ctx.fillStyle = '#2e7d32';
-                    ctx.fillRect(o.x - 7, o.y + 12, 8, 7);
-                    ctx.fillRect(o.x - 7, o.y + 8, 3, 5);
+                    ctx.fillRect(o.x, o.y, o.width, o.height);
+                    ctx.fillStyle = '#43a047';
+                    ctx.fillRect(o.x + 3, o.y + 3, o.width - 6, o.height - 6);
+
+                    if (o.height > 42) {
+                        ctx.fillStyle = '#2e7d32';
+                        ctx.fillRect(o.x - 8, o.y + 14, 9, 8);
+                        ctx.fillRect(o.x + o.width - 1, o.y + 20, 9, 8);
+                    }
                     
-                    ctx.fillRect(o.x + o.width - 1, o.y + 18, 8, 7);
-                    ctx.fillRect(o.x + o.width + 4, o.y + 14, 3, 5);
+                    ctx.strokeStyle = '#1b5e20';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(o.x + 2, o.y + 2, o.width - 4, o.height - 4);
+                    
+                    ctx.fillStyle = '#1b5e20';
+                    ctx.beginPath();
+                    ctx.moveTo(o.x, o.y);
+                    ctx.lineTo(o.x + o.width/2, o.y - 6);
+                    ctx.lineTo(o.x + o.width, o.y);
+                    ctx.fill();
+
+                } else if (currentTheme === 1) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                    ctx.fillRect(o.x + 6, groundY - 3, o.width * 0.6, 8);
+
+                    ctx.fillStyle = '#5d4037';
+                    ctx.fillRect(o.x + o.width * 0.32, o.y + o.height * 0.35, o.width * 0.36, o.height * 0.65);
+
+                    ctx.fillStyle = '#2e7d32';
+                    ctx.beginPath();
+                    ctx.moveTo(o.x + o.width/2, o.y - 8);
+                    ctx.lineTo(o.x - 4, o.y + o.height * 0.45);
+                    ctx.lineTo(o.x + o.width + 4, o.y + o.height * 0.45);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#388e3c';
+                    ctx.beginPath();
+                    ctx.moveTo(o.x + o.width/2, o.y + 5);
+                    ctx.lineTo(o.x + 2, o.y + o.height * 0.55);
+                    ctx.lineTo(o.x + o.width - 2, o.y + o.height * 0.55);
+                    ctx.fill();
+
+                } else if (currentTheme === 2) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                    ctx.fillRect(o.x + 4, groundY - 3, o.width, 7);
+
+                    ctx.fillStyle = '#e3f2fd';
+                    ctx.fillRect(o.x, o.y, o.width, o.height);
+                    
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(o.x + 3, o.y + 3, o.width - 6, o.height - 8);
+
+                    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                    ctx.fillRect(o.x + 5, o.y + 6, 6, o.height * 0.4);
+
+                    ctx.strokeStyle = '#90caf9';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(o.x + 2, o.y + 2, o.width - 4, o.height - 4);
+
+                } else if (currentTheme === 3) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+                    ctx.fillRect(o.x + 5, groundY - 3, o.width, 7);
+
+                    ctx.fillStyle = '#455a64';
+                    ctx.fillRect(o.x, o.y, o.width, o.height);
+
+                    ctx.fillStyle = '#37474f';
+                    ctx.fillRect(o.x - 2, o.y - 4, o.width + 4, 8);
+
+                    ctx.fillStyle = '#ffeb3b';
+                    const winSize = 5;
+                    const cols = Math.floor(o.width / 9);
+                    const rows = Math.floor(o.height / 11);
+                    
+                    for (let r = 0; r < rows; r++) {
+                        for (let c = 0; c < cols; c++) {
+                            ctx.fillRect(
+                                o.x + 4 + c * 9, 
+                                o.y + 8 + r * 11, 
+                                winSize, winSize
+                            );
+                        }
+                    }
                 }
-                
-                ctx.strokeStyle = '#1b5e20';
-                ctx.lineWidth = 1.5;
-                ctx.strokeRect(o.x + 2, o.y + 2, o.width - 4, o.height - 4);
-                
-                ctx.fillStyle = '#1b5e20';
+
+                ctx.restore();
+            }
+        }
+
+        function drawSnowflakes() {
+            if (currentTheme !== 2 || snowflakes.length === 0) return;
+
+            ctx.fillStyle = '#ffffff';
+            for (let s of snowflakes) {
                 ctx.beginPath();
-                ctx.moveTo(o.x, o.y);
-                ctx.lineTo(o.x + o.width / 2, o.y - 5);
-                ctx.lineTo(o.x + o.width, o.y);
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
                 ctx.fill();
                 
-                ctx.restore();
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.beginPath();
+                ctx.arc(s.x - 0.8, s.y - 0.8, s.size * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
             }
         }
 
         function drawHUD() {
             ctx.fillStyle = '#1b5e20';
-            ctx.font = 'bold 26px "Segoe UI", Arial';
+            ctx.font = 'bold 28px "Segoe UI", Arial';
             ctx.textAlign = 'left';
-            
-            ctx.fillText('Pontos: ' + Math.floor(score), 25, 45);
-            
-            ctx.fillStyle = '#f57c00';
+            ctx.fillText('Pontos: ' + Math.floor(score), 25, 42);
+
+            ctx.fillStyle = '#e65100';
             ctx.font = 'bold 20px "Segoe UI", Arial';
-            ctx.fillText('🏆 Recorde: ' + highScore, 25, 72);
-            
-            ctx.fillStyle = '#555';
-            ctx.font = '16px Arial';
-            ctx.fillText('Nível: ' + (difficultyLevel + 1), 25, 95);
+            ctx.fillText('🏆 Recorde: ' + highScore, 25, 68);
+
+            ctx.fillStyle = '#37474f';
+            ctx.font = 'bold 17px Arial';
+            ctx.fillText('Nível ' + (difficultyLevel + 1), 25, 90);
+
+            ctx.textAlign = 'right';
+            ctx.fillStyle = themeColors[currentTheme];
+            ctx.font = 'bold 18px "Segoe UI", Arial';
+            ctx.fillText(themeNames[currentTheme], canvas.width - 25, 42);
         }
 
         function drawGameOver() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
+
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(180, 100, 440, 200);
-            ctx.strokeStyle = '#d32f2f';
-            ctx.lineWidth = 5;
-            ctx.strokeRect(180, 100, 440, 200);
-            
-            ctx.fillStyle = '#c62828';
-            ctx.font = 'bold 52px "Segoe UI", Arial';
+            ctx.fillRect(160, 95, 480, 210);
+            ctx.strokeStyle = '#c62828';
+            ctx.lineWidth = 6;
+            ctx.strokeRect(160, 95, 480, 210);
+
+            ctx.fillStyle = '#b71c1c';
+            ctx.font = 'bold 54px "Segoe UI", Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('GAME OVER', 400, 155);
-            
+            ctx.fillText('GAME OVER', 400, 150);
+
             ctx.fillStyle = '#333';
-            ctx.font = 'bold 28px "Segoe UI", Arial';
-            ctx.fillText('Sua pontuação: ' + Math.floor(score), 400, 200);
-            
+            ctx.font = 'bold 26px "Segoe UI", Arial';
+            ctx.fillText('Sua pontuação: ' + Math.floor(score), 400, 195);
+
             const finalScore = Math.floor(score);
             if (finalScore > highScore) {
                 highScore = finalScore;
-                localStorage.setItem('pulaObstaculoHighScore', highScore);
-                
+                localStorage.setItem('pulaObstaculoMelhoradoHighScore', highScore);
                 ctx.fillStyle = '#ff6f00';
                 ctx.font = 'bold 22px "Segoe UI", Arial';
-                ctx.fillText('🎉 NOVO RECORDE! 🎉', 400, 235);
+                ctx.fillText('🎉 NOVO RECORDE! 🎉', 400, 230);
             } else {
-                ctx.fillStyle = '#f57c00';
-                ctx.font = 'bold 20px "Segoe UI", Arial';
-                ctx.fillText('Recorde atual: ' + highScore, 400, 235);
+                ctx.fillStyle = '#e65100';
+                ctx.font = 'bold 19px "Segoe UI", Arial';
+                ctx.fillText('Recorde: ' + highScore, 400, 230);
             }
-            
+
             ctx.fillStyle = '#1b5e20';
-            ctx.font = 'bold 20px "Segoe UI", Arial';
-            ctx.fillText('Pressione ESPAÇO para jogar novamente', 400, 275);
+            ctx.font = 'bold 19px "Segoe UI", Arial';
+            ctx.fillText('Pressione ESPAÇO para jogar novamente', 400, 270);
         }
 
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+
             drawBackground();
             drawGround();
             
             if (!gameOver) {
                 updateGame();
             }
+
+            if (currentTheme === 2) drawSnowflakes();
             
             drawObstacles();
             drawPlayer();
             drawHUD();
-            
+
             if (gameOver) {
                 drawGameOver();
             }
-            
-            if (!gameOver) {
-                frame++;
-            }
-            
+
+            if (!gameOver) frame++;
             requestAnimationFrame(gameLoop);
         }
 
         document.addEventListener('keydown', function(e) {
-            if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'ArrowUp' || e.key === 'Up') {
+            if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'ArrowUp') {
                 e.preventDefault();
-                
                 if (gameOver) {
                     resetGame();
-                } else {
-                    if (player.y >= groundY - player.height - 3) {
-                        player.vy = jumpForce;
-                    }
+                } else if (player.y >= groundY - player.height - 4) {
+                    player.vy = jumpForce;
                 }
             }
-            
-            if ((e.key === 'r' || e.key === 'R') && gameOver) {
+            if ((e.key.toLowerCase() === 'r') && gameOver) {
                 resetGame();
             }
         });
@@ -444,13 +638,11 @@
         function handleJump() {
             if (gameOver) {
                 resetGame();
-            } else {
-                if (player.y >= groundY - player.height - 3) {
-                    player.vy = jumpForce;
-                }
+            } else if (player.y >= groundY - player.height - 4) {
+                player.vy = jumpForce;
             }
         }
-        
+
         canvas.addEventListener('mousedown', handleJump);
         canvas.addEventListener('touchstart', function(e) {
             e.preventDefault();
@@ -459,24 +651,15 @@
 
         function startGame() {
             resetGame();
-            
-            setTimeout(() => {
-                if (!gameOver && obstacles.length === 0) {
-                    spawnObstacle();
-                }
-            }, 800);
-            
-            setTimeout(() => {
-                if (!gameOver && obstacles.length < 2) {
-                    spawnObstacle();
-                }
-            }, 1600);
-            
+            updateThemeDisplay();
+
+            setTimeout(() => { if (!gameOver && obstacles.length === 0) spawnObstacle(); }, 700);
+            setTimeout(() => { if (!gameOver && obstacles.length < 2) spawnObstacle(); }, 1500);
+
             gameLoop();
         }
 
         startGame();
-        
         canvas.setAttribute('tabindex', '1');
         canvas.focus();
     </script>
