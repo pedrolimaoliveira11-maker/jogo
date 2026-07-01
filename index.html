@@ -3,78 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🦖 Pula Obstáculo - Versão Melhorada</title>
+    <title>🎨 Pichador na Cidade</title>
     <style>
         body {
             margin: 0;
             padding: 15px;
-            background: linear-gradient(to bottom, #1a237e, #283593);
+            background: linear-gradient(to bottom, #0d1b2a, #1b263b);
             font-family: 'Segoe UI', Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            color: white;
+            color: #e0e0e0;
         }
         
         h1 {
-            color: #fff;
-            text-shadow: 0 0 20px rgba(255,255,255,0.3);
-            margin-bottom: 8px;
-            font-size: 2.4em;
+            color: #00e5ff;
+            text-shadow: 0 0 25px rgba(0, 229, 255, 0.6);
+            margin-bottom: 5px;
+            font-size: 2.5em;
         }
         
         .instructions {
-            background: rgba(255,255,255,0.1);
-            padding: 10px 22px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 25px;
             border-radius: 20px;
-            margin-bottom: 12px;
-            color: #e0e0e0;
+            margin-bottom: 10px;
+            color: #b0bec5;
             font-size: 1.05em;
             text-align: center;
-            max-width: 620px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(0, 229, 255, 0.3);
         }
         
         #game {
-            border: 8px solid #fff;
-            border-radius: 18px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 8px solid #00e5ff;
+            border-radius: 16px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
             background: #fff;
             cursor: pointer;
         }
         
-        .footer {
-            margin-top: 12px;
-            color: #b0bec5;
-            font-size: 0.9em;
-            text-align: center;
-        }
-        
         .stage-info {
             margin-top: 8px;
-            font-size: 1.1em;
+            font-size: 1.15em;
             font-weight: bold;
-            color: #ffeb3b;
-            text-shadow: 0 0 10px rgba(255,235,59,0.5);
+            color: #00e5ff;
+            text-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
+        }
+        
+        .footer {
+            margin-top: 10px;
+            color: #78909c;
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
-    <h1>🦖 Pula Obstáculo <span style="font-size:0.6em; color:#ffeb3b;">MELHORADO</span></h1>
+    <h1>🎨 Pichador na Cidade</h1>
     
     <div class="instructions">
-        <strong>ESPAÇO</strong> ou <strong>↑</strong> para pular • Clique na tela também funciona<br>
-        <span style="color:#ffeb3b;">A cada 200 pontos fica mais rápido!</span><br>
-        <span style="color:#4fc3f7;">A cada 1000 pontos muda o ambiente!</span>
+        <strong>ESPAÇO</strong> ou <strong>↑</strong> para pular • Clique na tela também pula<br>
+        <span style="color:#ffeb3b;">A cada 200 pontos fica mais rápido</span> • 
+        <span style="color:#4fc3f7;">A cada 1000 pontos muda a cidade</span>
     </div>
     
-    <canvas id="game" width="800" height="420"></canvas>
+    <canvas id="game" width="820" height="430"></canvas>
     
-    <div class="stage-info" id="stageText">Fase 1 - Deserto</div>
+    <div class="stage-info" id="stageText">Fase 1 - Centro da Cidade</div>
     
     <div class="footer">
-        Recordes salvos automaticamente • Divirta-se! 
+        Um pichador correndo pela cidade • Recordes salvos no navegador
     </div>
 
     <script>
@@ -82,28 +80,29 @@
         const ctx = canvas.getContext('2d', { alpha: true });
 
         let player = {
-            x: 110,
+            x: 105,
             y: 0,
-            width: 44,
-            height: 54,
+            width: 38,
+            height: 58,
             vy: 0
         };
         
         let obstacles = [];
         let particles = [];
+        let rainParticles = [];
         let score = 0;
         let highScore = 0;
-        let gameSpeed = 4.8;
-        let gravity = 0.68;
-        let jumpForce = -14;
+        let gameSpeed = 5.0;
+        let gravity = 0.7;
+        let jumpForce = -14.5;
         let gameOver = false;
         let frame = 0;
         let groundOffset = 0;
         let currentStage = 0;
-        let groundY = 340;
+        let groundY = 355;
 
         function loadHighScore() {
-            const saved = localStorage.getItem('pulaObstaculoMelhoradoHighScore');
+            const saved = localStorage.getItem('pichadorHighScore');
             if (saved) highScore = parseInt(saved);
         }
         loadHighScore();
@@ -113,8 +112,9 @@
             player.vy = 0;
             obstacles = [];
             particles = [];
+            rainParticles = [];
             score = 0;
-            gameSpeed = 4.8;
+            gameSpeed = 5.0;
             gameOver = false;
             frame = 0;
             groundOffset = 0;
@@ -123,18 +123,18 @@
         }
 
         function updateStageDisplay() {
-            const stageNames = [
-                "Fase 1 - Deserto",
-                "Fase 2 - Floresta",
-                "Fase 3 - Neve Noturna",
-                "Fase 4 - Vulcão"
+            const names = [
+                "Fase 1 - Centro da Cidade",
+                "Fase 2 - Noite Neon",
+                "Fase 3 - Chuva na Cidade",
+                "Fase 4 - Telhados"
             ];
-            const stageEl = document.getElementById('stageText');
-            if (stageEl) {
-                stageEl.textContent = stageNames[Math.min(currentStage, 3)];
-                stageEl.style.color = currentStage === 3 ? '#ff7043' : 
-                                     currentStage === 2 ? '#90caf9' : 
-                                     currentStage === 1 ? '#81c784' : '#ffeb3b';
+            const el = document.getElementById('stageText');
+            if (el) {
+                el.textContent = names[Math.min(currentStage, 3)];
+                el.style.color = currentStage === 3 ? '#ff7043' : 
+                                currentStage === 2 ? '#4fc3f7' : 
+                                currentStage === 1 ? '#ce93d8' : '#00e5ff';
             }
         }
 
@@ -147,44 +147,44 @@
             if (newStage !== currentStage && newStage <= 3) {
                 currentStage = newStage;
                 updateStageDisplay();
-                gameSpeed = Math.min(gameSpeed + 0.6, 13);
+                gameSpeed = Math.min(gameSpeed + 0.7, 14);
             }
         }
 
         function updateSpeed() {
-            const speedLevel = Math.floor(score / 200);
-            const baseSpeed = 4.8;
-            const newSpeed = Math.min(baseSpeed + speedLevel * 0.38, 13.5);
+            const level = Math.floor(score / 200);
+            const newSpeed = Math.min(5.0 + level * 0.42, 14);
             if (newSpeed > gameSpeed) gameSpeed = newSpeed;
         }
 
         function spawnObstacle() {
-            let height, width, obsType;
-            
-            if (currentStage === 0) {
-                height = 30 + Math.random() * 48;
-                width = 20 + Math.random() * 12;
-                obsType = 'cactus';
-            } else if (currentStage === 1) {
-                height = 35 + Math.random() * 55;
-                width = 22 + Math.random() * 14;
-                obsType = 'tree';
-            } else if (currentStage === 2) {
-                height = 28 + Math.random() * 42;
-                width = 24 + Math.random() * 16;
-                obsType = 'snow';
+            let height, width, type;
+            const stage = currentStage;
+
+            if (stage === 0) {
+                height = 32 + Math.random() * 38;
+                width = 22 + Math.random() * 12;
+                type = Math.random() > 0.5 ? 'trash' : 'box';
+            } else if (stage === 1) {
+                height = 28 + Math.random() * 35;
+                width = 20 + Math.random() * 14;
+                type = Math.random() > 0.6 ? 'cone' : 'barrel';
+            } else if (stage === 2) {
+                height = 25 + Math.random() * 40;
+                width = 24 + Math.random() * 10;
+                type = Math.random() > 0.5 ? 'bench' : 'hydrant';
             } else {
-                height = 32 + Math.random() * 50;
-                width = 21 + Math.random() * 15;
-                obsType = 'lava';
+                height = 30 + Math.random() * 42;
+                width = 23 + Math.random() * 11;
+                type = Math.random() > 0.5 ? 'box' : 'vent';
             }
-            
+
             obstacles.push({
-                x: canvas.width + 50,
+                x: canvas.width + 55,
                 y: groundY - height,
                 width: width,
                 height: height,
-                type: obsType
+                type: type
             });
         }
 
@@ -198,14 +198,14 @@
         }
 
         function createDust(x, y) {
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 4; i++) {
                 particles.push({
-                    x: x + Math.random() * 15,
-                    y: y + Math.random() * 5,
-                    vx: -1.5 - Math.random() * 1.5,
-                    vy: -0.8 + Math.random() * 0.6,
-                    life: 18 + Math.random() * 12,
-                    size: 2 + Math.random() * 2.5
+                    x: x + Math.random() * 12,
+                    y: y,
+                    vx: -2.2 - Math.random() * 1.8,
+                    vy: -1.2 + Math.random() * 0.8,
+                    life: 16 + Math.random() * 14,
+                    size: 2.5 + Math.random() * 2
                 });
             }
         }
@@ -215,19 +215,17 @@
                 const p = particles[i];
                 p.x += p.vx;
                 p.y += p.vy;
-                p.vy += 0.12;
+                p.vy += 0.15;
                 p.life--;
-                p.vx *= 0.96;
+                p.vx *= 0.95;
                 if (p.life <= 0) particles.splice(i, 1);
             }
         }
 
         function drawParticles() {
-            ctx.fillStyle = currentStage === 2 ? '#e3f2fd' : 
-                           currentStage === 3 ? '#ffcc80' : '#d7ccc8';
-            
+            ctx.fillStyle = currentStage === 2 ? '#90caf9' : '#b0bec5';
             for (let p of particles) {
-                ctx.globalAlpha = Math.max(0.2, p.life / 25);
+                ctx.globalAlpha = Math.max(0.15, p.life / 22);
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                 ctx.fill();
@@ -235,18 +233,52 @@
             ctx.globalAlpha = 1;
         }
 
+        function updateRain() {
+            if (currentStage !== 2) {
+                rainParticles = [];
+                return;
+            }
+            if (rainParticles.length < 80) {
+                for (let i = 0; i < 6; i++) {
+                    rainParticles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * (groundY - 30),
+                        len: 8 + Math.random() * 10,
+                        speed: 6 + Math.random() * 5
+                    });
+                }
+            }
+            for (let i = rainParticles.length - 1; i >= 0; i--) {
+                const r = rainParticles[i];
+                r.y += r.speed;
+                if (r.y > groundY) rainParticles.splice(i, 1);
+            }
+        }
+
+        function drawRain() {
+            if (currentStage !== 2) return;
+            ctx.strokeStyle = 'rgba(144, 202, 249, 0.6)';
+            ctx.lineWidth = 1.5;
+            for (let r of rainParticles) {
+                ctx.beginPath();
+                ctx.moveTo(r.x, r.y);
+                ctx.lineTo(r.x, r.y + r.len);
+                ctx.stroke();
+            }
+        }
+
         function updateGame() {
             player.vy += gravity;
             player.y += player.vy;
 
             if (player.y > groundY - player.height) {
-                if (player.vy > 2) createDust(player.x + 20, groundY - 2);
+                if (player.vy > 3) createDust(player.x + 18, groundY);
                 player.y = groundY - player.height;
                 player.vy = 0;
             }
 
-            if (!gameOver && player.vy === 0 && frame % 6 === 0) {
-                createDust(player.x + 8, groundY - 3);
+            if (!gameOver && player.vy === 0 && frame % 5 === 0) {
+                createDust(player.x + 6, groundY - 1);
             }
 
             for (let i = obstacles.length - 1; i >= 0; i--) {
@@ -254,9 +286,8 @@
                 if (obstacles[i].x + obstacles[i].width < 0) obstacles.splice(i, 1);
             }
 
-            const spawnDistance = Math.max(180, 280 - gameSpeed * 8);
-            if (obstacles.length === 0 || 
-                obstacles[obstacles.length - 1].x < canvas.width - spawnDistance) {
+            const spawnDist = Math.max(170, 290 - gameSpeed * 9);
+            if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < canvas.width - spawnDist) {
                 spawnObstacle();
             }
 
@@ -267,10 +298,11 @@
                 }
             }
 
-            score += 0.2;
+            score += 0.22;
             updateStage();
             updateSpeed();
             updateParticles();
+            updateRain();
         }
 
         function drawBackground() {
@@ -279,129 +311,135 @@
             if (stage === 0) {
                 const grad = ctx.createLinearGradient(0, 0, 0, groundY);
                 grad.addColorStop(0, '#4fc3f7');
-                grad.addColorStop(0.6, '#81d4fa');
-                grad.addColorStop(1, '#e1f5fe');
+                grad.addColorStop(0.55, '#81d4fa');
+                grad.addColorStop(1, '#e3f2fd');
                 ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, canvas.width, groundY);
+
+                ctx.fillStyle = '#607d8b';
+                ctx.fillRect(50, 80, 90, groundY - 80);
+                ctx.fillRect(180, 50, 70, groundY - 50);
+                ctx.fillRect(290, 95, 85, groundY - 95);
+                ctx.fillRect(420, 40, 65, groundY - 40);
+                ctx.fillRect(530, 75, 95, groundY - 75);
+                ctx.fillRect(670, 60, 75, groundY - 60);
+
+                ctx.fillStyle = '#ffeb3b';
+                for (let bx of [60, 200, 305, 440, 550, 690]) {
+                    for (let by = 100; by < groundY - 30; by += 28) {
+                        ctx.fillRect(bx, by, 12, 14);
+                    }
+                }
 
                 ctx.fillStyle = '#ffeb3b';
                 ctx.beginPath();
-                ctx.arc(700, 70, 35, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = '#78909c';
-                ctx.beginPath();
-                ctx.moveTo(0, groundY);
-                ctx.lineTo(180, groundY - 90);
-                ctx.lineTo(320, groundY);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.moveTo(250, groundY);
-                ctx.lineTo(420, groundY - 110);
-                ctx.lineTo(580, groundY);
+                ctx.arc(720, 55, 32, 0, Math.PI * 2);
                 ctx.fill();
 
             } else if (stage === 1) {
-                const grad = ctx.createLinearGradient(0, 0, 0, groundY);
-                grad.addColorStop(0, '#2e7d32');
-                grad.addColorStop(0.5, '#43a047');
-                grad.addColorStop(1, '#66bb6a');
-                ctx.fillStyle = grad;
+                ctx.fillStyle = '#1a237e';
                 ctx.fillRect(0, 0, canvas.width, groundY);
 
-                ctx.fillStyle = '#c5e1a5';
-                ctx.beginPath();
-                ctx.arc(680, 65, 28, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.fillStyle = '#263238';
+                ctx.fillRect(40, 70, 95, groundY - 70);
+                ctx.fillRect(170, 45, 75, groundY - 45);
+                ctx.fillRect(280, 85, 90, groundY - 85);
+                ctx.fillRect(410, 35, 70, groundY - 35);
+                ctx.fillRect(520, 65, 100, groundY - 65);
+                ctx.fillRect(660, 55, 80, groundY - 55);
 
-                ctx.fillStyle = '#1b5e20';
-                for (let i = 0; i < 5; i++) {
-                    const tx = ((frame * 0.4 + i * 180) % (canvas.width + 100)) - 50;
-                    ctx.fillRect(tx, groundY - 95, 18, 95);
-                    ctx.beginPath();
-                    ctx.moveTo(tx - 15, groundY - 95);
-                    ctx.lineTo(tx + 9, groundY - 160);
-                    ctx.lineTo(tx + 33, groundY - 95);
-                    ctx.fill();
+                ctx.fillStyle = '#00e5ff';
+                for (let bx of [55, 190, 300, 430, 540, 680]) {
+                    for (let by = 95; by < groundY - 25; by += 26) {
+                        if (Math.random() > 0.3) ctx.fillRect(bx, by, 11, 13);
+                    }
                 }
 
+                ctx.fillStyle = '#ff4081';
+                ctx.fillRect(300, 120, 60, 8);
+                ctx.fillStyle = '#7c4dff';
+                ctx.fillRect(520, 95, 45, 7);
+
             } else if (stage === 2) {
-                const grad = ctx.createLinearGradient(0, 0, 0, groundY);
-                grad.addColorStop(0, '#1a237e');
-                grad.addColorStop(0.4, '#283593');
-                grad.addColorStop(1, '#5c6bc0');
-                ctx.fillStyle = grad;
+                ctx.fillStyle = '#37474f';
                 ctx.fillRect(0, 0, canvas.width, groundY);
 
-                ctx.fillStyle = '#e3f2fd';
-                ctx.beginPath();
-                ctx.arc(680, 60, 30, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#283593';
-                ctx.beginPath();
-                ctx.arc(695, 55, 26, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.fillStyle = '#455a64';
+                ctx.fillRect(30, 65, 100, groundY - 65);
+                ctx.fillRect(160, 40, 80, groundY - 40);
+                ctx.fillRect(270, 80, 95, groundY - 80);
+                ctx.fillRect(400, 30, 75, groundY - 30);
+                ctx.fillRect(510, 60, 105, groundY - 60);
+                ctx.fillRect(650, 50, 85, groundY - 50);
 
-                ctx.fillStyle = '#ffffff';
-                for (let i = 0; i < 25; i++) {
-                    const sx = (i * 37 + frame * 0.1) % canvas.width;
-                    const sy = 30 + (i % 7) * 22;
-                    ctx.fillRect(sx, sy, 2, 2);
+                ctx.fillStyle = '#78909c';
+                for (let bx of [45, 180, 290, 420, 530, 670]) {
+                    for (let by = 90; by < groundY - 20; by += 25) {
+                        ctx.fillRect(bx, by, 10, 12);
+                    }
                 }
 
             } else {
-                const grad = ctx.createLinearGradient(0, 0, 0, groundY);
-                grad.addColorStop(0, '#bf360c');
-                grad.addColorStop(0.3, '#e65100');
-                grad.addColorStop(1, '#ff8a65');
-                ctx.fillStyle = grad;
+                ctx.fillStyle = '#1b263b';
                 ctx.fillRect(0, 0, canvas.width, groundY);
 
-                ctx.fillStyle = 'rgba(66,66,66,0.4)';
-                for (let i = 0; i < 3; i++) {
-                    const smokeX = 720 + Math.sin(frame * 0.03 + i) * 15;
-                    ctx.beginPath();
-                    ctx.arc(smokeX, 55 + i * 18, 22 + i * 4, 0, Math.PI * 2);
-                    ctx.fill();
-                }
+                ctx.fillStyle = '#37474f';
+                ctx.fillRect(20, 30, 110, groundY - 30);
+                ctx.fillRect(150, 15, 85, groundY - 15);
+                ctx.fillRect(260, 45, 100, groundY - 45);
+                ctx.fillRect(390, 10, 80, groundY - 10);
+                ctx.fillRect(500, 35, 110, groundY - 35);
+                ctx.fillRect(640, 25, 90, groundY - 25);
+
+                ctx.fillStyle = '#546e7a';
+                ctx.fillRect(20, 30, 110, 12);
+                ctx.fillRect(150, 15, 85, 12);
+                ctx.fillRect(260, 45, 100, 12);
             }
         }
 
         function drawGround() {
             const stage = currentStage;
-            groundOffset = (groundOffset + gameSpeed) % 50;
+            groundOffset = (groundOffset + gameSpeed) % 55;
 
             if (stage === 0) {
-                ctx.fillStyle = '#d7ccc8';
+                ctx.fillStyle = '#78909c';
                 ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-                ctx.fillStyle = '#a1887f';
-                ctx.fillRect(0, groundY, canvas.width, 14);
+                ctx.fillStyle = '#546e7a';
+                ctx.fillRect(0, groundY, canvas.width, 16);
             } else if (stage === 1) {
-                ctx.fillStyle = '#2e7d32';
+                ctx.fillStyle = '#37474f';
                 ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-                ctx.fillStyle = '#1b5e20';
-                ctx.fillRect(0, groundY, canvas.width, 14);
+                ctx.fillStyle = '#263238';
+                ctx.fillRect(0, groundY, canvas.width, 16);
             } else if (stage === 2) {
-                ctx.fillStyle = '#e3f2fd';
+                ctx.fillStyle = '#455a64';
                 ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-                ctx.fillStyle = '#90caf9';
-                ctx.fillRect(0, groundY, canvas.width, 14);
+                ctx.fillStyle = '#37474f';
+                ctx.fillRect(0, groundY, canvas.width, 16);
             } else {
-                ctx.fillStyle = '#5d4037';
+                ctx.fillStyle = '#37474f';
                 ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-                ctx.fillStyle = '#bf360c';
-                ctx.fillRect(0, groundY, canvas.width, 14);
+                ctx.fillStyle = '#263238';
+                ctx.fillRect(0, groundY, canvas.width, 16);
             }
 
-            ctx.strokeStyle = stage === 2 ? '#bbdefb' : 
-                             stage === 3 ? '#ffab91' : '#5d4037';
+            ctx.strokeStyle = stage === 2 ? '#90caf9' : '#b0bec5';
             ctx.lineWidth = 2.5;
-
-            for (let x = -groundOffset; x < canvas.width + 60; x += 50) {
+            for (let x = -groundOffset; x < canvas.width + 70; x += 55) {
                 ctx.beginPath();
-                ctx.moveTo(x + 12, groundY + 10);
-                ctx.lineTo(x + 18, groundY - 3);
-                ctx.lineTo(x + 24, groundY + 10);
+                ctx.moveTo(x + 15, groundY + 12);
+                ctx.lineTo(x + 22, groundY - 2);
+                ctx.lineTo(x + 29, groundY + 12);
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle = '#ffeb3b';
+            ctx.lineWidth = 3;
+            for (let x = -groundOffset * 1.3; x < canvas.width; x += 90) {
+                ctx.beginPath();
+                ctx.moveTo(x, groundY + 28);
+                ctx.lineTo(x + 45, groundY + 28);
                 ctx.stroke();
             }
         }
@@ -410,47 +448,68 @@
             ctx.save();
             ctx.translate(player.x, player.y);
 
-            const isJumping = player.vy < -2;
-            const runPhase = Math.sin(frame * 0.32) * (isJumping ? 0.3 : 1);
+            const isJumping = player.vy < -3;
+            const runPhase = Math.sin(frame * 0.35) * (isJumping ? 0.4 : 1.1);
 
-            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.fillStyle = 'rgba(0,0,0,0.25)';
             ctx.beginPath();
-            ctx.ellipse(23, 58, 24, 7, 0, 0, Math.PI * 2);
+            ctx.ellipse(20, 62, 22, 7, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.fillStyle = currentStage === 3 ? '#ff7043' : '#2e7d32';
-            ctx.fillRect(5, 16, 34, 30);
+            ctx.fillStyle = '#37474f';
+            const backLegX = 8 + runPhase * 3.5;
+            ctx.fillRect(backLegX, 46, 9, 18);
+            ctx.fillRect(backLegX - 1, 61, 7, 6);
 
-            ctx.fillStyle = currentStage === 3 ? '#ffab91' : '#43a047';
-            ctx.fillRect(9, 22, 26, 20);
+            const frontLegX = 22 - runPhase * 3.5;
+            ctx.fillRect(frontLegX, 46, 9, 18);
+            ctx.fillRect(frontLegX + 2, 61, 7, 6);
 
-            ctx.fillStyle = currentStage === 3 ? '#ff7043' : '#2e7d32';
-            ctx.fillRect(30, 6, 24, 22);
-            ctx.fillRect(50, 12, 13, 11);
+            ctx.fillStyle = currentStage === 1 ? '#7c4dff' : '#00bcd4';
+            ctx.fillRect(6, 18, 30, 30);
+
+            ctx.fillStyle = currentStage === 1 ? '#5c00b3' : '#0097a7';
+            ctx.beginPath();
+            ctx.ellipse(21, 22, 16, 14, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffcc80';
+            ctx.beginPath();
+            ctx.arc(22, 18, 11, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#263238';
+            ctx.beginPath();
+            ctx.ellipse(23, 12, 12, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(12, 10, 22, 5);
 
             ctx.fillStyle = '#fff';
-            ctx.fillRect(40, 10, 9, 9);
-            ctx.fillStyle = '#000';
-            ctx.fillRect(43, 12, 5, 5);
-
-            ctx.fillStyle = currentStage === 3 ? '#e64a19' : '#1b5e20';
             ctx.beginPath();
-            ctx.moveTo(5, 26);
-            ctx.quadraticCurveTo(-10 + runPhase * 2, 30 + runPhase, -14, 40);
-            ctx.quadraticCurveTo(-5, 44, 5, 36);
+            ctx.arc(26, 17, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(27, 17, 2, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.fillStyle = currentStage === 3 ? '#e64a19' : '#1b5e20';
-            const backLeg = 9 + runPhase * 3;
-            ctx.fillRect(backLeg, 44, 9, 16);
-            ctx.fillRect(backLeg - 2, 57, 7, 6);
+            ctx.fillStyle = '#455a64';
+            ctx.fillRect(32, 24, 8, 16);
 
-            const frontLeg = 25 - runPhase * 3;
-            ctx.fillRect(frontLeg, 44, 9, 16);
-            ctx.fillRect(frontLeg + 2, 57, 7, 6);
+            ctx.fillStyle = '#ffcc80';
+            ctx.fillRect(35, 36, 9, 8);
 
-            ctx.fillStyle = currentStage === 3 ? '#ff8a65' : '#388e3c';
-            ctx.fillRect(32, 26, 8, 13);
+            ctx.fillStyle = '#ffeb3b';
+            ctx.fillRect(38, 30, 7, 14);
+            ctx.fillStyle = '#ff9800';
+            ctx.fillRect(38, 30, 3, 14);
+            ctx.fillStyle = '#263238';
+            ctx.fillRect(39, 28, 5, 4);
+
+            if (!isJumping && frame % 3 === 0) {
+                ctx.fillStyle = 'rgba(255, 235, 59, 0.6)';
+                ctx.fillRect(46, 33 + Math.sin(frame) * 2, 8, 3);
+            }
 
             ctx.restore();
         }
@@ -459,45 +518,57 @@
             for (let o of obstacles) {
                 ctx.save();
 
-                if (o.type === 'cactus') {
-                    ctx.fillStyle = '#2e7d32';
+                if (o.type === 'trash') {
+                    ctx.fillStyle = '#455a64';
                     ctx.fillRect(o.x, o.y, o.width, o.height);
-                    ctx.fillStyle = '#388e3c';
-                    ctx.fillRect(o.x + 3, o.y + 4, o.width - 6, o.height - 8);
-                    if (o.height > 45) {
-                        ctx.fillRect(o.x - 6, o.y + 14, 7, 8);
-                        ctx.fillRect(o.x + o.width - 1, o.y + 20, 7, 8);
-                    }
-                    ctx.strokeStyle = '#1b5e20';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(o.x + 2, o.y + 2, o.width - 4, o.height - 4);
-                    
-                } else if (o.type === 'tree') {
-                    ctx.fillStyle = '#5d4037';
-                    ctx.fillRect(o.x + 6, o.y, o.width - 12, o.height);
-                    ctx.fillStyle = '#2e7d32';
-                    ctx.beginPath();
-                    ctx.ellipse(o.x + o.width/2, o.y - 5, o.width * 0.9, 22, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.ellipse(o.x + o.width/2, o.y + 12, o.width * 0.75, 18, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                } else if (o.type === 'snow') {
-                    ctx.fillStyle = '#90a4ae';
+                    ctx.fillStyle = '#607d8b';
+                    ctx.fillRect(o.x + 3, o.y + 4, o.width - 6, o.height - 10);
+                    ctx.fillStyle = '#263238';
+                    ctx.fillRect(o.x, o.y, o.width, 5);
+                } 
+                else if (o.type === 'box') {
+                    ctx.fillStyle = '#8d6e63';
                     ctx.fillRect(o.x, o.y, o.width, o.height);
-                    ctx.fillStyle = '#eceff1';
+                    ctx.fillStyle = '#6d4c41';
                     ctx.fillRect(o.x + 3, o.y + 3, o.width - 6, o.height - 6);
-                    ctx.fillStyle = '#b0bec5';
-                    ctx.fillRect(o.x + 2, o.y + 8, o.width - 4, 6);
-                    
-                } else if (o.type === 'lava') {
-                    ctx.fillStyle = '#37474f';
-                    ctx.fillRect(o.x, o.y, o.width, o.height);
+                    ctx.strokeStyle = '#5d4037';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(o.x + 4, o.y + 4, o.width - 8, o.height - 8);
+                } 
+                else if (o.type === 'cone') {
                     ctx.fillStyle = '#ff5722';
-                    ctx.fillRect(o.x + 4, o.y + 6, o.width - 8, o.height - 12);
-                    ctx.fillStyle = '#ffab91';
-                    ctx.fillRect(o.x + 6, o.y + 10, o.width - 12, 8);
+                    ctx.beginPath();
+                    ctx.moveTo(o.x + o.width/2, o.y);
+                    ctx.lineTo(o.x, o.y + o.height);
+                    ctx.lineTo(o.x + o.width, o.y + o.height);
+                    ctx.fill();
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(o.x + 4, o.y + o.height - 8, o.width - 8, 5);
+                } 
+                else if (o.type === 'barrel') {
+                    ctx.fillStyle = '#ff9800';
+                    ctx.fillRect(o.x, o.y, o.width, o.height);
+                    ctx.fillStyle = '#e65100';
+                    ctx.fillRect(o.x + 2, o.y + 6, o.width - 4, 4);
+                    ctx.fillRect(o.x + 2, o.y + o.height - 10, o.width - 4, 4);
+                } 
+                else if (o.type === 'bench') {
+                    ctx.fillStyle = '#5d4037';
+                    ctx.fillRect(o.x, o.y + 15, o.width, 12);
+                    ctx.fillRect(o.x + 3, o.y, 5, 15);
+                    ctx.fillRect(o.x + o.width - 8, o.y, 5, 15);
+                } 
+                else if (o.type === 'hydrant') {
+                    ctx.fillStyle = '#d32f2f';
+                    ctx.fillRect(o.x + 4, o.y, o.width - 8, o.height);
+                    ctx.fillStyle = '#b71c1c';
+                    ctx.fillRect(o.x + 2, o.y + 8, o.width - 4, 6);
+                } 
+                else if (o.type === 'vent') {
+                    ctx.fillStyle = '#607d8b';
+                    ctx.fillRect(o.x, o.y, o.width, o.height);
+                    ctx.fillStyle = '#455a64';
+                    ctx.fillRect(o.x + 3, o.y + 3, o.width - 6, o.height - 6);
                 }
 
                 ctx.restore();
@@ -506,54 +577,54 @@
 
         function drawHUD() {
             ctx.fillStyle = '#fff';
-            ctx.font = 'bold 28px "Segoe UI", Arial';
+            ctx.font = 'bold 26px "Segoe UI", Arial';
             ctx.textAlign = 'left';
-            ctx.fillText('Pontos: ' + Math.floor(score), 25, 42);
+            ctx.fillText('Pontos: ' + Math.floor(score), 22, 38);
 
             ctx.fillStyle = '#ffeb3b';
-            ctx.font = 'bold 20px "Segoe UI", Arial';
-            ctx.fillText('🏆 Recorde: ' + highScore, 25, 68);
+            ctx.font = 'bold 18px "Segoe UI", Arial';
+            ctx.fillText('🏆 Recorde: ' + highScore, 22, 60);
 
-            ctx.fillStyle = '#90caf9';
-            ctx.font = '16px Arial';
-            ctx.fillText('Velocidade: ' + gameSpeed.toFixed(1), 25, 90);
+            ctx.fillStyle = '#00e5ff';
+            ctx.font = '15px Arial';
+            ctx.fillText('Velocidade: ' + gameSpeed.toFixed(1), 22, 80);
         }
 
         function drawGameOver() {
-            ctx.fillStyle = 'rgba(0,0,0,0.65)';
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.fillStyle = '#fff';
-            ctx.fillRect(170, 95, 460, 210);
+            ctx.fillRect(160, 90, 500, 220);
             ctx.strokeStyle = '#f44336';
             ctx.lineWidth = 6;
-            ctx.strokeRect(170, 95, 460, 210);
+            ctx.strokeRect(160, 90, 500, 220);
 
             ctx.fillStyle = '#c62828';
-            ctx.font = 'bold 48px "Segoe UI", Arial';
+            ctx.font = 'bold 46px "Segoe UI", Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('GAME OVER', 400, 150);
+            ctx.fillText('GAME OVER', 410, 145);
 
             ctx.fillStyle = '#333';
-            ctx.font = 'bold 26px "Segoe UI", Arial';
-            ctx.fillText('Sua pontuação: ' + Math.floor(score), 400, 195);
+            ctx.font = 'bold 24px "Segoe UI", Arial';
+            ctx.fillText('Sua pontuação: ' + Math.floor(score), 410, 185);
 
-            const finalScore = Math.floor(score);
-            if (finalScore > highScore) {
-                highScore = finalScore;
-                localStorage.setItem('pulaObstaculoMelhoradoHighScore', highScore);
+            const final = Math.floor(score);
+            if (final > highScore) {
+                highScore = final;
+                localStorage.setItem('pichadorHighScore', highScore);
                 ctx.fillStyle = '#ff6f00';
-                ctx.font = 'bold 22px "Segoe UI", Arial';
-                ctx.fillText('🎉 NOVO RECORDE! 🎉', 400, 230);
+                ctx.font = 'bold 20px "Segoe UI", Arial';
+                ctx.fillText('🎉 NOVO RECORDE! 🎉', 410, 220);
             } else {
                 ctx.fillStyle = '#ff9800';
-                ctx.font = 'bold 20px "Segoe UI", Arial';
-                ctx.fillText('Recorde: ' + highScore, 400, 230);
+                ctx.font = 'bold 18px "Segoe UI", Arial';
+                ctx.fillText('Recorde atual: ' + highScore, 410, 220);
             }
 
             ctx.fillStyle = '#1b5e20';
-            ctx.font = 'bold 19px "Segoe UI", Arial';
-            ctx.fillText('Pressione ESPAÇO para jogar novamente', 400, 275);
+            ctx.font = 'bold 18px "Segoe UI", Arial';
+            ctx.fillText('Pressione ESPAÇO para jogar novamente', 410, 265);
         }
 
         function gameLoop() {
@@ -561,6 +632,7 @@
 
             drawBackground();
             drawGround();
+            drawRain();
 
             if (!gameOver) {
                 updateGame();
@@ -588,9 +660,7 @@
                     player.vy = jumpForce;
                 }
             }
-            if ((e.key === 'r' || e.key === 'R') && gameOver) {
-                resetGame();
-            }
+            if ((e.key === 'r' || e.key === 'R') && gameOver) resetGame();
         });
 
         function handleJump() {
@@ -609,8 +679,8 @@
 
         function startGame() {
             resetGame();
-            setTimeout(() => { if (!gameOver && obstacles.length === 0) spawnObstacle(); }, 700);
-            setTimeout(() => { if (!gameOver && obstacles.length < 2) spawnObstacle(); }, 1500);
+            setTimeout(() => { if (!gameOver && obstacles.length === 0) spawnObstacle(); }, 650);
+            setTimeout(() => { if (!gameOver && obstacles.length < 2) spawnObstacle(); }, 1400);
             gameLoop();
         }
 
