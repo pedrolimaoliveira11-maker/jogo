@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Guerra de Foguetes</title>
+  <title>Guerra de Foguetes com Terra Girando</title>
   <style>
     body {
       margin: 0;
@@ -57,6 +57,11 @@
       health: 100,
       bullets: []
     };
+
+    // Imagem da Terra
+    const earthImg = new Image();
+    earthImg.src = "https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg";
+    let angle = 0;
 
     // Função para desenhar foguete
     function drawRocket(obj) {
@@ -117,8 +122,22 @@
       if (Math.random() < 0.02) {
         enemy.bullets.push({x: enemy.x + enemy.width/2, y: enemy.y + enemy.height});
       }
-      // Movimento lateral simples
       enemy.x += Math.sin(Date.now()/500) * 2;
+    }
+
+    // Desenhar Terra girando
+    function drawEarth() {
+      const earthX = canvas.width - 150;
+      const earthY = canvas.height - 150;
+      const size = 120;
+
+      ctx.save();
+      ctx.translate(earthX + size/2, earthY + size/2);
+      ctx.rotate(angle);
+      ctx.drawImage(earthImg, -size/2, -size/2, size, size);
+      ctx.restore();
+
+      angle += 0.01; // velocidade da rotação
     }
 
     // Loop do jogo
@@ -133,6 +152,7 @@
       drawRocket(enemy);
       drawBullets(player.bullets);
       drawBullets(enemy.bullets);
+      drawEarth();
 
       document.getElementById("playerHealth").textContent = player.health;
       document.getElementById("enemyHealth").textContent = enemy.health;
@@ -148,7 +168,9 @@
       }
     }
 
-    gameLoop();
+    earthImg.onload = () => {
+      gameLoop();
+    };
   </script>
 </body>
 </html>
