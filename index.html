@@ -2,11 +2,10 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Corrida Realista</title>
+  <title>Corrida na Rua</title>
   <style>
     body {
       margin: 0;
-      background: #87CEEB;
       overflow: hidden;
       font-family: Arial, sans-serif;
     }
@@ -14,11 +13,12 @@
       position: relative;
       width: 100vw;
       height: 100vh;
-      background: linear-gradient(#87CEEB, #228B22);
+      background: url('rua.jpg') no-repeat center center;
+      background-size: cover;
     }
     .runner {
       position: absolute;
-      bottom: 0;
+      bottom: 20px;
       width: 60px;
       height: 100px;
       background-size: cover;
@@ -28,7 +28,7 @@
     #runner2 { left: 200px; background-image: url('runner_blue.png'); }
     .obstacle {
       position: absolute;
-      bottom: 0;
+      bottom: 20px;
       width: 40px;
       height: 40px;
       background: brown;
@@ -36,7 +36,7 @@
     }
     .powerup {
       position: absolute;
-      bottom: 50px;
+      bottom: 80px;
       width: 30px;
       height: 30px;
       background: gold;
@@ -58,6 +58,7 @@
       font-size: 24px;
       font-weight: bold;
       color: white;
+      text-shadow: 2px 2px 4px black;
     }
   </style>
 </head>
@@ -70,6 +71,7 @@
   </div>
 
   <script>
+    const gameArea = document.getElementById("gameArea");
     const runner1 = document.getElementById("runner1");
     const runner2 = document.getElementById("runner2");
     const message = document.getElementById("message");
@@ -78,12 +80,12 @@
     let pos2 = 200;
     let gameOver = false;
 
-    // Obstáculos e power-ups
+    // Criar obstáculos e power-ups
     function createObstacle(x) {
       const obs = document.createElement("div");
       obs.className = "obstacle";
       obs.style.left = x + "px";
-      document.getElementById("gameArea").appendChild(obs);
+      gameArea.appendChild(obs);
       return obs;
     }
 
@@ -91,7 +93,7 @@
       const pu = document.createElement("div");
       pu.className = "powerup";
       pu.style.left = x + "px";
-      document.getElementById("gameArea").appendChild(pu);
+      gameArea.appendChild(pu);
       return pu;
     }
 
