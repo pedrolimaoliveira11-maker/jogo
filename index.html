@@ -78,6 +78,7 @@
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     color:#fff; text-align:center; z-index:20;
     padding:20px;
+    overflow-y:auto;
   }
   .hidden { display:none !important; }
   .title {
@@ -117,18 +118,127 @@
     width:42px; height:42px; border-radius:50%;
     font-size:18px; cursor:pointer;
   }
+  #soundBtn {
+    position:absolute; top:16px; right:66px;
+    z-index:6; pointer-events:auto;
+    background:rgba(0,0,0,0.35); color:#fff; border:none;
+    width:42px; height:42px; border-radius:50%;
+    font-size:16px; cursor:pointer;
+  }
 
   #flashOverlay{
     position:absolute; top:0;left:0;right:0;bottom:0;
     pointer-events:none; z-index:15; background:rgba(255,255,255,0); 
   }
+
+  /* ---------- Auth / Room / Ranking ---------- */
+  .textInput{
+    width:100%; max-width:280px;
+    background:rgba(255,255,255,0.06);
+    border:2px solid rgba(255,255,255,0.15);
+    color:#fff; font-size:18px; font-weight:600;
+    padding:12px 16px; border-radius:14px;
+    text-align:center; outline:none;
+    letter-spacing:0.5px;
+  }
+  .textInput:focus{ border-color:#ffd700; background:rgba(255,215,0,0.08); }
+  .textInput::placeholder{ color:#666f92; font-weight:500; }
+
+  .fieldLabel{
+    font-size:12px; color:#8a8fb0; text-transform:uppercase; letter-spacing:1.5px;
+    margin-bottom:8px; font-weight:700;
+  }
+
+  .chipRow{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:14px; max-width:320px; }
+  .roomChip{
+    background:rgba(255,255,255,0.08); color:#cfd3f0; border:1px solid rgba(255,255,255,0.12);
+    padding:7px 16px; border-radius:20px; font-size:13px; font-weight:700; cursor:pointer;
+  }
+  .roomChip:active{ background:rgba(255,215,0,0.18); }
+
+  .userBadge{
+    display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,0.06); border-radius:16px; padding:10px 18px;
+    margin-bottom:18px; font-size:14px;
+  }
+  .userAvatar{
+    width:34px; height:34px; border-radius:50%;
+    background:linear-gradient(135deg,#ffd700,#ff5e3a);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; color:#1a0f00; font-size:15px;
+  }
+  .userBadge .uname{ font-weight:800; color:#fff; }
+  .userBadge .uroom{ color:#8a8fb0; font-size:12px; }
+
+  .miniBtn{
+    background:rgba(255,255,255,0.08); color:#dfe2f5; border:1px solid rgba(255,255,255,0.14);
+    padding:9px 18px; border-radius:24px; font-weight:700; font-size:13px; cursor:pointer;
+    margin:5px;
+  }
+  .miniBtn:active{ background:rgba(255,255,255,0.18); }
+
+  .menuRow{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
+
+  .tabRow{ display:flex; gap:6px; background:rgba(255,255,255,0.05); padding:5px; border-radius:16px; margin-bottom:16px; }
+  .tabBtn{
+    border:none; background:transparent; color:#8a8fb0; font-weight:800; font-size:13px;
+    padding:9px 22px; border-radius:12px; cursor:pointer; letter-spacing:0.5px;
+  }
+  .tabBtn.active{ background:linear-gradient(90deg,#ffd700,#ff8c00); color:#241400; }
+
+  .rankList{ width:100%; max-width:340px; max-height:320px; overflow-y:auto; }
+  .rankRow{
+    display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,0.045); border-radius:12px;
+    padding:9px 14px; margin-bottom:7px; text-align:left;
+  }
+  .rankRow.me{ background:rgba(255,215,0,0.14); box-shadow:inset 0 0 0 1px rgba(255,215,0,0.5); }
+  .rankPos{ width:26px; font-weight:900; font-size:14px; color:#8a8fb0; flex-shrink:0; }
+  .rankRow:nth-child(1) .rankPos{ color:#ffd700; }
+  .rankRow:nth-child(2) .rankPos{ color:#d8d8e0; }
+  .rankRow:nth-child(3) .rankPos{ color:#e0a05a; }
+  .rankName{ flex:1; font-weight:700; font-size:14px; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rankScore{ font-weight:800; font-size:14px; color:#ffd700; flex-shrink:0; }
+  .rankEmpty{ color:#666f92; font-size:13px; padding:30px 0; }
+  .spinner{
+    width:26px; height:26px; border-radius:50%;
+    border:3px solid rgba(255,255,255,0.15); border-top-color:#ffd700;
+    animation:spin 0.8s linear infinite; margin:20px auto;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .rankBadge{
+    font-size:13px; color:#ffd700; font-weight:800; margin-top:10px;
+    background:rgba(255,215,0,0.1); padding:6px 16px; border-radius:20px;
+  }
+  .smallNote{ font-size:11px; color:#5c6284; margin-top:14px; max-width:280px; line-height:1.5; }
+
+  /* ---------- Character Select ---------- */
+  .charGrid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+    max-width:360px; margin-top:6px;
+  }
+  .charCard{
+    background:rgba(255,255,255,0.05); border:2px solid rgba(255,255,255,0.1);
+    border-radius:16px; padding:10px 6px 8px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    transition:transform 0.08s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  .charCard:active{ transform:scale(0.96); }
+  .charCard.selected{
+    border-color:#ffd700; background:rgba(255,215,0,0.12);
+    box-shadow:0 0 0 1px rgba(255,215,0,0.4), 0 4px 14px rgba(255,180,0,0.25);
+  }
+  .charCard canvas{ width:64px; height:64px; }
+  .charCard .cname{ font-size:11px; font-weight:800; color:#dfe2f5; letter-spacing:0.3px; }
+  .charCard .clocked{ font-size:9px; color:#666f92; }
 </style>
 </head>
 <body>
 <div id="gameContainer">
   <canvas id="game"></canvas>
 
-  <div id="hud">
+  <div id="hud" class="hidden">
     <div class="hudBox">🏃 <span id="scoreVal">0</span></div>
     <div class="hudBox"><span class="coinIcon"></span> <span id="coinVal">0</span></div>
   </div>
@@ -137,12 +247,61 @@
   <div id="powerupBar"></div>
   <div id="flashOverlay"></div>
 
-  <button id="pauseBtn">⏸</button>
+  <button id="pauseBtn" class="hidden">⏸</button>
+  <button id="soundBtn" class="hidden">🔊</button>
 
-  <div id="startScreen" class="overlay">
+  <!-- LOGIN -->
+  <div id="loginScreen" class="overlay">
+    <div class="title" style="font-size:38px;">SUB SURF 3D</div>
+    <div class="subtitle">Crie seu perfil para competir no ranking</div>
+    <div class="fieldLabel">Seu nome de corredor</div>
+    <input id="usernameInput" class="textInput" maxlength="14" placeholder="Ex: RaioAzul" autocomplete="off">
+    <button class="playBtn" id="loginBtn" style="font-size:17px; padding:13px 40px;">ENTRAR ▶</button>
+    <div class="smallNote">Seu nome aparece no ranking global e no ranking da sua sala. Nada de dados pessoais — é só um apelido de corrida.</div>
+  </div>
+
+  <!-- ROOM SELECT -->
+  <div id="roomScreen" class="overlay hidden">
+    <div class="title" style="font-size:34px;">ESCOLHA A SALA</div>
+    <div class="subtitle" id="roomWelcome">Bem-vindo!</div>
+    <div class="fieldLabel">Nome da sala</div>
+    <input id="roomInput" class="textInput" maxlength="16" placeholder="geral" autocomplete="off">
+    <div class="chipRow" id="roomChips">
+      <div class="roomChip" data-room="geral">🌍 geral</div>
+      <div class="roomChip" data-room="brasil">🇧🇷 brasil</div>
+      <div class="roomChip" data-room="amigos">👥 amigos</div>
+      <div class="roomChip" data-room="treino">🏋 treino</div>
+    </div>
+    <button class="playBtn" id="enterRoomBtn" style="font-size:17px; padding:13px 40px;">ENTRAR NA SALA ▶</button>
+    <button class="miniBtn" id="switchProfileBtn">↺ Trocar de perfil</button>
+    <div class="smallNote">A sala define com quem você compete no ranking. Salas com o mesmo nome compartilham o mesmo placar — combine o nome com seus amigos!</div>
+  </div>
+
+  <!-- CHARACTER SELECT -->
+  <div id="charScreen" class="overlay hidden">
+    <div class="title" style="font-size:32px;">ESCOLHA SEU PERSONAGEM</div>
+    <div class="subtitle">Cada corredor tem seu próprio estilo</div>
+    <div class="charGrid" id="charGrid"></div>
+    <button class="playBtn" id="confirmCharBtn" style="font-size:17px; padding:13px 40px;">CONFIRMAR ▶</button>
+  </div>
+
+  <div id="startScreen" class="overlay hidden">
+    <div class="userBadge">
+      <div class="userAvatar" id="avatarInitial">?</div>
+      <div>
+        <div class="uname" id="startUsername">-</div>
+        <div class="uroom">sala: <span id="startRoom">-</span></div>
+      </div>
+    </div>
     <div class="title">SUB SURF 3D</div>
     <div class="subtitle">Corra, desvie, pule e deslize pelos trilhos!</div>
     <button class="playBtn" id="startBtn">▶ JOGAR</button>
+    <div class="menuRow">
+      <button class="miniBtn" id="rankingBtn">🏆 Ranking</button>
+      <button class="miniBtn" id="changeCharBtn">🧑 Personagem</button>
+      <button class="miniBtn" id="changeRoomBtn">🔀 Trocar sala</button>
+      <button class="miniBtn" id="logoutBtn">🚪 Sair</button>
+    </div>
     <div class="controlsHint">
       <b>PC:</b> ← → para trocar de pista, ↑ / W para pular, ↓ / S para deslizar.<br>
       <b>Celular:</b> deslize o dedo para os lados, para cima (pular) e para baixo (deslizar).<br>
@@ -154,20 +313,248 @@
     <div class="title" style="font-size:38px;">FIM DE JOGO</div>
     <div class="bigScore">Pontuação: <span id="finalScore">0</span></div>
     <div class="statLine">Moedas coletadas: <span id="finalCoins">0</span></div>
-    <div class="statLine">🏆 Recorde: <span id="finalBest">0</span></div>
+    <div class="statLine">🏆 Seu recorde: <span id="finalBest">0</span></div>
     <div id="newBestBadge" class="newBest hidden">✦ NOVO RECORDE ✦</div>
+    <div id="rankBadgeGlobal" class="rankBadge hidden"></div>
     <button class="playBtn" id="retryBtn">↻ JOGAR NOVAMENTE</button>
+    <div class="menuRow">
+      <button class="miniBtn" id="rankingBtn2">🏆 Ver ranking</button>
+      <button class="miniBtn" id="menuBtn2">🏠 Menu</button>
+    </div>
   </div>
 
   <div id="pauseScreen" class="overlay hidden">
     <div class="title" style="font-size:34px;">PAUSADO</div>
     <button class="playBtn" id="resumeBtn">▶ CONTINUAR</button>
   </div>
+
+  <!-- RANKING -->
+  <div id="rankingScreen" class="overlay hidden">
+    <div class="title" style="font-size:30px;">RANKING</div>
+    <div class="tabRow">
+      <button class="tabBtn active" id="tabGlobal">🌐 GLOBAL</button>
+      <button class="tabBtn" id="tabRoom">🏠 SALA</button>
+    </div>
+    <div class="rankList" id="rankList">
+      <div class="spinner"></div>
+    </div>
+    <button class="miniBtn" id="closeRankingBtn" style="margin-top:16px;">✕ Fechar</button>
+  </div>
 </div>
 
 <script>
 (function(){
 "use strict";
+
+// ============================================================
+// STORAGE / PROFILE / ROOM / LEADERBOARD
+// ============================================================
+let profile = null;          // { username }
+let currentRoom = 'geral';
+let soundOn = true;
+let personalBest = { score:0, coins:0 };
+
+function sanitizeName(raw){
+  return (raw||'').replace(/[\/\\'"]/g,'').trim().slice(0,14);
+}
+function sanitizeRoom(raw){
+  let r = (raw||'geral').toLowerCase().trim().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
+  r = r.slice(0,16);
+  return r.length ? r : 'geral';
+}
+
+async function storageGet(key, shared){
+  try{
+    const r = await window.storage.get(key, !!shared);
+    return r ? r.value : null;
+  }catch(e){ return null; }
+}
+async function storageSet(key, value, shared){
+  try{
+    await window.storage.set(key, value, !!shared);
+    return true;
+  }catch(e){ return false; }
+}
+
+async function loadProfile(){
+  const raw = await storageGet('profile', false);
+  if (raw){
+    try{ profile = JSON.parse(raw); }catch(e){ profile = null; }
+  }
+  return profile;
+}
+async function saveProfile(username){
+  profile = { username };
+  await storageSet('profile', JSON.stringify(profile), false);
+}
+async function clearProfile(){
+  profile = null;
+  try{ await window.storage.delete('profile', false); }catch(e){}
+}
+
+async function loadPersonalBest(){
+  if (!profile) return;
+  const raw = await storageGet('best:'+profile.username, false);
+  if (raw){
+    try{ personalBest = JSON.parse(raw); }catch(e){ personalBest = {score:0,coins:0}; }
+  } else {
+    personalBest = { score:0, coins:0 };
+  }
+}
+async function savePersonalBest(){
+  if (!profile) return;
+  await storageSet('best:'+profile.username, JSON.stringify(personalBest), false);
+}
+
+function lbKey(scope){
+  return scope === 'global' ? 'lb:global' : ('lb:room:' + sanitizeRoom(currentRoom));
+}
+
+async function fetchLeaderboard(scope){
+  const raw = await storageGet(lbKey(scope), true);
+  if (!raw) return [];
+  try{
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  }catch(e){ return []; }
+}
+
+async function submitScoreToLeaderboard(scope, entry){
+  const key = lbKey(scope);
+  let arr = [];
+  const raw = await storageGet(key, true);
+  if (raw){ try{ arr = JSON.parse(raw); if(!Array.isArray(arr)) arr=[]; }catch(e){ arr=[]; } }
+  const idx = arr.findIndex(e => e.username === entry.username);
+  if (idx >= 0){
+    if (entry.score > arr[idx].score) arr[idx] = entry;
+  } else {
+    arr.push(entry);
+  }
+  arr.sort((a,b) => b.score - a.score);
+  arr = arr.slice(0, 50);
+  await storageSet(key, JSON.stringify(arr), true);
+  return arr;
+}
+
+async function submitRun(finalScore, finalCoins){
+  const entry = {
+    username: profile.username,
+    score: Math.floor(finalScore),
+    coins: finalCoins,
+    ts: Date.now()
+  };
+  const [globalArr, roomArr] = await Promise.all([
+    submitScoreToLeaderboard('global', entry),
+    submitScoreToLeaderboard('room', entry)
+  ]);
+  return { globalArr, roomArr };
+}
+
+function rankOf(arr, username){
+  const i = arr.findIndex(e => e.username === username);
+  return i >= 0 ? i+1 : null;
+}
+
+// ============================================================
+// CHARACTERS
+// ============================================================
+const CHARACTERS = [
+  { id:'blaze',   name:'Blaze',   skin:'#e8b382', hair:'#2c1b12', body:'#ff6b35', body2:'#c9401a', cap:'#c0392b', cap2:'#7c1f18', accent:'#ffd54a' },
+  { id:'nova',    name:'Nova',    skin:'#f3caa0', hair:'#3a1f5d', body:'#8e5bff', body2:'#5a2fc9', cap:'#5a2fc9', cap2:'#381b8a', accent:'#c9a8ff' },
+  { id:'jade',    name:'Jade',    skin:'#c98a56', hair:'#111', body:'#1fbf7a', body2:'#0d7a4d', cap:'#0d7a4d', cap2:'#064d31', accent:'#9dffd6' },
+  { id:'ruby',    name:'Ruby',    skin:'#ffdcb8', hair:'#a3123a', body:'#ff3d6b', body2:'#c4123f', cap:'#c4123f', cap2:'#7a0827', accent:'#ffb8cc' },
+  { id:'volt',    name:'Volt',    skin:'#e2a878', hair:'#1a1a1a', body:'#ffd400', body2:'#d19a00', cap:'#2b2b2b', cap2:'#111', accent:'#fff6b0' },
+  { id:'frost',   name:'Frost',   skin:'#f0e0d0', hair:'#dfefff', body:'#3ac6ff', body2:'#1a8fc9', cap:'#1a8fc9', cap2:'#0d5c82', accent:'#e0f7ff' },
+];
+let selectedCharId = CHARACTERS[0].id;
+function getCharacter(){
+  return CHARACTERS.find(c => c.id === selectedCharId) || CHARACTERS[0];
+}
+async function loadCharacter(){
+  const raw = await storageGet('character', false);
+  if (raw && CHARACTERS.some(c=>c.id===raw)) selectedCharId = raw;
+}
+async function saveCharacter(id){
+  selectedCharId = id;
+  await storageSet('character', id, false);
+}
+
+function drawCharPreview(canvasEl, ch){
+  const c = canvasEl.getContext('2d');
+  const w = canvasEl.width, h = canvasEl.height;
+  c.clearRect(0,0,w,h);
+  c.save();
+  c.translate(w/2, h*0.86);
+  const scale = w/70;
+  c.scale(scale, scale);
+  // shadow
+  c.beginPath();
+  c.ellipse(0,4,16,4,0,0,Math.PI*2);
+  c.fillStyle='rgba(0,0,0,0.25)';
+  c.fill();
+  // body
+  const bg = c.createLinearGradient(-10,0,10,0);
+  bg.addColorStop(0,ch.body2); bg.addColorStop(0.5,ch.body); bg.addColorStop(1,ch.body2);
+  c.fillStyle = bg;
+  roundRectPath(c,-10,-34,20,22,5);
+  c.fill();
+  // legs
+  c.fillStyle = '#2c3e50';
+  c.fillRect(-9,-14,7,14);
+  c.fillRect(2,-14,7,14);
+  // head
+  c.fillStyle = ch.skin;
+  c.beginPath();
+  c.arc(0,-38,9,0,Math.PI*2);
+  c.fill();
+  // hair
+  c.fillStyle = ch.hair;
+  c.beginPath();
+  c.arc(0,-40,9,Math.PI,Math.PI*2);
+  c.fill();
+  // cap
+  c.fillStyle = ch.cap;
+  c.beginPath();
+  c.arc(0,-41,9.5,Math.PI,Math.PI*2);
+  c.fill();
+  c.fillRect(-9.5,-41,19,3);
+  c.fillStyle = ch.cap2;
+  c.fillRect(-1,-41,13,2.5);
+  c.restore();
+}
+function roundRectPath(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);
+  c.arcTo(x,y,x+w,y,r);
+  c.closePath();
+}
+
+function renderCharGrid(){
+  const grid = document.getElementById('charGrid');
+  grid.innerHTML = '';
+  CHARACTERS.forEach(ch=>{
+    const card = document.createElement('div');
+    card.className = 'charCard' + (ch.id===selectedCharId ? ' selected':'');
+    card.dataset.id = ch.id;
+    const cv = document.createElement('canvas');
+    cv.width = 64; cv.height = 64;
+    const label = document.createElement('div');
+    label.className = 'cname';
+    label.textContent = ch.name;
+    card.appendChild(cv);
+    card.appendChild(label);
+    card.addEventListener('click', ()=>{
+      selectedCharId = ch.id;
+      document.querySelectorAll('.charCard').forEach(el=>el.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+    grid.appendChild(card);
+    drawCharPreview(cv, ch);
+  });
+}
 
 // ============================================================
 // AUDIO (lightweight synthesized SFX, no assets needed)
@@ -179,7 +566,7 @@ function ensureAudio(){
   }
 }
 function beep(freq, dur, type, vol, glide){
-  if (!actx) return;
+  if (!actx || !soundOn) return;
   const t0 = actx.currentTime;
   const osc = actx.createOscillator();
   const gain = actx.createGain();
@@ -221,13 +608,13 @@ const H = () => canvas.height;
 // ============================================================
 // GAME STATE
 // ============================================================
-let state = 'start'; // start | playing | paused | gameover
+let state = 'login'; // login | roomselect | charselect | start | playing | paused | gameover | ranking
 let score = 0;
 let coins = 0;
 let bestScore = 0;
 let bestCoins = 0;
 let distance = 0;
-let baseSpeed = 6.5;
+let baseSpeed = 4.2;
 let speed = baseSpeed;
 let elapsed = 0;
 let combo = 1;
@@ -361,19 +748,19 @@ function spawnCoinPattern(lane){
   }
 }
 
-// Background scenery: alternating buildings with windows
+// Background scenery: rolling nature (hills + trees), no city
 function initScenery(){
   scenery = [];
-  for (let i=0;i<14;i++){
+  for (let i=0;i<26;i++){
     const side = i%2===0 ? -1 : 1;
     scenery.push({
       side,
       y: Math.random()*H(),
       depth: 0.2+Math.random()*0.8,
+      kind: Math.random()<0.65 ? 'tree' : 'rock',
       wSeed: Math.random(),
-      hSeed: 40+Math.random()*160,
-      hue: 210+Math.random()*50,
-      lit: Math.random()<0.5
+      hSeed: 30+Math.random()*70,
+      hue: 100+Math.random()*40
     });
   }
   clouds = [];
@@ -463,10 +850,16 @@ canvas.addEventListener('touchend', (e)=>{
 // ============================================================
 // UI WIRING
 // ============================================================
+const loginScreen = document.getElementById('loginScreen');
+const roomScreen = document.getElementById('roomScreen');
+const charScreen = document.getElementById('charScreen');
 const startScreen = document.getElementById('startScreen');
 const gameOverScreen = document.getElementById('gameOverScreen');
 const pauseScreen = document.getElementById('pauseScreen');
+const rankingScreen = document.getElementById('rankingScreen');
 const pauseBtn = document.getElementById('pauseBtn');
+const soundBtn = document.getElementById('soundBtn');
+const hud = document.getElementById('hud');
 const scoreVal = document.getElementById('scoreVal');
 const coinVal = document.getElementById('coinVal');
 const comboWrap = document.getElementById('comboWrap');
@@ -474,7 +867,145 @@ const comboVal = document.getElementById('comboVal');
 const powerupBar = document.getElementById('powerupBar');
 const flashOverlay = document.getElementById('flashOverlay');
 const newBestBadge = document.getElementById('newBestBadge');
+const rankBadgeGlobal = document.getElementById('rankBadgeGlobal');
 
+function showOnly(el){
+  [loginScreen, roomScreen, charScreen, startScreen, gameOverScreen, pauseScreen, rankingScreen].forEach(s=>{
+    if (s === el) s.classList.remove('hidden'); else s.classList.add('hidden');
+  });
+}
+
+// ---- LOGIN ----
+const usernameInput = document.getElementById('usernameInput');
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+usernameInput.addEventListener('keydown', (e)=>{ if (e.key==='Enter') doLogin(); });
+
+async function doLogin(){
+  userGesture();
+  const name = sanitizeName(usernameInput.value);
+  if (!name){ usernameInput.style.borderColor = '#ff5555'; usernameInput.placeholder = 'Digite um nome válido'; return; }
+  await saveProfile(name);
+  await loadPersonalBest();
+  bestScore = personalBest.score||0;
+  bestCoins = personalBest.coins||0;
+  goToRoomScreen();
+}
+
+function goToRoomScreen(){
+  state = 'roomselect';
+  document.getElementById('roomWelcome').textContent = 'Bem-vindo, ' + profile.username + '!';
+  document.getElementById('roomInput').value = currentRoom === 'geral' ? '' : currentRoom;
+  showOnly(roomScreen);
+}
+
+document.getElementById('switchProfileBtn').addEventListener('click', async ()=>{
+  await clearProfile();
+  usernameInput.value = '';
+  usernameInput.placeholder = 'Ex: RaioAzul';
+  usernameInput.style.borderColor = '';
+  state = 'login';
+  showOnly(loginScreen);
+});
+
+// ---- ROOM ----
+document.querySelectorAll('.roomChip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.getElementById('roomInput').value = chip.dataset.room;
+  });
+});
+document.getElementById('enterRoomBtn').addEventListener('click', enterRoom);
+document.getElementById('roomInput').addEventListener('keydown', (e)=>{ if (e.key==='Enter') enterRoom(); });
+
+function enterRoom(){
+  userGesture();
+  const val = document.getElementById('roomInput').value;
+  currentRoom = sanitizeRoom(val);
+  goToCharScreen();
+}
+
+// ---- CHARACTER SELECT ----
+function goToCharScreen(){
+  state = 'charselect';
+  renderCharGrid();
+  showOnly(charScreen);
+}
+document.getElementById('confirmCharBtn').addEventListener('click', async ()=>{
+  await saveCharacter(selectedCharId);
+  goToMenu();
+});
+document.getElementById('changeCharBtn').addEventListener('click', goToCharScreen);
+
+function goToMenu(){
+  state = 'start';
+  document.getElementById('avatarInitial').textContent = (profile.username[0]||'?').toUpperCase();
+  document.getElementById('startUsername').textContent = profile.username;
+  document.getElementById('startRoom').textContent = currentRoom;
+  hud.classList.add('hidden');
+  pauseBtn.classList.remove('hidden');
+  soundBtn.classList.remove('hidden');
+  showOnly(startScreen);
+}
+
+document.getElementById('changeRoomBtn').addEventListener('click', goToRoomScreen);
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+  await clearProfile();
+  usernameInput.value = '';
+  usernameInput.style.borderColor = '';
+  state = 'login';
+  showOnly(loginScreen);
+});
+
+// ---- SOUND ----
+soundBtn.addEventListener('click', ()=>{
+  soundOn = !soundOn;
+  soundBtn.textContent = soundOn ? '🔊' : '🔇';
+});
+
+// ---- RANKING ----
+let rankingTab = 'global';
+document.getElementById('rankingBtn').addEventListener('click', ()=>openRanking('global'));
+document.getElementById('rankingBtn2').addEventListener('click', ()=>openRanking('global'));
+document.getElementById('closeRankingBtn').addEventListener('click', ()=>{
+  showOnly(state === 'gameover' ? gameOverScreen : startScreen);
+});
+document.getElementById('tabGlobal').addEventListener('click', ()=>renderRanking('global'));
+document.getElementById('tabRoom').addEventListener('click', ()=>renderRanking('room'));
+document.getElementById('menuBtn2').addEventListener('click', goToMenu);
+
+async function openRanking(tab){
+  showOnly(rankingScreen);
+  await renderRanking(tab);
+}
+
+async function renderRanking(scope){
+  rankingTab = scope;
+  document.getElementById('tabGlobal').classList.toggle('active', scope==='global');
+  document.getElementById('tabRoom').classList.toggle('active', scope==='room');
+  document.getElementById('tabRoom').textContent = '🏠 ' + currentRoom.toUpperCase();
+  const listEl = document.getElementById('rankList');
+  listEl.innerHTML = '<div class="spinner"></div>';
+  const arr = await fetchLeaderboard(scope);
+  if (!arr.length){
+    listEl.innerHTML = '<div class="rankEmpty">Ninguém pontuou aqui ainda.<br>Seja o primeiro! 🏁</div>';
+    return;
+  }
+  const medals = ['🥇','🥈','🥉'];
+  let html = '';
+  arr.slice(0,20).forEach((e,i)=>{
+    const isMe = profile && e.username === profile.username;
+    html += `<div class="rankRow ${isMe?'me':''}">
+      <div class="rankPos">${medals[i]||('#'+(i+1))}</div>
+      <div class="rankName">${escapeHtml(e.username)}</div>
+      <div class="rankScore">${e.score}</div>
+    </div>`;
+  });
+  listEl.innerHTML = html;
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ---- PAUSE ----
 document.getElementById('startBtn').addEventListener('click', ()=>{ userGesture(); startGame(); });
 document.getElementById('retryBtn').addEventListener('click', ()=>{ userGesture(); startGame(); });
 document.getElementById('resumeBtn').addEventListener('click', togglePause);
@@ -513,23 +1044,40 @@ function startGame(){
   sinceLastPower = 0;
   initScenery();
 
-  startScreen.classList.add('hidden');
-  gameOverScreen.classList.add('hidden');
-  pauseScreen.classList.add('hidden');
+  showOnly(null);
+  hud.classList.remove('hidden');
+  pauseBtn.classList.remove('hidden');
+  soundBtn.classList.remove('hidden');
   newBestBadge.classList.add('hidden');
+  rankBadgeGlobal.classList.add('hidden');
   state = 'playing';
 }
 
 function endGame(){
   state = 'gameover';
-  const isNewBest = Math.floor(score) > bestScore;
-  bestScore = Math.max(bestScore, Math.floor(score));
+  const finalScoreVal = Math.floor(score);
+  const isNewBest = finalScoreVal > bestScore;
+  bestScore = Math.max(bestScore, finalScoreVal);
   bestCoins = Math.max(bestCoins, coins);
-  document.getElementById('finalScore').textContent = Math.floor(score);
+  personalBest = { score: bestScore, coins: bestCoins };
+  savePersonalBest();
+
+  document.getElementById('finalScore').textContent = finalScoreVal;
   document.getElementById('finalCoins').textContent = coins;
   document.getElementById('finalBest').textContent = bestScore;
   newBestBadge.classList.toggle('hidden', !isNewBest);
-  gameOverScreen.classList.remove('hidden');
+  rankBadgeGlobal.classList.add('hidden');
+  pauseBtn.classList.add('hidden');
+  soundBtn.classList.add('hidden');
+  showOnly(gameOverScreen);
+
+  submitRun(finalScoreVal, coins).then(({globalArr})=>{
+    const rank = rankOf(globalArr, profile.username);
+    if (rank){
+      rankBadgeGlobal.textContent = '🌐 #' + rank + ' no ranking global';
+      rankBadgeGlobal.classList.remove('hidden');
+    }
+  }).catch(()=>{});
 }
 
 // ============================================================
@@ -542,7 +1090,7 @@ function update(){
   elapsed++;
   distance += speed;
   score += speed * 0.045 * (boostTime>0?1.6:1);
-  speed = baseSpeed + Math.min(elapsed/1400, 1) * 7 + (boostTime>0?4:0);
+  speed = baseSpeed + Math.min(elapsed/2200, 1) * 4 + (boostTime>0?3:0);
 
   // player horizontal smoothing
   player.x += (player.targetX - player.x) * 0.28;
@@ -585,7 +1133,7 @@ function update(){
   spawnTimer++;
   if (spawnTimer >= nextSpawnGap){
     spawnTimer = 0;
-    nextSpawnGap = Math.max(46, 95 - elapsed/40);
+    nextSpawnGap = Math.max (46, 95 - elapsed/40);
     spawnObstacleRow();
   }
 
@@ -785,6 +1333,18 @@ function drawSky(){
   ctx.fillStyle = '#fff7d6';
   ctx.fill();
 
+  // distant hills silhouette (replaces the city skyline)
+  ctx.fillStyle = 'rgba(90,140,110,0.55)';
+  ctx.beginPath();
+  ctx.moveTo(0, hz);
+  for (let x=0; x<=W(); x+=W()/10){
+    const hgt = hz - 18 - Math.sin(x*0.01+2)*14;
+    ctx.lineTo(x, hgt);
+  }
+  ctx.lineTo(W(), hz);
+  ctx.closePath();
+  ctx.fill();
+
   // clouds
   for (const cl of clouds){
     ctx.save();
@@ -802,38 +1362,47 @@ function drawSky(){
 
 function drawScenery(){
   const hz = horizonY();
-  // buildings recede toward the horizon on both sides of the track
+  // trees & rocks line the sides of the track, receding toward the horizon
   for (const s of scenery){
     const scale = worldScaleAt(Math.max(hz, s.y));
     const trackW = trackWidthAt(Math.max(hz,s.y));
     const cx = W()/2;
-    const edge = trackW/2 + 10*scale;
-    const bw = (34 + s.wSeed*40) * scale;
-    const bh = s.hSeed * scale;
-    const x = s.side<0 ? cx - edge - bw : cx + edge;
+    const edge = trackW/2 + 12*scale;
     const y = s.y;
     if (y < hz-10 || y > H()+140) continue;
+    const x = s.side<0 ? cx - edge - 18*scale : cx + edge + 18*scale;
 
-    // building body with simple 3D shading (front face + side shadow strip)
-    const grad = ctx.createLinearGradient(x,y-bh,x,y);
-    grad.addColorStop(0, `hsl(${s.hue}, 35%, ${s.lit?42:28}%)`);
-    grad.addColorStop(1, `hsl(${s.hue}, 30%, ${s.lit?24:14}%)`);
-    ctx.fillStyle = grad;
-    ctx.fillRect(x, y-bh, bw, bh);
-    // side shadow (depth cue)
-    ctx.fillStyle = 'rgba(0,0,0,0.22)';
-    ctx.fillRect(x + (s.side<0?bw-4*scale:0), y-bh, 4*scale, bh);
-    // windows
-    if (bw>10 && bh>16){
-      ctx.fillStyle = s.lit ? 'rgba(255,230,150,0.85)' : 'rgba(180,210,255,0.35)';
-      const cols = Math.max(1, Math.floor(bw/12));
-      const rows = Math.max(1, Math.floor(bh/16));
-      for (let r=0;r<rows;r++){
-        for (let c=0;c<cols;c++){
-          if (Math.random()<0.02) continue;
-          ctx.fillRect(x+4*scale + c*(bw/cols), y-bh+6*scale + r*(bh/rows), Math.max(1,3*scale), Math.max(1,5*scale));
-        }
-      }
+    if (s.kind === 'tree'){
+      const trunkH = s.hSeed*0.35*scale;
+      const trunkW = 6*scale;
+      // trunk
+      ctx.fillStyle = '#6b4a2a';
+      ctx.fillRect(x-trunkW/2, y-trunkH, trunkW, trunkH);
+      // foliage (layered circles for volume)
+      const r = s.hSeed*0.42*scale;
+      const foliageGrad = ctx.createRadialGradient(x-r*0.3,y-trunkH-r*0.6,2,x,y-trunkH-r*0.4,r*1.3);
+      foliageGrad.addColorStop(0, `hsl(${s.hue+15}, 55%, 48%)`);
+      foliageGrad.addColorStop(1, `hsl(${s.hue}, 45%, 26%)`);
+      ctx.fillStyle = foliageGrad;
+      ctx.beginPath();
+      ctx.arc(x, y-trunkH-r*0.75, r, 0, Math.PI*2);
+      ctx.arc(x-r*0.55, y-trunkH-r*0.35, r*0.7, 0, Math.PI*2);
+      ctx.arc(x+r*0.55, y-trunkH-r*0.35, r*0.7, 0, Math.PI*2);
+      ctx.fill();
+    } else {
+      const rw = (16 + s.wSeed*18)*scale;
+      const rh = rw*0.65;
+      const rockGrad = ctx.createLinearGradient(x-rw/2,y-rh,x+rw/2,y);
+      rockGrad.addColorStop(0,'#9aa0a8');
+      rockGrad.addColorStop(1,'#5c626b');
+      ctx.fillStyle = rockGrad;
+      ctx.beginPath();
+      ctx.moveTo(x-rw/2, y);
+      ctx.lineTo(x-rw*0.3, y-rh);
+      ctx.lineTo(x+rw*0.25, y-rh*0.85);
+      ctx.lineTo(x+rw/2, y);
+      ctx.closePath();
+      ctx.fill();
     }
   }
 }
@@ -842,10 +1411,10 @@ function drawTrackFloor(){
   const hz = horizonY();
   const floorH = H() - hz;
 
-  // ground fog/gradient
+  // ground fog/gradient — natural grassy tone instead of city grey
   const fg = ctx.createLinearGradient(0,hz,0,H());
-  fg.addColorStop(0,'#5b6a80');
-  fg.addColorStop(1,'#2a3040');
+  fg.addColorStop(0,'#5f7a52');
+  fg.addColorStop(1,'#33422c');
   ctx.fillStyle = fg;
   ctx.fillRect(0, hz, W(), floorH);
 
@@ -1058,12 +1627,13 @@ function roundRect(x,y,w,h,r){
 }
 
 function drawPlayer(){
+  const ch = getCharacter();
   const x = player.x;
   const groundY = player.groundY;
   const z = player.z;
   let w = player.width, h = player.height;
-  let bodyColor = '#ff6b35';
-  let bodyColor2 = '#e0501f';
+  let bodyColor = ch.body;
+  let bodyColor2 = ch.body2;
   if (shieldTime>0) { bodyColor = '#57e08a'; bodyColor2='#2e9d5a'; }
   if (player.hitFlash > 0 && (player.hitFlash % 6 < 3)) { bodyColor = '#ff0000'; bodyColor2='#aa0000'; }
 
@@ -1087,38 +1657,30 @@ function drawPlayer(){
     ctx.lineWidth = 4;
     ctx.stroke();
   }
+  // speed trail while boosting
+  if (boostTime>0){
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    for (let i=1;i<=3;i++){
+      ctx.fillStyle = ch.accent;
+      roundRect(-w*0.24, -h*0.85 + i*10, w*0.48, h*0.5, 8);
+      ctx.globalAlpha = 0.35/(i);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
 
   if (player.state === 'slide'){ h = h*0.5; }
 
   const runPhase = Math.sin(player.animTime*0.45);
   const legOffset = player.state === 'run' ? runPhase*8 : 0;
 
-  // body with volumetric shading (gradient = pseudo-3D roundness)
-  const bodyGrad = ctx.createLinearGradient(-w*0.32,0,w*0.32,0);
-  bodyGrad.addColorStop(0, bodyColor2);
-  bodyGrad.addColorStop(0.5, bodyColor);
-  bodyGrad.addColorStop(1, bodyColor2);
-  ctx.fillStyle = bodyGrad;
-  roundRect(-w*0.32, -h, w*0.64, h*0.62, 10);
-  ctx.fill();
-
-  // head
-  const headGrad = ctx.createRadialGradient(-w*0.08,-h-14,2,0,-h-6,w*0.3);
-  headGrad.addColorStop(0,'#ffe6c2');
-  headGrad.addColorStop(1,'#e8b382');
-  ctx.fillStyle = headGrad;
-  ctx.beginPath();
-  ctx.arc(0, -h - 6, w*0.28, 0, Math.PI*2);
-  ctx.fill();
-
-  // cap
-  ctx.fillStyle = '#c0392b';
-  ctx.beginPath();
-  ctx.arc(0, -h-10, w*0.30, Math.PI, Math.PI*2);
-  ctx.fill();
-  ctx.fillRect(-w*0.30, -h-10, w*0.60, 6);
-  ctx.fillStyle='#922b21';
-  ctx.fillRect(-w*0.05, -h-10, w*0.42, 5);
+  // back arm (drawn first so it sits behind the torso)
+  ctx.fillStyle = bodyColor2;
+  const armPhase = -runPhase*10;
+  if (player.state !== 'slide'){
+    ctx.fillRect(w*0.34, -h*0.55, 8, h*0.35 - armPhase*0.3);
+  }
 
   // legs
   ctx.fillStyle = '#2c3e50';
@@ -1131,16 +1693,69 @@ function drawPlayer(){
   } else {
     ctx.fillRect(-w*0.34, -h*0.5, w*0.7, h*0.5);
   }
+  // shoes accent
+  ctx.fillStyle = ch.accent;
+  if (player.state !== 'slide'){
+    ctx.fillRect(-w*0.28, -h*0.38+ (h*0.4 + legOffset)-6, w*0.24, 6);
+    ctx.fillRect(w*0.04, -h*0.38 + (h*0.4 - legOffset)-6, w*0.24, 6);
+  }
 
-  // arms
+  // body with volumetric shading (gradient = pseudo-3D roundness)
+  const bodyGrad = ctx.createLinearGradient(-w*0.32,0,w*0.32,0);
+  bodyGrad.addColorStop(0, bodyColor2);
+  bodyGrad.addColorStop(0.5, bodyColor);
+  bodyGrad.addColorStop(1, bodyColor2);
+  ctx.fillStyle = bodyGrad;
+  roundRect(-w*0.32, -h, w*0.64, h*0.62, 10);
+  ctx.fill();
+  // chest highlight stripe
+  ctx.fillStyle = ch.accent;
+  ctx.globalAlpha = 0.55;
+  roundRect(-w*0.06, -h+4, w*0.12, h*0.55, 4);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // head
+  const headGrad = ctx.createRadialGradient(-w*0.08,-h-14,2,0,-h-6,w*0.3);
+  headGrad.addColorStop(0, lighten(ch.skin));
+  headGrad.addColorStop(1, ch.skin);
+  ctx.fillStyle = headGrad;
+  ctx.beginPath();
+  ctx.arc(0, -h - 6, w*0.28, 0, Math.PI*2);
+  ctx.fill();
+
+  // hair peeking from under cap
+  ctx.fillStyle = ch.hair;
+  ctx.beginPath();
+  ctx.arc(0, -h-6, w*0.28, 0.15*Math.PI, 0.85*Math.PI);
+  ctx.fill();
+
+  // cap
+  ctx.fillStyle = ch.cap;
+  ctx.beginPath();
+  ctx.arc(0, -h-10, w*0.30, Math.PI, Math.PI*2);
+  ctx.fill();
+  ctx.fillRect(-w*0.30, -h-10, w*0.60, 6);
+  ctx.fillStyle = ch.cap2;
+  ctx.fillRect(-w*0.05, -h-10, w*0.42, 5);
+
+  // front arm (drawn last, over the torso)
   ctx.fillStyle = bodyColor2;
-  const armPhase = -runPhase*10;
   if (player.state !== 'slide'){
     ctx.fillRect(-w*0.42, -h*0.55, 8, h*0.35 + armPhase*0.3);
-    ctx.fillRect(w*0.34, -h*0.55, 8, h*0.35 - armPhase*0.3);
   }
 
   ctx.restore();
+}
+
+function lighten(hex){
+  // quick helper to brighten a hex color for a soft highlight
+  const c = hex.replace('#','');
+  if (c.length!==6) return hex;
+  const r = Math.min(255, parseInt(c.substr(0,2),16)+30);
+  const g = Math.min(255, parseInt(c.substr(2,2),16)+30);
+  const b = Math.min(255, parseInt(c.substr(4,2),16)+30);
+  return `rgb(${r},${g},${b})`;
 }
 
 function drawParticles(){
@@ -1205,6 +1820,21 @@ requestAnimationFrame(loop);
 
 // initial idle background render
 draw();
+
+// ============================================================
+// BOOT: check for existing profile, skip login if found
+// ============================================================
+(async function boot(){
+  showOnly(loginScreen);
+  const p = await loadProfile();
+  await loadCharacter();
+  if (p && p.username){
+    await loadPersonalBest();
+    bestScore = personalBest.score||0;
+    bestCoins = personalBest.coins||0;
+    goToMenu();
+  }
+})();
 
 })();
 </script>
