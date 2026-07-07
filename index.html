@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Corrida de Pessoas</title>
+  <title>Corrida com Obstáculos</title>
   <style>
     body {
       margin: 0;
@@ -21,11 +21,26 @@
       bottom: 0;
       width: 50px;
       height: 80px;
-      background: red;
       border-radius: 10px;
     }
     #runner1 { left: 100px; background: red; }
     #runner2 { left: 200px; background: blue; }
+    .obstacle {
+      position: absolute;
+      bottom: 0;
+      width: 40px;
+      height: 40px;
+      background: brown;
+      border-radius: 5px;
+    }
+    .powerup {
+      position: absolute;
+      bottom: 50px;
+      width: 30px;
+      height: 30px;
+      background: gold;
+      border-radius: 50%;
+    }
     #finishLine {
       position: absolute;
       top: 0;
@@ -50,18 +65,38 @@
     <div id="runner1" class="runner"></div>
     <div id="runner2" class="runner"></div>
     <div id="finishLine"></div>
-    <div id="message">Pressione ESPAÇO para correr!</div>
+    <div id="message">ESPAÇO (vermelho) / ENTER (azul)</div>
   </div>
 
   <script>
+    const gameArea = document.getElementById("gameArea");
     const runner1 = document.getElementById("runner1");
     const runner2 = document.getElementById("runner2");
     const message = document.getElementById("message");
-    const finishLine = document.getElementById("finishLine");
 
     let pos1 = 100;
     let pos2 = 200;
     let gameOver = false;
+
+    // Criar obstáculos e power-ups
+    function createObstacle(x) {
+      const obs = document.createElement("div");
+      obs.className = "obstacle";
+      obs.style.left = x + "px";
+      gameArea.appendChild(obs);
+      return obs;
+    }
+
+    function createPowerup(x) {
+      const pu = document.createElement("div");
+      pu.className = "powerup";
+      pu.style.left = x + "px";
+      gameArea.appendChild(pu);
+      return pu;
+    }
+
+    const obstacles = [createObstacle(400), createObstacle(700), createObstacle(1000)];
+    const powerups = [createPowerup(600), createPowerup(900)];
 
     document.addEventListener("keydown", (e) => {
       if (gameOver) return;
@@ -69,14 +104,42 @@
       if (e.code === "Space") {
         pos1 += 20;
         runner1.style.left = pos1 + "px";
+        checkCollision(runner1, "Jogador Vermelho");
       }
       if (e.code === "Enter") {
         pos2 += 20;
         runner2.style.left = pos2 + "px";
+        checkCollision(runner2, "Jogador Azul");
       }
 
       checkWinner();
     });
+
+    function checkCollision(runner, playerName) {
+      const runnerRect = runner.getBoundingClientRect();
+
+      obstacles.forEach(obs => {
+        const obsRect = obs.getBoundingClientRect();
+        if (runnerRect.left < obsRect.right &&
+            runnerRect.right > obsRect.left &&
+            runnerRect.bottom > obsRect.top) {
+          message.textContent = playerName + " bateu no obstáculo!";
+          gameOver = true;
+        }
+      });
+
+      powerups.forEach(pu => {
+        const puRect = pu.getBoundingClientRect();
+        if (runnerRect.left < puRect.right &&
+            runnerRect.right > puRect.left &&
+            runnerRect.bottom > puRect.top) {
+          pu.remove();
+          message.textContent = playerName + " ganhou um turbo!";
+          let boost = 100;
+          runner.style.left = (parseInt(runner.style.left) + boost) + "px";
+        }
+      });
+    }
 
     function checkWinner() {
       const finishX = window.innerWidth - 60;
