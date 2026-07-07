@@ -1,40 +1,93 @@
-.grass {
-  background-image: url("sprites/grass.png");
-  background-size: cover;
-}
-.stone {
-  background-image: url("sprites/stone.png");
-  background-size: cover;
-}
-.wood {
-  background-image: url("sprites/wood.png");
-  background-size: cover;
-}
-#player {
-  background-image: url("sprites/player.png");
-  background-size: cover;
-}
-.enemy {
-  background-image: url("sprites/enemy.png");
-  background-size: cover;
-}
-.grass {
-  background-image: url("sprites/grass.png");
-  background-size: cover;
-}
-.stone {
-  background-image: url("sprites/stone.png");
-  background-size: cover;
-}
-.wood {
-  background-image: url("sprites/wood.png");
-  background-size: cover;
-}
-#player {
-  background-image: url("sprites/player.png");
-  background-size: cover;
-}
-.enemy {
-  background-image: url("sprites/enemy.png");
-  background-size: cover;
-}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Corrida de Pessoas</title>
+  <style>
+    body {
+      margin: 0;
+      background: #87CEEB;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    #gameArea {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(#87CEEB, #228B22);
+    }
+    .runner {
+      position: absolute;
+      bottom: 0;
+      width: 50px;
+      height: 80px;
+      background: red;
+      border-radius: 10px;
+    }
+    #runner1 { left: 100px; background: red; }
+    #runner2 { left: 200px; background: blue; }
+    #finishLine {
+      position: absolute;
+      top: 0;
+      right: 50px;
+      width: 10px;
+      height: 100%;
+      background: yellow;
+    }
+    #message {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div id="gameArea">
+    <div id="runner1" class="runner"></div>
+    <div id="runner2" class="runner"></div>
+    <div id="finishLine"></div>
+    <div id="message">Pressione ESPAÇO para correr!</div>
+  </div>
+
+  <script>
+    const runner1 = document.getElementById("runner1");
+    const runner2 = document.getElementById("runner2");
+    const message = document.getElementById("message");
+    const finishLine = document.getElementById("finishLine");
+
+    let pos1 = 100;
+    let pos2 = 200;
+    let gameOver = false;
+
+    document.addEventListener("keydown", (e) => {
+      if (gameOver) return;
+
+      if (e.code === "Space") {
+        pos1 += 20;
+        runner1.style.left = pos1 + "px";
+      }
+      if (e.code === "Enter") {
+        pos2 += 20;
+        runner2.style.left = pos2 + "px";
+      }
+
+      checkWinner();
+    });
+
+    function checkWinner() {
+      const finishX = window.innerWidth - 60;
+      if (pos1 >= finishX) {
+        message.textContent = "Jogador Vermelho venceu!";
+        gameOver = true;
+      } else if (pos2 >= finishX) {
+        message.textContent = "Jogador Azul venceu!";
+        gameOver = true;
+      }
+    }
+  </script>
+</body>
+</html>
