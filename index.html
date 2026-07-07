@@ -2,175 +2,92 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Guerra de Foguetes com Terra Girando</title>
+  <title>Corrida de Pessoas</title>
   <style>
     body {
       margin: 0;
+      background: #87CEEB;
       overflow: hidden;
-      background: url('https://i.ibb.co/7jRZyQF/universe.jpg') no-repeat center center fixed;
-      background-size: cover;
-    }
-    canvas {
-      display: block;
-      margin: auto;
-      background: transparent;
-    }
-    #hud {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      color: white;
       font-family: Arial, sans-serif;
-      font-size: 18px;
+    }
+    #gameArea {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(#87CEEB, #228B22);
+    }
+    .runner {
+      position: absolute;
+      bottom: 0;
+      width: 50px;
+      height: 80px;
+      background: red;
+      border-radius: 10px;
+    }
+    #runner1 { left: 100px; background: red; }
+    #runner2 { left: 200px; background: blue; }
+    #finishLine {
+      position: absolute;
+      top: 0;
+      right: 50px;
+      width: 10px;
+      height: 100%;
+      background: yellow;
+    }
+    #message {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <div id="hud">
-    Vida Jogador: <span id="playerHealth">100</span><br>
-    Vida Inimigo: <span id="enemyHealth">100</span>
+  <div id="gameArea">
+    <div id="runner1" class="runner"></div>
+    <div id="runner2" class="runner"></div>
+    <div id="finishLine"></div>
+    <div id="message">Pressione ESPAÇO para correr!</div>
   </div>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
 
   <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+    const runner1 = document.getElementById("runner1");
+    const runner2 = document.getElementById("runner2");
+    const message = document.getElementById("message");
+    const finishLine = document.getElementById("finishLine");
 
-    // Jogador
-    const player = {
-      x: 380,
-      y: 500,
-      width: 40,
-      height: 60,
-      color: "white",
-      health: 100,
-      bullets: []
-    };
+    let pos1 = 100;
+    let pos2 = 200;
+    let gameOver = false;
 
-    // Inimigo
-    const enemy = {
-      x: 380,
-      y: 50,
-      width: 40,
-      height: 60,
-      color: "lime",
-      health: 100,
-      bullets: []
-    };
+    document.addEventListener("keydown", (e) => {
+      if (gameOver) return;
 
-    // Imagem da Terra
-    const earthImg = new Image();
-    earthImg.src = "https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg";
-    let angle = 0;
+      if (e.code === "Space") {
+        pos1 += 20;
+        runner1.style.left = pos1 + "px";
+      }
+      if (e.code === "Enter") {
+        pos2 += 20;
+        runner2.style.left = pos2 + "px";
+      }
 
-    // Função para desenhar foguete
-    function drawRocket(obj) {
-      ctx.fillStyle = obj.color;
-      ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
-    }
+      checkWinner();
+    });
 
-    // Função para desenhar balas
-    function drawBullets(bullets) {
-      ctx.fillStyle = "red";
-      bullets.forEach(b => {
-        ctx.fillRect(b.x, b.y, 5, 10);
-      });
-    }
-
-    // Movimento das balas
-    function updateBullets() {
-      player.bullets.forEach((b, i) => {
-        b.y -= 10;
-        if (b.y < 0) player.bullets.splice(i, 1);
-        if (b.x < enemy.x + enemy.width && b.x > enemy.x &&
-            b.y < enemy.y + enemy.height && b.y > enemy.y) {
-          enemy.health -= 10;
-          player.bullets.splice(i, 1);
-        }
-      });
-
-      enemy.bullets.forEach((b, i) => {
-        b.y += 10;
-        if (b.y > canvas.height) enemy.bullets.splice(i, 1);
-        if (b.x < player.x + player.width && b.x > player.x &&
-            b.y < player.y + player.height && b.y > player.y) {
-          player.health -= 10;
-          enemy.bullets.splice(i, 1);
-        }
-      });
-    }
-
-    // Controle do jogador
-    const keys = {};
-    document.addEventListener("keydown", e => keys[e.key] = true);
-    document.addEventListener("keyup", e => keys[e.key] = false);
-
-    function updatePlayer() {
-      if (keys["ArrowLeft"] && player.x > 0) player.x -= 5;
-      if (keys["ArrowRight"] && player.x < canvas.width - player.width) player.x += 5;
-      if (keys["ArrowUp"] && player.y > 0) player.y -= 5;
-      if (keys["ArrowDown"] && player.y < canvas.height - player.height) player.y += 5;
-      if (keys[" "]) {
-        if (player.bullets.length < 5) {
-          player.bullets.push({x: player.x + player.width/2, y: player.y});
-        }
+    function checkWinner() {
+      const finishX = window.innerWidth - 60;
+      if (pos1 >= finishX) {
+        message.textContent = "Jogador Vermelho venceu!";
+        gameOver = true;
+      } else if (pos2 >= finishX) {
+        message.textContent = "Jogador Azul venceu!";
+        gameOver = true;
       }
     }
-
-    // Movimento inimigo e tiros
-    function updateEnemy() {
-      if (Math.random() < 0.02) {
-        enemy.bullets.push({x: enemy.x + enemy.width/2, y: enemy.y + enemy.height});
-      }
-      enemy.x += Math.sin(Date.now()/500) * 2;
-    }
-
-    // Desenhar Terra girando
-    function drawEarth() {
-      const earthX = canvas.width - 150;
-      const earthY = canvas.height - 150;
-      const size = 120;
-
-      ctx.save();
-      ctx.translate(earthX + size/2, earthY + size/2);
-      ctx.rotate(angle);
-      ctx.drawImage(earthImg, -size/2, -size/2, size, size);
-      ctx.restore();
-
-      angle += 0.01; // velocidade da rotação
-    }
-
-    // Loop do jogo
-    function gameLoop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      updatePlayer();
-      updateEnemy();
-      updateBullets();
-
-      drawRocket(player);
-      drawRocket(enemy);
-      drawBullets(player.bullets);
-      drawBullets(enemy.bullets);
-      drawEarth();
-
-      document.getElementById("playerHealth").textContent = player.health;
-      document.getElementById("enemyHealth").textContent = enemy.health;
-
-      if (player.health <= 0) {
-        alert("Você perdeu!");
-        document.location.reload();
-      } else if (enemy.health <= 0) {
-        alert("Você venceu!");
-        document.location.reload();
-      } else {
-        requestAnimationFrame(gameLoop);
-      }
-    }
-
-    earthImg.onload = () => {
-      gameLoop();
-    };
   </script>
 </body>
 </html>
